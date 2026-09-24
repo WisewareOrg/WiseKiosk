@@ -290,7 +290,7 @@ test('TST076: tours the remaining rides two at a time, on the configured interva
     status: 200,
     data: parksPayload([onePark(EPCOT, { rides: rankedRoster() })]),
   }));
-  await render(page, placed([EPCOT], { rotationIntervalSeconds: 6 }));
+  await render(page, placed([EPCOT], { rotationIntervalSeconds: 8 }));
 
   const card = page.locator(CARD);
   // Held: Test Track, Soarin, Spaceship Earth. Remaining, in the source's own order: Mission: Space,
@@ -299,7 +299,7 @@ test('TST076: tours the remaining rides two at a time, on the configured interva
   expect(await rideNamesIn(card, TOUR_ROW)).toEqual(['Mission: Space', 'Imagination!']);
 
   // Not yet — a step short of the configured interval finds the same pair still shown.
-  await advanceHostClock(page, 6 * 1000 - 500);
+  await advanceHostClock(page, 8 * 1000 - 500);
   expect(await rideNamesIn(card, TOUR_ROW)).toEqual(['Mission: Space', 'Imagination!']);
 
   // The interval elapses, and the tour advances to the next pair — the whole of the remainder is
@@ -309,7 +309,7 @@ test('TST076: tours the remaining rides two at a time, on the configured interva
 
   // And a full cycle returns to the first pair, the tour being a repeating rotation rather than a
   // one-time advance.
-  await advanceHostClock(page, 6 * 1000);
+  await advanceHostClock(page, 8 * 1000);
   expect(await rideNamesIn(card, TOUR_ROW)).toEqual(['Mission: Space', 'Imagination!']);
 });
 
@@ -368,14 +368,14 @@ test('TST076: the footer marks the tour’s own position, one segment per page',
     status: 200,
     data: parksPayload([onePark(EPCOT, { rides: rankedRoster() })]),
   }));
-  await render(page, placed([EPCOT], { rotationIntervalSeconds: 5 }));
+  await render(page, placed([EPCOT], { rotationIntervalSeconds: 8 }));
 
   const segments = page.locator(CARD).locator(FOOTER_SEGMENT);
   await expect(segments).toHaveCount(2);
   await expect(segments.nth(0)).toHaveClass(/filled/);
   await expect(segments.nth(1)).not.toHaveClass(/filled/);
 
-  await advanceHostClock(page, 5 * 1000);
+  await advanceHostClock(page, 8 * 1000);
   await expect(segments.nth(0)).not.toHaveClass(/filled/);
   await expect(segments.nth(1)).toHaveClass(/filled/);
 });
@@ -403,7 +403,7 @@ test('advances two cards of different page counts on the same tick — neither m
   // takes to its last page. Each position is read a step BEFORE its tick as well as after, which is
   // what pins the two advances to the same tick rather than to two moments inside one interval —
   // a card a fraction of an interval out of phase fails that reading.
-  const ROTATION_S = 6;
+  const ROTATION_S = 8;
   await holdHostClock(page, HOST_TIME);
   await serveModuleData(page, () => ({
     status: 200,
@@ -878,7 +878,7 @@ test('holds the footer’s own position across the tour’s pages, including a l
       }),
     ]),
   }));
-  await render(page, placed([MAGIC_KINGDOM], { rotationIntervalSeconds: 5 }));
+  await render(page, placed([MAGIC_KINGDOM], { rotationIntervalSeconds: 8 }));
 
   const card = page.locator(CARD);
   const footerY = async () => (await card.locator(FOOTER_SEGMENT).first().boundingBox())?.y;
@@ -889,11 +889,11 @@ test('holds the footer’s own position across the tour’s pages, including a l
   const footer0 = await footerY();
   await expect(card.locator(TOUR_ROW)).toHaveCount(2);
 
-  await advanceHostClock(page, 5 * 1000);
+  await advanceHostClock(page, 8 * 1000);
   await expect(card.locator(TOUR_ROW)).toHaveCount(2);
   expect(await footerY()).toBe(footer0);
 
-  await advanceHostClock(page, 5 * 1000);
+  await advanceHostClock(page, 8 * 1000);
   // The odd last page: one real row, padded by exactly one blank row so the footer beneath it does
   // not move up for having one fewer ride to show — padding the two full pages above never carried.
   await expect(card.locator(TOUR_ROW)).toHaveCount(1);
@@ -1543,7 +1543,7 @@ test('restarts every scroll on the rotation tick the cards flip on, rather than 
   // on one clock rather than two that drift apart. Read on either side of a single tick: the
   // footer's own filled segment advances, and a scroll that was in flight is back home and sets off
   // again.
-  const ROTATION_S = 6;
+  const ROTATION_S = 8;
   await holdHostClock(page, HOST_TIME);
   await serveModuleData(page, () => ({
     status: 200,
