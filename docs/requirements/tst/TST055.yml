@@ -33,9 +33,9 @@ references:
 - keyword: 'test(''TST055: goes on showing an advancing time while the backend is
     unreachable'', async ({'
   path: frontend/src/modules/clock/clock.spec.ts
-  sha: bde616617df7323233b410672f2b36f883652892637b03f73d3099e983c096f8
+  sha: 7c74168575d2dd3845719a68363871f3a09f074043f4ca3ba36c181f03ff10e9
   type: file
-reviewed: 1V257U-oEQA3kaF0eKvIGYpU680DUHoXZ5thLSL9H_E=
+reviewed: u8xltEpF0KGNW5C8bVQXR5D02Td9qIRhTrvwRqtFZuM=
 status: proposed
 text: |
   Render test driving one loaded page from a serving backend into an outage, with a module that fails

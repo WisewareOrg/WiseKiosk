@@ -18,9 +18,9 @@ references:
 - keyword: 'test(''TST052: keeps the displayed time moving as the host clock moves'',
     async ({ page }) => {'
   path: frontend/src/modules/clock/clock.spec.ts
-  sha: bde616617df7323233b410672f2b36f883652892637b03f73d3099e983c096f8
+  sha: 7c74168575d2dd3845719a68363871f3a09f074043f4ca3ba36c181f03ff10e9
   type: file
-reviewed: GoV0OwXZOa4CJ6gOXVhv0zmjttFnz19sIvblSO-RsD4=
+reviewed: 4-_yg6f0I46Th_9BiZLtMNH9kz8dS-OxffchTaoLe30=
 status: proposed
 text: |
   Render test loading the page once and advancing the held host clock twice, each time by more than
