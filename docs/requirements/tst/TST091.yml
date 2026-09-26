@@ -11,8 +11,7 @@ rationale: |
   Each card's marked position is read a step short of its tick as well as across it. That pairing is
   what bounds the two advances into the one window, rather than establishing only that both had moved
   by the time an interval had passed: a card running a fraction of an interval out of phase has already
-  advanced at the earlier reading and fails there. Staged at a three-second offset against a six-second
-  interval, it does.
+  advanced at the earlier reading and fails there. Staged at a half-interval offset, it does.
   The second reading is taken across the tick on which the shorter tour wraps home while the longer
   takes its last page. That is where the two cards must show different positions while still changing
   at the one moment, which separates a position derived from the shared count modulo each card's own
@@ -32,7 +31,7 @@ references:
   path: frontend/src/modules/park_wait_times/park_wait_times.spec.ts
   sha: 47cc00b211005aa3bb51fede5a0c05991f91f41da56a31cdc81cd0db0481ea52
   type: file
-reviewed: gJIJU8ju9Vg8ZayjdGKTwoiU_KLTFZqDDhnbx4_Ggvc=
+reviewed: W4pQn4eHCu1s-M1t_1mnwuVqA8b0gU2Et2lR8mjHBDg=
 status: accepted
 text: |
   A render test over a configuration placing two parks whose payloads give them different numbers of
