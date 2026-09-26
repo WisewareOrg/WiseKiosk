@@ -164,8 +164,6 @@ test('TST074: draws every configured park at once, none absent awaiting a rotati
 test('renders two configured parks that resolve to the same name without throwing — the grid’s own each block is keyed positionally, never on identity', async ({
   page,
 }) => {
-  // Two parks sharing the one identity the wire carries, the name — the case
-  // a name- or id-keyed `{#each}` throws Svelte's own each_key_duplicate on.
   const pageErrors: string[] = [];
   page.on('pageerror', (error) => pageErrors.push(error.message));
 
@@ -199,9 +197,6 @@ test('renders two configured parks that resolve to the same name without throwin
 test('renders a park whose rides share a name without throwing — the ride each block is keyed positionally too', async ({
   page,
 }) => {
-  // Two rides sharing a name, the payload carrying no ride id
-  // (boundary/openapi.yaml's ParkWaitTimesRide) — the case a name-keyed
-  // `{#each}` throws Svelte's own each_key_duplicate on.
   const pageErrors: string[] = [];
   page.on('pageerror', (error) => pageErrors.push(error.message));
 
@@ -285,7 +280,7 @@ test('TST076: the rotation interval is the configuration’s, not one fixed in t
 test('TST076: a placement that omits its own rotation interval tours on the schema’s default of eight seconds', async ({
   page,
 }) => {
-  // `rotation_interval_seconds` is absent, so ajv fills the schema default (8).
+  // `rotation_interval_seconds` is absent, so ajv fills the schema default.
   await holdHostClock(page, HOST_TIME);
   await serveModuleData(page, () => ({
     status: 200,

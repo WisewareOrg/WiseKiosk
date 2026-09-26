@@ -11,9 +11,9 @@ references:
 - keyword: 'test(''TST077: lays its cards out in the column and row counts its configuration
     names, and a second shape re-lays them'', async ({'
   path: frontend/src/modules/park_wait_times/park_wait_times.spec.ts
-  sha: e908784a8e2c6e5be8eec8dd37e3f3bb20f9d5a8464643f89103223639279876
+  sha: 47cc00b211005aa3bb51fede5a0c05991f91f41da56a31cdc81cd0db0481ea52
   type: file
-reviewed: eGsfx2lmFpnen33nliFo56KSBwXWkGLJ-urLhLOycro=
+reviewed: LfrtZSc4u0jmJ5GLd_uBoaIHXfTa8YcafxGJeenB6J0=
 status: accepted
 text: |
   Render test that, under one grid-shape configuration and then a second naming the same parks, the
