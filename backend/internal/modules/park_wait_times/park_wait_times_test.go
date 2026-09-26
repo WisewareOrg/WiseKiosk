@@ -24,21 +24,15 @@ import (
 	"github.com/tjwise99/WiseKiosk/backend/internal/upstream"
 )
 
-// The two captured responses every shaping case runs against: one park's real
-// live-data answer and its real schedule answer, both taken for Magic Kingdom.
-// No case here reaches a network.
+// Captured Magic Kingdom live and schedule responses; no case reaches a network.
 const (
 	capturedLive     = "testdata/mk-live.json"
 	capturedSchedule = "testdata/mk-schedule.json"
 )
 
-// epcotEntityID is Epcot's known themeparks.wiki entity id, one of the six in
-// knownParks — a second known-good id besides magicKingdomEntityID, for tests
-// distinguishing two parks' own cache keys and upstream calls. Derived through
-// resolvePark rather than restated, so it cannot drift from knownParks.
+// epcotEntityID is derived through resolvePark, so it cannot drift from knownParks.
 var _, epcotEntityID, _ = resolvePark("Epcot")
 
-// liveResponseBytes and scheduleResponseBytes read the captured responses.
 func liveResponseBytes(t *testing.T) []byte {
 	t.Helper()
 	body, err := os.ReadFile(filepath.FromSlash(capturedLive))
@@ -57,15 +51,12 @@ func scheduleResponseBytes(t *testing.T) []byte {
 	return body
 }
 
-// roundTrip is a transport written as a function.
 type roundTrip func(*http.Request) (*http.Response, error)
 
 func (f roundTrip) RoundTrip(r *http.Request) (*http.Response, error) {
 	return f(r)
 }
 
-// serve runs one request against this module's own schema handler, which is
-// what judges a body and what answers a rejection.
 func serve(t *testing.T, body string) *httptest.ResponseRecorder {
 	t.Helper()
 
@@ -75,17 +66,14 @@ func serve(t *testing.T, body string) *httptest.ResponseRecorder {
 	return recorder
 }
 
-// freshRoute swaps the package's one route for a fresh one for the length of
-// the calling test, so a case that drives a request to completion does not
-// leave a cached answer or a spent rate token for whatever runs next.
+// freshRoute gives the calling test its own route, so no cached answer or rate token leaks
+// between tests.
 func freshRoute(t *testing.T) {
 	t.Helper()
 	freshRouteWithConfig(t, Config())
 }
 
-// freshRouteWithConfig is freshRoute's own build, against a caller-supplied
-// policy — the router package's own fake clock is package-private
-// (router_test.go, rate_test.go), so a short real interval stands in here.
+// A short real interval stands in: the router's fake clock is package-private.
 func freshRouteWithConfig(t *testing.T, cfg upstream.Config) {
 	t.Helper()
 	held := served
@@ -97,25 +85,16 @@ func freshRouteWithConfig(t *testing.T, cfg upstream.Config) {
 	t.Cleanup(func() { served = held })
 }
 
-// uuidShape is the shape of a themeparks.wiki entity id.
 var uuidShape = regexp.MustCompile(`^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`)
 
-// liveURL and scheduleURL restate route.go's inline upstream-URL shape, test-local: a case that
-// checks which URL a request was captured under needs the same string production actually built, to
-// key against or compare against.
+// liveURL and scheduleURL restate route.go's upstream-URL shape.
 func liveURL(entityID string) string     { return entityBaseURL + entityID + "/live" }
 func scheduleURL(entityID string) string { return entityBaseURL + entityID + "/schedule" }
 
-// noExclusion admits every row — every shapeRides/fetchPark call below with nothing of its own to
-// filter passes this.
 func noExclusion(liveRow) bool { return false }
 
-// intp is a pointer to an int literal — the shape waitMinutes takes on the
-// boundary, a posted wait or nil.
 func intp(n int) *int { return &n }
 
-// sameWaitMinutes reports whether two waitMinutes values agree: both absent,
-// or both present and equal.
 func sameWaitMinutes(a, b *int) bool {
 	if a == nil || b == nil {
 		return a == nil && b == nil
@@ -123,7 +102,6 @@ func sameWaitMinutes(a, b *int) bool {
 	return *a == *b
 }
 
-// showWaitMinutes renders a waitMinutes value for a failure message.
 func showWaitMinutes(p *int) string {
 	if p == nil {
 		return "null"
@@ -131,19 +109,12 @@ func showWaitMinutes(p *int) string {
 	return fmt.Sprintf("%d", *p)
 }
 
-// TestTST073_ShapingBuildsTheParksRidesFromTheCapturedResponse reads
-// SRS056<!-- The park-wait-times module puts each park's identity, hours, and ride waits across the boundary -->
-// against the captured live-data response, with no network: only the
-// attraction rows are kept, in the source's own order, each carrying its name,
-// its operating state, and its posted wait as the source reported it.
 func TestTST073_ShapingBuildsTheParksRidesFromTheCapturedResponse(t *testing.T) {
 	rides, err := shapeRides(liveResponseBytes(t), noExclusion)
 	if err != nil {
 		t.Fatalf("shapeRides: unexpected error: %v", err)
 	}
 
-	// The capture carries a park row, a show row and a restaurant row beside
-	// its seven attractions; only the seven are kept.
 	want := []boundary.ParkWaitTimesRide{
 		{Name: "The Hall of Presidents", State: boundary.Closed},
 		{Name: "Mad Tea Party", State: boundary.Operating, WaitMinutes: intp(10)},
@@ -172,9 +143,7 @@ func TestTST073_ShapingBuildsTheParksRidesFromTheCapturedResponse(t *testing.T) 
 	}
 }
 
-// TestShapeRidesReadsTheBodyWithoutWritingToIt covers the framework's own
-// condition on a shaping function: the body is the cached response every
-// caller it is served to holds.
+// Shaping must not write to the body: it is the cached response every caller holds.
 func TestShapeRidesReadsTheBodyWithoutWritingToIt(t *testing.T) {
 	body := liveResponseBytes(t)
 	held := string(body)
@@ -187,18 +156,13 @@ func TestShapeRidesReadsTheBodyWithoutWritingToIt(t *testing.T) {
 	}
 }
 
-// TestShapeRidesRefusesABodyThatIsNotJSON is shapeRides's own decode failure.
 func TestShapeRidesRefusesABodyThatIsNotJSON(t *testing.T) {
 	if _, err := shapeRides([]byte("not json"), noExclusion); err == nil {
 		t.Error("shapeRides: no error for a body that is not JSON")
 	}
 }
 
-// TestShapeWaitReadsEveryStatusTheSourceDeclares reads
 // SRS061<!-- The park-wait-times module draws a wait as the time or the not-operating state it is handed -->
-// against each of the source's four statuses directly, and against the two
-// ways an OPERATING row can carry no wait a viewer could be shown, and a
-// status the source's own enum does not carry.
 func TestShapeWaitReadsEveryStatusTheSourceDeclares(t *testing.T) {
 	minutes := 12
 	operating := &queueBlock{Standby: &standbyBlock{WaitTime: &minutes}}
@@ -244,11 +208,6 @@ func TestShapeWaitReadsEveryStatusTheSourceDeclares(t *testing.T) {
 	}
 }
 
-// TestTST073_AResponseMissingAValueTheRideNeedsIsNotShaped is the other half
-// of the shaping obligation: a response missing a value a kept row needs is
-// an error rather than a payload carrying a zero nobody reported. An
-// OPERATING row reporting no wait is not among these —
-// TestShapeRidesFiltersAnOperatingRowWithNoPostedWait covers that row.
 func TestTST073_AResponseMissingAValueTheRideNeedsIsNotShaped(t *testing.T) {
 	cases := map[string]func(read map[string]any){
 		"an attraction with no name": func(read map[string]any) {
@@ -289,13 +248,8 @@ func TestTST073_AResponseMissingAValueTheRideNeedsIsNotShaped(t *testing.T) {
 	}
 }
 
-// TestShapeRidesFiltersAnOperatingRowWithNoPostedWait reads
-// SRS056<!-- The park-wait-times module puts each park's identity, hours, and ride waits across the boundary -->
-// against the captured response with one attraction mutated to report
-// OPERATING with no posted wait — the shape themeparks.wiki gives a
-// walk-through landmark, typed ATTRACTION no differently from a queued
-// ride: the row is left out of the rides list, every other row still
-// shapes, and the call itself does not error.
+// SRS056<!-- The park-wait-times module puts each park's identity, hours, and ride waits across the boundary -->:
+// an OPERATING row with no posted wait is a walk-through landmark.
 func TestShapeRidesFiltersAnOperatingRowWithNoPostedWait(t *testing.T) {
 	var read map[string]any
 	if err := json.Unmarshal(liveResponseBytes(t), &read); err != nil {
@@ -321,24 +275,13 @@ func TestShapeRidesFiltersAnOperatingRowWithNoPostedWait(t *testing.T) {
 			t.Errorf("rides carries %q, want it filtered out as not a ride", landmarkName)
 		}
 	}
-	// The capture's seven attractions, minus the one turned into a
-	// no-wait landmark above; the show, restaurant and park rows were
-	// never carried to begin with.
 	if len(rides) != 6 {
 		t.Errorf("shaped %d rides, want 6 (the capture's 7 attractions minus the filtered landmark): %+v", len(rides), rides)
 	}
 }
 
-// TestTST073_ShapingBuildsTheParksHoursFromTheCapturedResponse reads the
-// hours half of
-// SRS056<!-- The park-wait-times module puts each park's identity, hours, and ride waits across the boundary -->
-// against the captured schedule response: the `OPERATING`-typed entry for the
-// day named is what is read, not an early entry or a ticketed evening event
-// on the same date.
 func TestTST073_ShapingBuildsTheParksHoursFromTheCapturedResponse(t *testing.T) {
-	// The capture's first OPERATING entry is 2026-09-13, 08:00-04:00 to
-	// 18:00-04:00; "now" is read against its own offset, so any hour of that
-	// same calendar day in -04:00 selects it.
+	// Read in the entry's own -04:00 offset.
 	now := time.Date(2026, 9, 13, 12, 0, 0, 0, time.UTC)
 
 	_, hours, err := shapeSchedule(scheduleResponseBytes(t), now)
@@ -356,10 +299,7 @@ func TestTST073_ShapingBuildsTheParksHoursFromTheCapturedResponse(t *testing.T) 
 	}
 }
 
-// TestShapeScheduleReturnsNilForADayTheSourceReportsNoOperatingEntry is
-// shapeSchedule's absence path: a day the source reports no OPERATING entry for
-// is nil rather than an error, the park may simply be closed that day
-// (boundary/openapi.yaml's ParkWaitTimesHours).
+// A closed day is nil, not an error (boundary/openapi.yaml's ParkWaitTimesHours).
 func TestShapeScheduleReturnsNilForADayTheSourceReportsNoOperatingEntry(t *testing.T) {
 	// A day one past the capture's last OPERATING entry.
 	now := time.Date(2026, 9, 15, 12, 0, 0, 0, time.UTC)
@@ -373,9 +313,6 @@ func TestShapeScheduleReturnsNilForADayTheSourceReportsNoOperatingEntry(t *testi
 	}
 }
 
-// TestShapeScheduleRefusesAMalformedScheduleEntry covers shapeSchedule's own
-// failure paths: a body that is not JSON, and an OPERATING entry missing a
-// timestamp or carrying one this module cannot read.
 func TestShapeScheduleRefusesAMalformedScheduleEntry(t *testing.T) {
 	if _, _, err := shapeSchedule([]byte("not json"), time.Now()); err == nil {
 		t.Error("shapeSchedule: no error for a body that is not JSON")
@@ -422,9 +359,6 @@ func TestShapeScheduleRefusesAMalformedScheduleEntry(t *testing.T) {
 	}
 }
 
-// TestSameDay reads sameDay across the boundary it is built to draw: the same
-// calendar day at two different moments, the moment either side of midnight,
-// and two locations that disagree about what day the same instant is.
 func TestSameDay(t *testing.T) {
 	est := time.FixedZone("", -4*3600)
 
@@ -461,12 +395,6 @@ func TestSameDay(t *testing.T) {
 	}
 }
 
-// TestShapeScheduleReturnsNilForADayWhoseOnlyEntriesAreTicketed is
-// shapeSchedule's own day-selection read where a date carries schedule content
-// but none of it OPERATING-typed — distinct from
-// TestShapeScheduleReturnsNilForADayTheSourceReportsNoOperatingEntry (a date
-// past the capture's last entry entirely), this is a date the source
-// reports on, entirely as TICKETED_EVENT.
 func TestShapeScheduleReturnsNilForADayWhoseOnlyEntriesAreTicketed(t *testing.T) {
 	body := []byte(`{"schedule":[{"type":"TICKETED_EVENT","openingTime":"2026-09-20T09:00:00-04:00","closingTime":"2026-09-20T22:00:00-04:00"}]}`)
 	now := time.Date(2026, 9, 20, 12, 0, 0, 0, time.UTC)
@@ -480,9 +408,6 @@ func TestShapeScheduleReturnsNilForADayWhoseOnlyEntriesAreTicketed(t *testing.T)
 	}
 }
 
-// TestShapeScheduleReturnsNilForAnEmptySchedule is shapeSchedule's own boundary at
-// zero: a `schedule` array with nothing in it at all, distinct from every
-// other absence case above which still carries entries to skip past.
 func TestShapeScheduleReturnsNilForAnEmptySchedule(t *testing.T) {
 	_, hours, err := shapeSchedule([]byte(`{"schedule":[]}`), time.Now())
 	if err != nil {
@@ -493,12 +418,8 @@ func TestShapeScheduleReturnsNilForAnEmptySchedule(t *testing.T) {
 	}
 }
 
-// TestShapeScheduleSelectsTheDayInTheOperatingEntrysOwnOffset reads
-// shapeSchedule's day-selection (SRS056<!-- The park-wait-times module puts each park's identity, hours, and ride waits across the boundary -->)
-// against an offset other than the captured fixture's own -04:00: "today" is
-// judged in the OPERATING entry's own offset, never a fixed offset or the
-// caller's. sameDay's own semantics are pinned by TestSameDay; this is
-// shapeSchedule's wiring of it.
+// "Today" is judged in the OPERATING entry's own offset
+// (SRS056<!-- The park-wait-times module puts each park's identity, hours, and ride waits across the boundary -->).
 func TestShapeScheduleSelectsTheDayInTheOperatingEntrysOwnOffset(t *testing.T) {
 	cases := []struct {
 		name              string
@@ -553,11 +474,7 @@ func TestShapeScheduleSelectsTheDayInTheOperatingEntrysOwnOffset(t *testing.T) {
 	}
 }
 
-// TestLiveAndScheduleURLsNameTheParksEntity reads the upstream requests a
-// real fetch actually issues, not a URL-building helper in isolation: both
-// are exactly the entity id's own live and schedule URLs, nothing this
-// module was not handed
-// (SRS065<!-- The park-wait-times module takes what it shows from one external wait-times source -->).
+// SRS065<!-- The park-wait-times module takes what it shows from one external wait-times source -->
 func TestLiveAndScheduleURLsNameTheParksEntity(t *testing.T) {
 	entityID := magicKingdomEntityID
 	transport := &capturingTransport{body: liveResponseBytes(t)}
@@ -575,8 +492,6 @@ func TestLiveAndScheduleURLsNameTheParksEntity(t *testing.T) {
 	urls := append([]string(nil), transport.urls...)
 	transport.mu.Unlock()
 
-	// Exact equality, not a substring/suffix check: a loose check would still
-	// pass a call that carried the right id and suffix at the wrong host.
 	wantLive, wantSchedule := liveURL(entityID), scheduleURL(entityID)
 	if !slices.Contains(urls, wantLive) {
 		t.Errorf("no request for %q among %v", wantLive, urls)
@@ -591,12 +506,6 @@ func TestLiveAndScheduleURLsNameTheParksEntity(t *testing.T) {
 	}
 }
 
-// TestTST079_ThePolicyHoldsAnAnswerNoLongerThanTheFreshnessBound is the unit
-// half of TST079, reading this module's registered policy against
-// SRS062<!-- The wait a viewer sees is no more than five minutes behind its source -->'s
-// figure rather than against itself. The render half — that the display
-// follows a changed answer on this cadence without being reloaded — is
-// park_wait_times.spec.ts's.
 func TestTST079_ThePolicyHoldsAnAnswerNoLongerThanTheFreshnessBound(t *testing.T) {
 	policy := Config()
 
@@ -606,13 +515,6 @@ func TestTST079_ThePolicyHoldsAnAnswerNoLongerThanTheFreshnessBound(t *testing.T
 	}
 }
 
-// TestTST080_ThePolicyComesToOnceEveryFiveMinutesForAPark reads this module's
-// half of
-// SRS063<!-- The park-wait-times module asks an answering source at most once every five minutes for a park -->:
-// the interval it registers, against what obliged it. What the framework
-// does with that interval belongs to the router package;
-// TestTST080_IntegrationParkKeysAreCachedIndependently below reads this
-// module's own contribution — that a park's cache key is its own.
 func TestTST080_ThePolicyComesToOnceEveryFiveMinutesForAPark(t *testing.T) {
 	policy := Config()
 
@@ -627,17 +529,9 @@ func TestTST080_ThePolicyComesToOnceEveryFiveMinutesForAPark(t *testing.T) {
 	}
 }
 
-// TestTST081_ThePolicyComesToOnceEveryFiveMinutesForAFailingPark reads this
-// module's half of
-// SRS064<!-- The park-wait-times module asks a failing source no more often than once every five minutes -->:
-// the interval it registers, against what obliged it. What the framework does
-// with that interval belongs to the router package.
 func TestTST081_ThePolicyComesToOnceEveryFiveMinutesForAFailingPark(t *testing.T) {
 	policy := Config()
 
-	// The interval holds the rate on this path: the route answers from the
-	// held failure until it lapses, so one park costs one upstream call per
-	// interval — a too-short interval is the violation.
 	const bound = 5 * time.Minute
 	if policy.NegativeTTL < bound {
 		t.Errorf("a %s failure interval asks for one park oftener than once every %s, want no oftener than that",
@@ -645,10 +539,7 @@ func TestTST081_ThePolicyComesToOnceEveryFiveMinutesForAFailingPark(t *testing.T
 	}
 }
 
-// TestThePolicyIsComplete reads what an entry requires of any policy.
-// SuccessTTL and NegativeTTL are read from the same figure (Config's own
-// doc comment), so there is no "failure retried sooner" relation to assert
-// between them.
+// SuccessTTL and NegativeTTL share one figure, so no ordering between them is asserted.
 func TestThePolicyIsComplete(t *testing.T) {
 	policy := Config()
 
@@ -658,10 +549,7 @@ func TestThePolicyIsComplete(t *testing.T) {
 	}
 }
 
-// successTransport answers every call as a success, from the body given for
-// the URL asked, and counts every URL asked for. Its own map is guarded by
-// a mutex — a plain map is not concurrency-safe, and this transport is
-// called from more than one goroutine at once (route.go's fan-out).
+// Mutex-guarded: route.go's fan-out calls it concurrently.
 type successTransport struct {
 	mu      sync.Mutex
 	calls   map[string]*atomic.Int64
@@ -685,12 +573,6 @@ func (s *successTransport) RoundTrip(r *http.Request) (*http.Response, error) {
 	}, nil
 }
 
-// TestTST080_IntegrationParkKeysAreCachedIndependently reads the integration
-// half of TST080<!-- an answering source is asked at most once every five
-// minutes per park -->: fetchPark's two calls for one park are cached under
-// that park's own keys, so a second call for the same park costs no
-// further upstream call, and a second park's own fetch is unaffected by the
-// first's — two parks never share a cache key.
 func TestTST080_IntegrationParkKeysAreCachedIndependently(t *testing.T) {
 	live := liveResponseBytes(t)
 	schedule := scheduleResponseBytes(t)
@@ -742,8 +624,6 @@ func TestTST080_IntegrationParkKeysAreCachedIndependently(t *testing.T) {
 	}
 }
 
-// failingTransport answers every call with a status this module's pipeline
-// classifies as a failure, and counts the calls it received.
 type failingTransport struct {
 	calls atomic.Int64
 }
@@ -757,21 +637,13 @@ func (f *failingTransport) RoundTrip(*http.Request) (*http.Response, error) {
 	}, nil
 }
 
-// TestTST081_IntegrationAFailingParkIsRetriedNoOftenerThanTheNegativeInterval
-// is TST081<!-- a failing source is asked no more than once every five
-// minutes per park -->'s integration half: a park whose own upstream calls
-// fail is held under the negative cache the same as a success, so calling
-// fetchPark for it again inside the failure window costs no further
-// upstream call, and a call once the window has elapsed does retry.
 func TestTST081_IntegrationAFailingParkIsRetriedNoOftenerThanTheNegativeInterval(t *testing.T) {
 	transport := &failingTransport{}
 	held := http.DefaultTransport
 	http.DefaultTransport = transport
 	t.Cleanup(func() { http.DefaultTransport = held })
 
-	// A real, short interval stands in for the registered five minutes: the
-	// router package's own fake clock is package-private (router_test.go,
-	// rate_test.go).
+	// A short real interval: the router's fake clock is package-private.
 	const shrunkBound = 100 * time.Millisecond
 	cfg := Config()
 	cfg.NegativeTTL = shrunkBound
@@ -795,13 +667,10 @@ func TestTST081_IntegrationAFailingParkIsRetriedNoOftenerThanTheNegativeInterval
 		t.Fatalf("fetchPark #2: available = true against a failing source, want false")
 	}
 
-	// Called again well inside the interval, and yet the failing source's
-	// endpoint was reached once: the live fetch's own failure is held.
 	if calls := transport.calls.Load(); calls != 1 {
 		t.Errorf("a park failing twice in a row inside its held interval cost %d upstream calls, want 1", calls)
 	}
 
-	// The interval elapses, and a further ask does retry.
 	time.Sleep(shrunkBound + 150*time.Millisecond)
 
 	third, err := fetchPark(ctx, "Magic Kingdom", noExclusion)
@@ -816,11 +685,7 @@ func TestTST081_IntegrationAFailingParkIsRetriedNoOftenerThanTheNegativeInterval
 	}
 }
 
-// TestPostApiParkWaitTimesFansOutOverEveryConfiguredPark reads
 // SRS054<!-- The park-wait-times module reports on the parks its configuration names -->
-// through the module's own handler: a request naming several parks answers
-// with every one of them, each carrying the answer given for its own entity
-// id, in the order the request named them.
 func TestPostApiParkWaitTimesFansOutOverEveryConfiguredPark(t *testing.T) {
 	live := liveResponseBytes(t)
 	transport := successTransport{
@@ -844,15 +709,10 @@ func TestPostApiParkWaitTimesFansOutOverEveryConfiguredPark(t *testing.T) {
 	if len(payload.Parks) != 2 {
 		t.Fatalf("parks = %d, want 2: %+v", len(payload.Parks), payload.Parks)
 	}
-	// Each park carries the pretty name it was resolved to, in the request's own order — the wire
-	// carries no id to check the order against instead.
 	if payload.Parks[0].Name != "Epcot" || payload.Parks[1].Name != "Magic Kingdom" {
 		t.Errorf("parks = [%s, %s], want the request's own order [Epcot, Magic Kingdom]",
 			payload.Parks[0].Name, payload.Parks[1].Name)
 	}
-	// Each was fetched from the upstream at the identity resolvePark gave it (TST086: "fetched at
-	// the identity recorded") — derived from resolvePark rather than restated, so this cannot drift
-	// from the resolution.
 	_, wantFirst, _ := resolvePark("Epcot")
 	_, wantSecond, _ := resolvePark("Magic Kingdom")
 	transport.mu.Lock()
@@ -872,18 +732,10 @@ func TestPostApiParkWaitTimesFansOutOverEveryConfiguredPark(t *testing.T) {
 	}
 }
 
-// TestTheProductRouteReachesTheSourceRatherThanAnEmbeddedFixture pins the one
-// thing a demonstration mode takes away: the route a display calls must answer
-// from the source
-// (SRS065<!-- The park-wait-times module takes what it shows from one external wait-times source -->),
-// so a fixture standing in for the source on the product path is a defect
-// however plausible the payload it writes reads. Asserted two ways, because
-// either alone is passable by a fixture that got better rather than a route
-// that reached the source: the route must have issued an upstream request at
-// all, and what it served must be what that request was answered with.
+// TestTheProductRouteReachesTheSourceRatherThanAnEmbeddedFixture checks that the
+// route issues an upstream request and serves what it answered
+// (SRS065<!-- The park-wait-times module takes what it shows from one external wait-times source -->).
 func TestTheProductRouteReachesTheSourceRatherThanAnEmbeddedFixture(t *testing.T) {
-	// A roster no embedded fixture can be carrying, so the served rides
-	// matching it is explicable only by the response this transport wrote.
 	const sentinelRide = "Sentinel Upstream-Only Attraction"
 	sentinelLive := []byte(`{"liveData":[{"id":"sentinel-upstream-only","name":"` + sentinelRide +
 		`","entityType":"ATTRACTION","status":"OPERATING","queue":{"STANDBY":{"waitTime":42}}}]}`)
@@ -929,10 +781,7 @@ func TestTheProductRouteReachesTheSourceRatherThanAnEmbeddedFixture(t *testing.T
 	}
 }
 
-// TestPostApiParkWaitTimesPayloadCarriesNoParkID proves a served park carries
-// no `id` key on the wire, read off the raw JSON rather than the generated
-// struct so this stays meaningful once the field is gone from
-// boundary.ParkWaitTimesPark.
+// Read off the raw JSON, not the generated struct.
 func TestPostApiParkWaitTimesPayloadCarriesNoParkID(t *testing.T) {
 	live := liveResponseBytes(t)
 	held := http.DefaultTransport
@@ -959,9 +808,6 @@ func TestPostApiParkWaitTimesPayloadCarriesNoParkID(t *testing.T) {
 	}
 }
 
-// TestAParksOwnFailureDoesNotFailTheWholeRequest: a park whose own upstream
-// calls fail carries `available: false` and a reason; the parks that did
-// answer are unaffected.
 func TestAParksOwnFailureDoesNotFailTheWholeRequest(t *testing.T) {
 	live := liveResponseBytes(t)
 	transport := roundTrip(func(r *http.Request) (*http.Response, error) {
@@ -1006,11 +852,8 @@ func TestAParksOwnFailureDoesNotFailTheWholeRequest(t *testing.T) {
 	}
 }
 
-// barrierTransport proves concurrency rather than timing it: every call
-// blocks until n calls have arrived at once, then releases all of them
-// together with a failure. A sequential fan-out can never reach n, so the
-// safety timeout fires and fails the test outright — deterministic, with no
-// wall-clock margin to go flaky under CI load.
+// barrierTransport holds every call until n arrive at once, so a sequential fan-out times out
+// rather than passes.
 type barrierTransport struct {
 	mu       sync.Mutex
 	arrived  int
@@ -1050,11 +893,6 @@ func (bt *barrierTransport) RoundTrip(*http.Request) (*http.Response, error) {
 	return nil, errors.New("barrierTransport: simulated failure, released once every park's call was in flight at once")
 }
 
-// TestColdStartFetchesEveryParkConcurrentlyNotSequentially reads the
-// fan-out end-to-end: with the cache cold, every configured park's own
-// live-data call is genuinely in flight at once (barrierTransport's own
-// proof, not a timing inference), and the whole request still answers with
-// each park marked unavailable rather than failing outright.
 func TestColdStartFetchesEveryParkConcurrentlyNotSequentially(t *testing.T) {
 	parks := []string{"Magic Kingdom", "Epcot", "Hollywood Studios"}
 	barrier := newBarrierTransport(len(parks), 2*time.Second)
@@ -1088,10 +926,6 @@ func TestColdStartFetchesEveryParkConcurrentlyNotSequentially(t *testing.T) {
 	}
 }
 
-// TestAParkWhoseResponseCannotBeShapedIsUnavailable is fetchPark's other
-// failure path: a live response the pipeline reads as a success but this
-// module cannot shape is this park's own failure, distinct from an upstream
-// call that failed outright.
 func TestAParkWhoseResponseCannotBeShapedIsUnavailable(t *testing.T) {
 	transport := roundTrip(func(*http.Request) (*http.Response, error) {
 		return &http.Response{StatusCode: http.StatusOK, Body: io.NopCloser(bytes.NewReader([]byte("not json"))), Header: make(http.Header)}, nil
@@ -1112,25 +946,17 @@ func TestAParkWhoseResponseCannotBeShapedIsUnavailable(t *testing.T) {
 	if park.Message == nil || *park.Message != errMalformedPayload.Error() {
 		t.Errorf("Message = %v, want %q", park.Message, errMalformedPayload.Error())
 	}
-	// A recognized park keeps its pretty name even where its reading failed.
 	if park.Name != "Magic Kingdom" {
 		t.Errorf("Name = %q, want the pretty name %q carried through the failure", park.Name, "Magic Kingdom")
 	}
 }
 
-// TestAParkWithNoOperatingScheduleEntryStillAnswersWithItsRides is the
-// quieter-content half of fetchPark: a schedule that could not be shaped
-// costs this park its hours only, not its rides, which is what
-// SRS056<!-- The park-wait-times module puts each park's identity, hours, and ride waits across the boundary -->
-// owes a viewer regardless of whether the source reports hours for today.
 func TestAParkWithNoOperatingScheduleEntryStillAnswersWithItsRides(t *testing.T) {
 	live := liveResponseBytes(t)
 	transport := roundTrip(func(r *http.Request) (*http.Response, error) {
 		if strings.HasSuffix(r.URL.Path, "/live") {
 			return &http.Response{StatusCode: http.StatusOK, Body: io.NopCloser(bytes.NewReader(live)), Header: make(http.Header)}, nil
 		}
-		// The schedule call fails outright, distinct from a schedule the
-		// source answered with no OPERATING entry — both leave Hours nil.
 		return &http.Response{StatusCode: http.StatusServiceUnavailable, Body: io.NopCloser(bytes.NewReader(nil)), Header: make(http.Header)}, nil
 	})
 	held := http.DefaultTransport
@@ -1154,12 +980,6 @@ func TestAParkWithNoOperatingScheduleEntryStillAnswersWithItsRides(t *testing.T)
 	}
 }
 
-// TestAParkWithANoWaitLandmarkStaysAvailable is fetchPark's own read of
-// SRS056<!-- The park-wait-times module puts each park's identity, hours, and ride waits across the boundary -->:
-// a park whose live response mixes a landmark reporting OPERATING with no
-// posted wait among its real rides does not cascade to `available: false`
-// over that one row — it answers with the landmark filtered and its real
-// rides intact.
 func TestAParkWithANoWaitLandmarkStaysAvailable(t *testing.T) {
 	var read map[string]any
 	if err := json.Unmarshal(liveResponseBytes(t), &read); err != nil {
@@ -1207,13 +1027,7 @@ func TestAParkWithANoWaitLandmarkStaysAvailable(t *testing.T) {
 	}
 }
 
-// TestFetchParkDeliversHoursForATodayOperatingEntry reads fetchPark's own
-// call to time.Now() on its positive path: a schedule whose OPERATING entry
-// is today's carries that day's hours into the park's payload
-// (SRS056<!-- The park-wait-times module puts each park's identity, hours, and ride waits across the boundary -->).
-// The schedule fixture's OPERATING entry is built from today's own UTC date
-// at test time, spanning the whole UTC day so no day-boundary is crossed
-// however long the test takes to run.
+// The OPERATING entry spans today's whole UTC day, so no day boundary is crossed mid-test.
 func TestFetchParkDeliversHoursForATodayOperatingEntry(t *testing.T) {
 	today := time.Now().UTC()
 	open := time.Date(today.Year(), today.Month(), today.Day(), 0, 0, 0, 0, time.UTC).Format(time.RFC3339)
@@ -1248,19 +1062,12 @@ func TestFetchParkDeliversHoursForATodayOperatingEntry(t *testing.T) {
 	}
 }
 
-// TestFetchParkAnswersWithNilHoursWhenTheScheduleAnswersButCannotBeShaped is
-// fetchPark's own "quieter content" read: distinct from
-// TestAParkWithNoOperatingScheduleEntryStillAnswersWithItsRides (the
-// schedule call fails outright), this is a schedule call that answers 200
-// with a body shapeSchedule cannot read — costing the park only its hours,
-// never its availability or its rides.
 func TestFetchParkAnswersWithNilHoursWhenTheScheduleAnswersButCannotBeShaped(t *testing.T) {
 	live := liveResponseBytes(t)
 	transport := roundTrip(func(r *http.Request) (*http.Response, error) {
 		if strings.HasSuffix(r.URL.Path, "/live") {
 			return &http.Response{StatusCode: http.StatusOK, Body: io.NopCloser(bytes.NewReader(live)), Header: make(http.Header)}, nil
 		}
-		// The schedule call itself succeeds; its body is what cannot be shaped.
 		return &http.Response{StatusCode: http.StatusOK, Body: io.NopCloser(bytes.NewReader([]byte("not json"))), Header: make(http.Header)}, nil
 	})
 	held := http.DefaultTransport
@@ -1284,20 +1091,10 @@ func TestFetchParkAnswersWithNilHoursWhenTheScheduleAnswersButCannotBeShaped(t *
 	}
 }
 
-// TestPostApiParkWaitTimesAnswersShuttingDownWhenTheCallersContextEnds
-// reads the one failure PostApiParkWaitTimes maps itself, rather than
-// through a module's own failureMessage: the caller's own context ending —
-// this client gone, or the server shutting down — fails the whole read, the
-// same 503 outcome router.Route.Serve answers it with.
+// The caller's context ending maps to the same 503 router.Route.Serve answers.
 func TestPostApiParkWaitTimesAnswersShuttingDownWhenTheCallersContextEnds(t *testing.T) {
-	// A transport that never answers, so the flight this request joins never
-	// completes and the only way this test's call to Fetch can return is the
-	// already-cancelled context below. upstream.Proxy.Do runs the fetch
-	// against context.Background(), not the caller's ctx (proxy.go), so this
-	// flight keeps running in its own goroutine after PostApiParkWaitTimes
-	// has already answered — cleanup waits for it to actually finish before
-	// handing http.DefaultTransport back, or that goroutine's read of the
-	// global races the next test's write to it.
+	// Never answers. upstream.Proxy.Do runs on context.Background(), so cleanup waits for the flight
+	// before restoring http.DefaultTransport.
 	block := make(chan struct{})
 	released := make(chan struct{})
 	transport := roundTrip(func(*http.Request) (*http.Response, error) {
@@ -1334,17 +1131,12 @@ func TestPostApiParkWaitTimesAnswersShuttingDownWhenTheCallersContextEnds(t *tes
 	if err := json.Unmarshal(recorder.Body.Bytes(), &failure); err != nil {
 		t.Fatalf("reading the failure body %q: %v", recorder.Body, err)
 	}
-	// Checked against the framework's own exported constant, not this package's identically-valued
-	// private one.
+	// The framework's exported constant, not this package's copy.
 	if failure.Cause != router.CauseShuttingDown {
 		t.Errorf("Cause = %q, want router.CauseShuttingDown (%q)", failure.Cause, router.CauseShuttingDown)
 	}
 }
 
-// TestDecodeRequestRejectsWhatItMustAndAdmitsTrailingBytes reads decodeRequest
-// directly: a body naming an unknown field or none of the schema's own field
-// is refused, an empty list is refused even though it decodes, and bytes
-// trailing a complete JSON value are left unread rather than refused.
 func TestDecodeRequestRejectsWhatItMustAndAdmitsTrailingBytes(t *testing.T) {
 	rejected := []string{
 		`{}`,
@@ -1371,9 +1163,6 @@ func TestDecodeRequestRejectsWhatItMustAndAdmitsTrailingBytes(t *testing.T) {
 	}
 }
 
-// errReadCloser is an io.ReadCloser whose Read always fails, the shape
-// PostApiParkWaitTimes's io.ReadAll error path needs and a real request body
-// cannot otherwise be made to produce.
 type errReadCloser struct{}
 
 func (errReadCloser) Read([]byte) (int, error) {
@@ -1393,14 +1182,9 @@ func TestARequestBodyThatCannotBeReadIsRejected(t *testing.T) {
 	}
 }
 
-// TestWriteJSONAnswersInternalServerErrorForAValueThatCannotBeEncoded is
-// writeJSON's own failure path — reached only by a payload that cannot be
-// marshalled, which nothing this module builds can produce, so it is driven
-// directly rather than through the handler.
+// Unreachable through the handler, so driven directly.
 func TestWriteJSONAnswersInternalServerErrorForAValueThatCannotBeEncoded(t *testing.T) {
 	recorder := httptest.NewRecorder()
-	// A channel is the standard library's own example of a value json.Marshal
-	// refuses.
 	writeJSON(recorder, http.StatusOK, make(chan int))
 
 	if recorder.Code != http.StatusInternalServerError {
@@ -1408,13 +1192,9 @@ func TestWriteJSONAnswersInternalServerErrorForAValueThatCannotBeEncoded(t *test
 	}
 }
 
-// fuzzHangBudget is the per-input wall-clock deadline runWithin enforces.
 const fuzzHangBudget = time.Second
 
-// runWithin fails the test if fn has not returned within budget, naming the
-// target that hung, or if fn returns a non-nil error. fn runs on its own
-// goroutine and reports through its return value: FailNow must be called only
-// from the goroutine running the test.
+// fn runs on its own goroutine: FailNow may be called only from the test's.
 func runWithin(t *testing.T, budget time.Duration, name string, fn func() error) {
 	t.Helper()
 
@@ -1433,9 +1213,7 @@ func runWithin(t *testing.T, budget time.Duration, name string, fn func() error)
 	}
 }
 
-// FuzzShapeRides drives shapeRides with bytes, seeded from the captured live
-// response (`check-fuzz`, docs/CI.md § Backend fuzz), and asserts two calls on
-// the same bytes are equal by their marshalled form.
+// check-fuzz (docs/CI.md § Backend fuzz).
 func FuzzShapeRides(f *testing.F) {
 	seed, err := os.ReadFile(filepath.FromSlash(capturedLive))
 	if err != nil {
@@ -1470,9 +1248,7 @@ func FuzzShapeRides(f *testing.F) {
 	})
 }
 
-// FuzzDecodeRequest drives decodeRequest with the bytes a request body
-// carries (`check-fuzz`, docs/CI.md § Backend fuzz), seeded from the bodies
-// TestDecodeRequestRejectsWhatItMustAndAdmitsTrailingBytes exercises.
+// check-fuzz (docs/CI.md § Backend fuzz).
 func FuzzDecodeRequest(f *testing.F) {
 	for _, body := range []string{
 		`{}`, `{"parks":[]}`, `{"parks":["epcot"],"region":"orlando"}`,
@@ -1489,11 +1265,7 @@ func FuzzDecodeRequest(f *testing.F) {
 	})
 }
 
-// FuzzResolvePark drives resolvePark with a config-named park
-// (`check-fuzz`, docs/CI.md § Backend fuzz) — the pretty-name/entity-id/pass-
-// through resolution (#309 build spec decisions 3-4) — seeded from the module's
-// own known parks (both a pretty name and an entity id) and from values outside
-// it.
+// check-fuzz (docs/CI.md § Backend fuzz).
 func FuzzResolvePark(f *testing.F) {
 	for _, p := range knownParks {
 		f.Add(p.name)
@@ -1511,11 +1283,6 @@ func FuzzResolvePark(f *testing.F) {
 	})
 }
 
-// TestFailureMessageNamesEachOutcomeThePipelineDistinguishes reads
-// failureMessage against every Kind the upstream package declares, so a
-// park's own failure always carries a reason a viewer can read — including
-// the one outcome (Success) failureMessage is never reached for in
-// production, which its default case still answers rather than panicking on.
 func TestFailureMessageNamesEachOutcomeThePipelineDistinguishes(t *testing.T) {
 	for _, kind := range []upstream.Kind{
 		upstream.Unreachable,
@@ -1532,10 +1299,6 @@ func TestFailureMessageNamesEachOutcomeThePipelineDistinguishes(t *testing.T) {
 	}
 }
 
-// TestFailureMessageNamesTheUpstreamsOwnStatus pins the one outcome
-// TestFailureMessageNamesEachOutcomeThePipelineDistinguishes leaves
-// unasserted beyond non-empty text: UpstreamStatus's message names the
-// specific status the source answered with, not a generic "answered badly".
 func TestFailureMessageNamesTheUpstreamsOwnStatus(t *testing.T) {
 	message := failureMessage(upstream.Result{Kind: upstream.UpstreamStatus, Status: http.StatusServiceUnavailable})
 	if !strings.Contains(message, fmt.Sprintf("%d", http.StatusServiceUnavailable)) {
@@ -1543,22 +1306,10 @@ func TestFailureMessageNamesTheUpstreamsOwnStatus(t *testing.T) {
 	}
 }
 
-// --- The blacklist exclusion mechanism ---
-//
-// A central pre-filter removes an excluded entity from a park's live-data
-// list before the ATTRACTION filter and the nil-name guard, and coexists
-// with errNoPostedWait rather than subsuming it: the module's own prebuilt
-// id list (active unless turned off) unioned with the request's own
-// blacklist names, matched trim + case-fold + curly-quote fold, then
-// whole-name equality.
-//
-// Every case below drives the module's own HTTP handler (serve) rather
-// than shapeRides or fetchPark directly, since useDefaultBlacklist and
-// blacklist are read off boundary.ParkWaitTimesRequest.
+// --- Blacklist exclusion (boundary/openapi.yaml ParkWaitTimesRequest;
+// TST083<!-- The blacklist pre-filter excludes named entities from a park's rides -->),
+// driven through the handler ---
 
-// rideNames is the set of names a park's own answer carries, letting a
-// blacklist case read for a name's absence without caring about its wait or
-// position.
 func rideNames(park boundary.ParkWaitTimesPark) map[string]bool {
 	names := make(map[string]bool)
 	if park.Rides == nil {
@@ -1570,9 +1321,6 @@ func rideNames(park boundary.ParkWaitTimesPark) map[string]bool {
 	return names
 }
 
-// blacklistFixture copies the captured live response and appends the rows
-// given, for cases the real capture cannot exercise on its own (a status the
-// pre-filter must still drop under, a name carrying a curly apostrophe).
 func blacklistFixture(t *testing.T, extra ...map[string]any) []byte {
 	t.Helper()
 
@@ -1593,9 +1341,6 @@ func blacklistFixture(t *testing.T, extra ...map[string]any) []byte {
 	return body
 }
 
-// operatingRowWithWait, rowWithStatus and nilNameRow are minimal synthetic
-// liveData rows this suite adds beside the captured ones, each carrying
-// only what shapeRides and the blacklist filter read.
 func operatingRowWithWait(id, name string, minutes int) map[string]any {
 	return map[string]any{
 		"id": id, "name": name, "entityType": "ATTRACTION", "status": "OPERATING",
@@ -1611,8 +1356,7 @@ func nilNameRow(id, status string) map[string]any {
 	return map[string]any{"id": id, "name": nil, "entityType": "ATTRACTION", "status": status}
 }
 
-// liveTransport answers a park's /live call with body and its /schedule call
-// with a failure, which every blacklist case below is indifferent to.
+// liveTransport answers /live with body and fails every /schedule call.
 func liveTransport(body []byte) http.RoundTripper {
 	return roundTrip(func(r *http.Request) (*http.Response, error) {
 		if strings.HasSuffix(r.URL.Path, "/live") {
@@ -1622,11 +1366,6 @@ func liveTransport(body []byte) http.RoundTripper {
 	})
 }
 
-// TestSupportedParksResolveWellFormedDistinctEntityIDs is
-// TestDefaultBlacklistIDsAreCuratedAndWellFormed's counterpart for the
-// module's own curated roster: every knownParks entry names a themeparks.wiki
-// entity in the shape that source uses, with no id and no pretty name
-// repeated.
 func TestSupportedParksResolveWellFormedDistinctEntityIDs(t *testing.T) {
 	if len(knownParks) == 0 {
 		t.Fatal("knownParks is empty, want the module's curated park roster")
@@ -1648,11 +1387,6 @@ func TestSupportedParksResolveWellFormedDistinctEntityIDs(t *testing.T) {
 	}
 }
 
-// TestDefaultBlacklistIDsAreCuratedAndWellFormed is
-// TestSupportedParksResolveWellFormedDistinctEntityIDs's counterpart for the
-// module's own prebuilt exclusion list: an empty list is itself a defect,
-// and every entry names a themeparks.wiki entity in the shape that source
-// uses, with no id repeated.
 func TestDefaultBlacklistIDsAreCuratedAndWellFormed(t *testing.T) {
 	if len(defaultBlacklistIDs) == 0 {
 		t.Fatal("defaultBlacklistIDs is empty, want the module's curated junk-entity ids")
@@ -1669,15 +1403,7 @@ func TestDefaultBlacklistIDsAreCuratedAndWellFormed(t *testing.T) {
 	}
 }
 
-// TestBlacklistPreFilterDropsAPrebuiltIDAcrossEveryStatus reads the central
-// pre-filter's own ordering: an entity whose id is on the module's prebuilt
-// list is left out of a park's rides regardless of what status it reports —
-// DOWN, CLOSED, REFURBISHMENT and an OPERATING row with a posted wait — and
-// even where the row carries no name at all, which the nil-name guard would
-// otherwise fail the whole park's shaping over. An OPERATING row with no
-// posted wait is deliberately not a case here: errNoPostedWait already
-// drops that row regardless of the blacklist, so it cannot tell a
-// pre-filter's presence from its absence.
+// No OPERATING-with-no-wait case: errNoPostedWait drops that row regardless, so it cannot tell.
 func TestBlacklistPreFilterDropsAPrebuiltIDAcrossEveryStatus(t *testing.T) {
 	junkID := defaultBlacklistIDs[0]
 
@@ -1720,11 +1446,7 @@ func TestBlacklistPreFilterDropsAPrebuiltIDAcrossEveryStatus(t *testing.T) {
 					t.Errorf("rides carries %q, want the blacklisted entity filtered out", ride.Name)
 				}
 			}
-			// Mad Tea Party, Seven Dwarfs Mine Train and The Barnstormer: the
-			// capture's own seven attractions, minus the four the prebuilt list
-			// already excludes by default (The Hall of Presidents, Casey Jr.
-			// Splash 'N' Soak Station, Walt Disney's Carousel of Progress,
-			// Cinderella Castle) and the synthetic junk row appended above.
+			// The seven attractions, less the four the prebuilt list excludes, and the junk row.
 			if len(*park.Rides) != 3 {
 				t.Errorf("shaped %d rides, want 3: %+v", len(*park.Rides), *park.Rides)
 			}
@@ -1732,11 +1454,6 @@ func TestBlacklistPreFilterDropsAPrebuiltIDAcrossEveryStatus(t *testing.T) {
 	}
 }
 
-// TestUseDefaultBlacklistFalseIgnoresThePrebuiltList reads the toggle's off
-// half: turning it off admits an entity the prebuilt list would otherwise
-// drop, while a name on the request's own list is still dropped regardless
-// — the toggle governs the prebuilt list only, not the central filter as a
-// whole.
 func TestUseDefaultBlacklistFalseIgnoresThePrebuiltList(t *testing.T) {
 	junkID := defaultBlacklistIDs[0]
 	live := blacklistFixture(t,
@@ -1767,11 +1484,6 @@ func TestUseDefaultBlacklistFalseIgnoresThePrebuiltList(t *testing.T) {
 	}
 }
 
-// TestBlacklistIsTheAdditiveUnionOfThePrebuiltAndUserLists reads the
-// toggle's default-on half together with the union the two lists form: a
-// request naming no blacklist fields at all still runs the prebuilt list, a
-// name on the request's own list excludes besides it rather than instead of
-// it, and a ride neither list names is left untouched.
 func TestBlacklistIsTheAdditiveUnionOfThePrebuiltAndUserLists(t *testing.T) {
 	junkID := defaultBlacklistIDs[0]
 	live := blacklistFixture(t, operatingRowWithWait(junkID, "Prebuilt Junk Ride", 3))
@@ -1781,8 +1493,6 @@ func TestBlacklistIsTheAdditiveUnionOfThePrebuiltAndUserLists(t *testing.T) {
 	t.Cleanup(func() { http.DefaultTransport = held })
 	freshRoute(t)
 
-	// Names the park's real "Mad Tea Party" on the user list, alongside the
-	// prebuilt id above, and asks nothing of the toggle.
 	recorder := serve(t, `{"parks":["Magic Kingdom"],"blacklist":["Mad Tea Party"]}`)
 	if recorder.Code != http.StatusOK {
 		t.Fatalf("status = %d, want %d (%s)", recorder.Code, http.StatusOK, recorder.Body)
@@ -1804,13 +1514,7 @@ func TestBlacklistIsTheAdditiveUnionOfThePrebuiltAndUserLists(t *testing.T) {
 	}
 }
 
-// TestUserBlacklistNameMatchIsNormalizedExact reads the request's own list's
-// match rule directly: a name on it matches a ride's name after trimming,
-// Unicode case-folding and a fold of the curly quotes/apostrophes stdlib
-// case-folding does not itself touch (U+2018/2019/201C/201D to ASCII) — and,
-// once folded, the two must match WHOLE, not merely share a substring. No
-// fullwidth-form/NFKC case: NFKC needs golang.org/x/text, a runtime
-// dependency this backend does not carry (ADR 0008 rev 6).
+// No NFKC case: it needs golang.org/x/text (ADR 0008 rev 6).
 func TestUserBlacklistNameMatchIsNormalizedExact(t *testing.T) {
 	cases := []struct {
 		name        string
@@ -1865,28 +1569,13 @@ func TestUserBlacklistNameMatchIsNormalizedExact(t *testing.T) {
 	}
 }
 
-// --- The #309 parks-roster removal: pretty-name resolution, pass-through, 404-vs-transient ---
+// --- Park resolution
+// (SRS067<!-- The park-wait-times module confines a failure to the part of its own response the failure touches -->) ---
 //
-// There is no roster gatekeeping: a configured park resolves through knownParks
-// — a normalized pretty-name or entity-id hit takes that park's own pretty name
-// and entity id; a miss passes the config string through to the upstream as-is
-// and takes the source's own name; an upstream 404 is this park's own
-// unsupported outcome, distinct from a transient failure. No tier rejects the
-// whole request (SRS067<!-- The park-wait-times module confines a failure to
-// the part of its own response the failure touches -->). Every case below
-// drives the module's own HTTP handler, not resolvePark directly, so it says
-// nothing about the resolution's internal shape.
-//
-// magicKingdomEntityID is Magic Kingdom's entry in knownParks, named here for
-// the cases that assert which identifier a resolved park's own upstream call
-// carried. Derived through resolvePark rather than restated, so it cannot
-// drift from knownParks.
+// magicKingdomEntityID is derived through resolvePark, so it cannot drift from knownParks.
 var _, magicKingdomEntityID, _ = resolvePark("Magic Kingdom")
 
-// capturingTransport answers a park's /live call with body and its /schedule
-// call with a failure (mirroring liveTransport), while recording every
-// request URL it saw — this suite's way of reading which identifier a
-// resolved park's own upstream call actually carried.
+// capturingTransport is liveTransport that also records every request URL.
 type capturingTransport struct {
 	mu   sync.Mutex
 	body []byte
@@ -1914,12 +1603,6 @@ func (c *capturingTransport) sawURLContaining(substr string) bool {
 	return false
 }
 
-// TestPrettyNameResolvesToItsUUID reads decisions 3-4 of the #309 build spec:
-// a config entry naming a park by its known pretty name resolves to that
-// park's upstream entity id, and the upstream call this park's own fetch
-// makes carries that id — not the pretty name itself (TST086: fetched at the
-// identity recorded). The id itself never crosses the boundary, so this is
-// read off the upstream call the transport captured, not a wire field.
 func TestPrettyNameResolvesToItsUUID(t *testing.T) {
 	transport := &capturingTransport{body: liveResponseBytes(t)}
 	held := http.DefaultTransport
@@ -1948,13 +1631,6 @@ func TestPrettyNameResolvesToItsUUID(t *testing.T) {
 	}
 }
 
-// TestPrettyNameMatchIsNormalized reads decision 3's normalization: a pretty
-// name given with different case or surrounding whitespace still matches,
-// the same convention as the user-blacklist name match (trim + case-fold).
-// None of the module's six known pretty names carries an apostrophe, so this
-// case cannot exercise the curly-quote fold half of that convention against
-// real data; that half is already covered where it is exercisable, against
-// ride names (TestUserBlacklistNameMatchIsNormalizedExact above).
 func TestPrettyNameMatchIsNormalized(t *testing.T) {
 	variants := []string{
 		"magic kingdom",
@@ -1991,9 +1667,6 @@ func TestPrettyNameMatchIsNormalized(t *testing.T) {
 	}
 }
 
-// TestUnrecognizedConfigStringPassesThroughAsIs reads decision 4's second
-// tier: a config string that matches no pretty name is fetched from the
-// upstream as-is, treated as the identifier, rather than being rejected.
 func TestUnrecognizedConfigStringPassesThroughAsIs(t *testing.T) {
 	const raw = "not-a-known-pretty-name"
 
@@ -2012,13 +1685,7 @@ func TestUnrecognizedConfigStringPassesThroughAsIs(t *testing.T) {
 	}
 }
 
-// TestUpstream404IsUnsupportedDistinctFromATransientFailure reads decisions
-// 1-2 of the #309 build spec: a park whose upstream call answers 404 is
-// reported available:false with the locked wording "the source has no such
-// park" — not the generic per-status text a transient (non-404) failure
-// still carries — and neither park's own failure fails the whole request
-// (SRS067<!-- The park-wait-times module confines a failure to the part of
-// its own response the failure touches -->).
+// SRS067<!-- The park-wait-times module confines a failure to the part of its own response the failure touches -->
 func TestUpstream404IsUnsupportedDistinctFromATransientFailure(t *testing.T) {
 	const notFoundBody = `{"success":false,"error":{"message":"entity not found","code":404}}`
 
@@ -2065,20 +1732,10 @@ func TestUpstream404IsUnsupportedDistinctFromATransientFailure(t *testing.T) {
 		t.Fatal("transient-park: carries no message")
 	}
 
-	// wantUnsupportedMessage is the locked unsupported-park wording (#309
-	// build spec decision 1, owner-decided) — deliberately not the generic
-	// per-status text every other UpstreamStatus outcome gets, so a GREEN
-	// that leaves 404 falling through to the existing status-passthrough
-	// cannot pass this by accident.
 	const wantUnsupportedMessage = "the source has no such park"
 	if *unsupported.Message != wantUnsupportedMessage {
 		t.Errorf("unsupported-park's message = %q, want the locked unsupported wording %q", *unsupported.Message, wantUnsupportedMessage)
 	}
-	// The literal text below is the existing transient wording a viewer already
-	// sees for any non-404 upstream status (route.go's failureMessage,
-	// UpstreamStatus case) — asserted as the observable message text itself,
-	// not through calling that helper, so this stays a behavioral check of
-	// what the response says rather than a coupling to how it is produced.
 	wantTransientMessage := fmt.Sprintf("the source answered with status %d", http.StatusServiceUnavailable)
 	if *transientPark.Message != wantTransientMessage {
 		t.Errorf("transient-park's message = %q, want the existing transient wording %q unchanged", *transientPark.Message, wantTransientMessage)
@@ -2088,13 +1745,7 @@ func TestUpstream404IsUnsupportedDistinctFromATransientFailure(t *testing.T) {
 	}
 }
 
-// TestAKnownParkShowsItsPrettyNameNotTheUpstreams: a recognized park's card
-// shows this module's own pretty name, never a name the source carries — the
-// reason the offline set holds a name at all. The pretty name must beat both
-// places a source name could come from: the live response's own PARK row
-// ("Magic Kingdom Park" in the capture) and a succeeding schedule answer whose
-// top-level name is a distinct sentinel. Serving a succeeding, differently-named
-// schedule is what pins the !known guard — a known park must ignore it.
+// A succeeding schedule with a different name is what pins the !known guard.
 func TestAKnownParkShowsItsPrettyNameNotTheUpstreams(t *testing.T) {
 	live := liveResponseBytes(t)
 	var read map[string]any
@@ -2146,12 +1797,7 @@ func TestAKnownParkShowsItsPrettyNameNotTheUpstreams(t *testing.T) {
 	}
 }
 
-// TestAKnownParkStaysAvailableWhenTheLiveResponseHasNoParkRow: the Universal
-// parks' live response carries no PARK-identity row. A recognized park takes
-// its name from the offline set rather than the live response, so a missing
-// PARK row costs it nothing — it stays available and reads under its own pretty
-// name. The fixture is a real Universal Studios capture; the guard below fails
-// if it ever gains a PARK row, since then it would not stand for the case.
+// A real Universal capture with no PARK row; the guard below fails if it gains one.
 func TestAKnownParkStaysAvailableWhenTheLiveResponseHasNoParkRow(t *testing.T) {
 	live, err := os.ReadFile(filepath.FromSlash("testdata/us-live.json"))
 	if err != nil {
@@ -2199,13 +1845,6 @@ func TestAKnownParkStaysAvailableWhenTheLiveResponseHasNoParkRow(t *testing.T) {
 	}
 }
 
-// TestAPassThroughParkRecognizedByItsEntityIDShowsThePrettyName covers the
-// second row of the resolution table: a configured string that is a known
-// park's entity id — not its pretty name — still resolves to that park's own
-// pretty name, not the fuller name the source carries, and is fetched at that
-// same id (TST086: fetched at the identity recorded — the id itself never
-// crosses the boundary). Configuring by the id is the case FuzzResolvePark
-// only line-covers; here it is asserted end to end.
 func TestAPassThroughParkRecognizedByItsEntityIDShowsThePrettyName(t *testing.T) {
 	transport := &capturingTransport{body: liveResponseBytes(t)}
 	held := http.DefaultTransport
@@ -2213,8 +1852,6 @@ func TestAPassThroughParkRecognizedByItsEntityIDShowsThePrettyName(t *testing.T)
 	t.Cleanup(func() { http.DefaultTransport = held })
 	freshRoute(t)
 
-	// Magic Kingdom named by its raw entity id, the value an operator lifting a
-	// UUID out of the source would configure.
 	recorder := serve(t, `{"parks":["`+magicKingdomEntityID+`"]}`)
 	if recorder.Code != http.StatusOK {
 		t.Fatalf("status = %d, want %d (%s)", recorder.Code, http.StatusOK, recorder.Body)
@@ -2235,13 +1872,8 @@ func TestAPassThroughParkRecognizedByItsEntityIDShowsThePrettyName(t *testing.T)
 	}
 }
 
-// TestAPassThroughParkIsNamedFromTheSchedule reads the pass-through half of the
-// resolution: a park this module does not recognize takes its shown name from
-// the source's own schedule answer — the one name every park carries, the live
-// park-identity row being absent for some. The live fixture is a real Universal
-// capture with no PARK row at all, so the name can only come from the schedule;
-// the schedule's top-level name is a sentinel present in no live row, so a
-// name drawn from the live response instead could not produce it.
+// The live fixture has no PARK row and the schedule's name is a sentinel, so the name can only
+// come from the schedule.
 func TestAPassThroughParkIsNamedFromTheSchedule(t *testing.T) {
 	const configured = "some-unknown-entity-id"
 	const scheduleName = "Sentinel Park Name"
@@ -2282,7 +1914,6 @@ func TestAPassThroughParkIsNamedFromTheSchedule(t *testing.T) {
 	if payload.Parks[0].Name != scheduleName {
 		t.Errorf("Name = %q, want the source's own schedule name %q for a pass-through park", payload.Parks[0].Name, scheduleName)
 	}
-	// Fetched through as configured (TST086), not carried as a wire field.
 	transport.mu.Lock()
 	_, sawConfigured := transport.calls[liveURL(configured)]
 	transport.mu.Unlock()
@@ -2291,11 +1922,6 @@ func TestAPassThroughParkIsNamedFromTheSchedule(t *testing.T) {
 	}
 }
 
-// TestAPassThroughParkFallsBackToTheConfiguredNameWhenTheSourceSuppliesNone is
-// the last row's fallback: a pass-through park whose schedule answer gives no
-// name is shown under the configured string itself, rather than left nameless.
-// Both ways the source can withhold a name are covered — the schedule call
-// failing, and answering with no top-level name.
 func TestAPassThroughParkFallsBackToTheConfiguredNameWhenTheSourceSuppliesNone(t *testing.T) {
 	const configured = "another-unknown-entity-id"
 	live, err := os.ReadFile(filepath.FromSlash("testdata/us-live.json"))

@@ -103,7 +103,8 @@ the region it is placed in.
 A park name is drawn on a single line and never wraps. A ride name is too, but where the fixed card
 leaves it no room, it scrolls to reveal itself rather than wrapping, truncating, or widening the card
 — held at home, scrolled left to the end, held there, returned home; a name that already fits is left
-static.
+static. The hold at home also keeps the scroll clear of the card flip's repaint, which otherwise reads
+as a stutter.
 
 What moves is the **name column's own `scrollLeft`**, not a transform on the text inside it. On a Pi
 Zero-class host, painting a clipped container's scroll offset costs a fraction of translating the

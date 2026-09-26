@@ -20,49 +20,38 @@ import {
 } from '../../../tests/render/harness';
 import { HOLD_END_S, HOLD_HOME_S, MARQUEE_PX_PER_S } from './marquee-clock';
 
-/**
- * The park-wait-times module's render tests. Every one answers the module's route from the test,
- * never a real source.
- */
+/** Every case answers the module's route from the test, never a real source. */
 
 const READ_INTERVAL_MS = 5 * 60 * 1000;
 
-/** The last stretch of that interval, held back so a read can be shown to fall inside it. */
+/** Held back from the interval, so a read falls inside it. */
 const ALMOST = 10_000;
 
-/** An instant to hold the host clock at, wherever a case drives time rather than waiting it out. */
 const HOST_TIME = new Date('2026-08-31T14:00:00Z');
 
-/** Enough driven time under a held clock for a marquee measurement's own animation frame to run.
-    `page.clock` fakes requestAnimationFrame along with the timers it drives, so the measurement
-    `ParkCard.svelte`'s `marquee` action schedules at mount stays queued until the clock is run. */
+/** Driven time for the marquee's measurement frame, which `page.clock` holds queued. */
 const MEASURE_FRAME_MS = 100;
 
-/** The most a scroll reading may lag the instant it is taken at: the fake clock paces animation
-    frames at about 16ms and `scrollLeft` reports whole pixels, together under a pixel and a half of
-    travel at `MARQUEE_PX_PER_S`. */
+/** ~16ms frame pacing plus whole-pixel `scrollLeft` at `MARQUEE_PX_PER_S`. */
 const FRAME_SLACK_PX = 2;
 
-/** One park's answer, defaulting to available with no rides — every case fills in what it reads.
-    Takes the park's own name, not an id: the response carries no id field. */
+/** Available, no rides; keyed by name, since the response carries no id. */
 function onePark(name: string, fields: Partial<ParkWaitTimesPark> = {}): ParkWaitTimesPark {
   return { name, available: true, ...fields };
 }
 
-/** A full payload, one entry per park named. */
 function parksPayload(parks: ParkWaitTimesPark[]): ParkWaitTimesPayload {
   return { parks };
 }
 
-/** A ride fixture: a number sets an Operating wait in minutes; a state word sets that state with
-    waitMinutes null. */
+/** A number is an Operating wait in minutes; a state word sets that state with `waitMinutes`
+    null. */
 function ride(name: string, wait: number | ParkWaitTimesState): ParkWaitTimesRide {
   return typeof wait === 'number'
     ? { name, state: ParkWaitTimesState.Operating, waitMinutes: wait }
     : { name, state: wait, waitMinutes: null };
 }
 
-/** A placement naming `parks`, laid out `columns` × `rows`. */
 function placed(
   parks: string[],
   { columns = parks.length, rows = 1, rotationIntervalSeconds }: { columns?: number; rows?: number; rotationIntervalSeconds?: number } = {},
@@ -88,13 +77,7 @@ const MODULE = '[data-park-wait-times]';
 const CARD = '[data-pwt-card]';
 const LOADING = '[data-module-loading]';
 const MODULE_UNAVAILABLE = '[data-module-unavailable]';
-/**
- * What the page draws where a module threw, in place of that module
- * (../../../tests/render/fault-containment.spec.ts). Distinct from `MODULE_UNAVAILABLE`, which is this
- * module's own report that its reading failed: a contained fault is read here because an uncaught
- * error is no longer visible as one — it is caught, and the marker is the only thing left that says it
- * happened.
- */
+/** The framework's contained-fault marker (ModuleHost.svelte). */
 const MODULE_FAULTED = '[data-module-faulted]';
 const PARK_UNAVAILABLE = '[data-pwt-unavailable]';
 const HEADER = '[data-pwt-header]';
@@ -105,13 +88,11 @@ const TOUR_ROW = '[data-pwt-tour-row]';
 const FOOTER = '[data-pwt-footer]';
 const FOOTER_SEGMENT = '[data-pwt-footer-segment]';
 const WAIT = '[data-pwt-wait]';
-/** The ride-name column — the clipping scroll container the marquee clock writes `scrollLeft` on,
-    not the oversized `.ride-name-text` inside it. */
+/** The scroll container, not `.ride-name-text` inside it. */
 const RIDE_NAME_COLUMN = '[data-pwt-ride-name]';
 
-/** The six known parks by their own pretty name — the one identity the wire carries
-    (boundary/openapi.yaml's ParkWaitTimesPark.name). A render fixture names
-    parks by these strings for both the request (`parks`) and the response `onePark` builds. */
+/** Keyed by name, the one identity the wire carries (boundary/openapi.yaml's
+    ParkWaitTimesPark.name). */
 const MAGIC_KINGDOM = 'Magic Kingdom';
 const EPCOT = 'Epcot';
 const HOLLYWOOD_STUDIOS = 'Hollywood Studios';
@@ -119,23 +100,17 @@ const ANIMAL_KINGDOM = 'Animal Kingdom';
 const UNIVERSAL_STUDIOS = 'Universal Studios';
 const ISLANDS_OF_ADVENTURE = 'Islands of Adventure';
 
-/** A name the module has no icon for — an unrecognized park, drawn name-only (the sanctioned
-    fallback). */
+/** No icon for this name: drawn name-only. */
 const UNKNOWN_PARK = 'A Park With No Icon';
 
-/** A ride name far wider than any ride-name column this module draws, at every viewport the render
-    tier runs — so a case about an overflowing name is about that and not about which viewport it
-    happened to run at. */
+/** Wider than the ride-name column at every render viewport. */
 const OVERFLOWING_RIDE_NAME =
   'Guardians of the Galaxy: Cosmic Rewind — The Complete Extended Experience Edition';
 
-/** Locates a rendered card by the park's own displayed name rather than the `data-pwt-park`
-    test-id. */
 function cardNamed(page: import('@playwright/test').Page, name: string) {
   return page.locator(CARD).filter({ has: page.locator('.name', { hasText: name }) });
 }
 
-/** A card's own leaderboard-row and tour-row ride names, read in the order drawn. */
 async function rideNamesIn(card: ReturnType<import('@playwright/test').Page['locator']>, selector: string): Promise<string[]> {
   return card.locator(selector).locator('.ride-name').allTextContents();
 }
@@ -143,8 +118,7 @@ async function rideNamesIn(card: ReturnType<import('@playwright/test').Page['loc
 test('TST071: reports on the parks its configuration names, in the region it names, and moves with a second configuration', async ({
   page,
 }) => {
-  // One stub, two placements: the answer is a function of the ask, so the two rosters are told apart
-  // by what each request carried rather than by the order the module happened to ask in.
+  // The answer is a function of the ask, so the rosters are told apart by request, not by order.
   await serveModuleData(page, (_asked, body) => {
     const { parks } = body as { parks: string[] };
     return { status: 200, data: parksPayload(parks.map((configured) => onePark(configured))) };
@@ -157,13 +131,11 @@ test('TST071: reports on the parks its configuration names, in the region it nam
     ],
   });
 
-  // Each region shows the answer given for the park its own placement named.
   const here = page.locator(`[data-region="middle_center"] ${CARD}`);
   const there = page.locator(`[data-region="lower_third"] ${CARD}`);
   await expect(here.locator('.name')).toHaveText(MAGIC_KINGDOM);
   await expect(there.locator('.name')).toHaveText(EPCOT);
 
-  // A second configuration moves both.
   await render(page, {
     modules: [
       { region: 'middle_center', module: 'park_wait_times', options: { parks: [HOLLYWOOD_STUDIOS], columns: 1, rows: 1 } },
@@ -184,8 +156,6 @@ test('TST074: draws every configured park at once, none absent awaiting a rotati
   });
   await render(page, placed(roster, { columns: 2, rows: 2 }));
 
-  // All four, read on the first paint — nothing here waits for a clock to advance, because a park
-  // rotating onto screen later would still pass a count taken after one.
   await expect(page.locator(CARD)).toHaveCount(roster.length);
   const shown = await page.locator(CARD).evaluateAll((cards) => cards.map((card) => card.querySelector('.name')?.textContent ?? ''));
   expect(new Set(shown)).toEqual(new Set(roster));
@@ -199,9 +169,6 @@ test('renders two configured parks that resolve to the same name without throwin
   const pageErrors: string[] = [];
   page.on('pageerror', (error) => pageErrors.push(error.message));
 
-  // One ride each, and different ones: the two cards then differ by content while sharing the name
-  // they are keyed against, so a grid that collapsed them into one is caught by what is drawn rather
-  // than only by how many boxes there are.
   await serveModuleData(page, () => ({
     status: 200,
     data: parksPayload([
@@ -211,11 +178,8 @@ test('renders two configured parks that resolve to the same name without throwin
   }));
   await render(page, placed([MAGIC_KINGDOM, MAGIC_KINGDOM], { columns: 2, rows: 1 }));
 
-  // What the module drew, not what the page failed to raise. A throw here no longer reaches the page
-  // as an uncaught error — it is caught where the module is mounted and the module is replaced by the
-  // marker (../../../tests/render/fault-containment.spec.ts) — so the absence below would be satisfied
-  // by the very failure it was written to catch. Both cards, each with its own name and its own ride,
-  // is what a module that rendered the duplicate looks like and a contained one does not.
+  // Read what was drawn: a contained throw raises no page error
+  // (SRS069<!-- A module that stops drawing says so in its own place -->).
   await expect(page.locator(CARD)).toHaveCount(2);
   await expect(page.locator(`${CARD} ${HEADER}`)).toHaveCount(2);
   expect(
@@ -229,8 +193,6 @@ test('renders two configured parks that resolve to the same name without throwin
   ]);
   await expect(page.locator(MODULE_FAULTED)).toHaveCount(0);
 
-  // Kept beside them rather than in place of them: a boundary catches what is thrown under a render,
-  // and an error raised anywhere else still arrives here.
   expect(pageErrors, 'the page raised nothing while rendering the duplicate').toHaveLength(0);
 });
 
@@ -249,9 +211,6 @@ test('renders a park whose rides share a name without throwing — the ride each
   }));
   await render(page, placed([EPCOT]));
 
-  // Both rows drawn, each carrying its own name and its own wait, for the reason the duplicate-park
-  // case above states: a throw is contained rather than raised at the page, so what the module drew is
-  // the reading and the absence of an uncaught error no longer is.
   await expect(page.locator(LEADERBOARD_ROW)).toHaveCount(2);
   await expect(page.locator(`${LEADERBOARD_ROW} ${RIDE_NAME_COLUMN}`)).toHaveText([
     'Test Track',
@@ -263,13 +222,11 @@ test('renders a park whose rides share a name without throwing — the ride each
   expect(pageErrors, 'the page raised nothing while rendering the duplicate ride name').toHaveLength(0);
 });
 
-/** Seven rides spread widely enough that the ranking
+/** Three held and four touring, so the ranking
     (SRS058<!-- The park-wait-times module keeps each park's longest current waits in view -->) and
     the rotation
     (SRS059<!-- The park-wait-times module tours the remaining rides on an interval its
-    configuration sets -->) are each unambiguous: three waits longer than every other entry, and
-    four more than the tour's own two-at-a-time page holds, so a full cycle takes more than one
-    page. */
+    configuration sets -->) are each unambiguous. */
 function rankedRoster(): ParkWaitTimesRide[] {
   return [
     ride('Test Track', 80),
@@ -293,22 +250,16 @@ test('TST076: tours the remaining rides two at a time, on the configured interva
   await render(page, placed([EPCOT], { rotationIntervalSeconds: 8 }));
 
   const card = page.locator(CARD);
-  // Held: Test Track, Soarin, Spaceship Earth. Remaining, in the source's own order: Mission: Space,
-  // Imagination!, The Seas, Living with the Land — four rides, two pages at two per page.
+  // Held: Test Track, Soarin, Spaceship Earth; four remaining, two pages.
   await expect(card.locator(TOUR_ROW)).toHaveCount(2);
   expect(await rideNamesIn(card, TOUR_ROW)).toEqual(['Mission: Space', 'Imagination!']);
 
-  // Not yet — a step short of the configured interval finds the same pair still shown.
   await advanceHostClock(page, 8 * 1000 - 500);
   expect(await rideNamesIn(card, TOUR_ROW)).toEqual(['Mission: Space', 'Imagination!']);
 
-  // The interval elapses, and the tour advances to the next pair — the whole of the remainder is
-  // reachable, not only the pair the first paint happened to show.
   await advanceHostClock(page, 500);
   expect(await rideNamesIn(card, TOUR_ROW)).toEqual(['The Seas', 'Living with the Land']);
 
-  // And a full cycle returns to the first pair, the tour being a repeating rotation rather than a
-  // one-time advance.
   await advanceHostClock(page, 8 * 1000);
   expect(await rideNamesIn(card, TOUR_ROW)).toEqual(['Mission: Space', 'Imagination!']);
 });
@@ -324,9 +275,6 @@ test('TST076: the rotation interval is the configuration’s, not one fixed in t
   const card = page.locator(CARD);
   expect(await rideNamesIn(card, TOUR_ROW)).toEqual(['Mission: Space', 'Imagination!']);
 
-  // A shorter span than the one configured here does not advance a module configured for twenty
-  // seconds, proving the interval read is the configuration's rather than a value fixed in the
-  // component — the same distinction TST069 draws for the weather module's series switch.
   await advanceHostClock(page, 6 * 1000);
   expect(await rideNamesIn(card, TOUR_ROW)).toEqual(['Mission: Space', 'Imagination!']);
 
@@ -337,12 +285,7 @@ test('TST076: the rotation interval is the configuration’s, not one fixed in t
 test('TST076: a placement that omits its own rotation interval tours on the schema’s default of eight seconds', async ({
   page,
 }) => {
-  // rotation_interval_seconds is genuinely absent from this placement's own options (unlike the
-  // cases above, which all set it) — the schema's own default: 8 (config/schema.json) is what
-  // ajv's useDefaults fills in before the component ever reads the config, and the component reads
-  // that value directly rather than falling back to one of its own. This pins the eight-second
-  // figure as the only source that fill comes from; it does not by itself prove every way that
-  // fill could stop working.
+  // `rotation_interval_seconds` is absent, so ajv fills the schema default (8).
   await holdHostClock(page, HOST_TIME);
   await serveModuleData(page, () => ({
     status: 200,
@@ -353,11 +296,9 @@ test('TST076: a placement that omits its own rotation interval tours on the sche
   const card = page.locator(CARD);
   expect(await rideNamesIn(card, TOUR_ROW)).toEqual(['Mission: Space', 'Imagination!']);
 
-  // A step short of eight seconds finds the same pair still shown.
   await advanceHostClock(page, 8 * 1000 - 500);
   expect(await rideNamesIn(card, TOUR_ROW)).toEqual(['Mission: Space', 'Imagination!']);
 
-  // The eight-second default elapses, and the tour advances.
   await advanceHostClock(page, 500);
   expect(await rideNamesIn(card, TOUR_ROW)).toEqual(['The Seas', 'Living with the Land']);
 });
@@ -380,14 +321,11 @@ test('TST076: the footer marks the tour’s own position, one segment per page',
   await expect(segments.nth(1)).toHaveClass(/filled/);
 });
 
-/** A park's roster of `count` rides, waits descending so the ranking is unambiguous and every name
-    distinct. `count` fixes the card's page count: three are held, the rest tour two at a time. */
+/** `count` distinct rides, waits descending: three held, the rest touring two a page. */
 function rosterOf(park: string, count: number): ParkWaitTimesRide[] {
   return Array.from({ length: count }, (_unused, index) => ride(`${park} ride ${index}`, count - index));
 }
 
-/** The index of the footer segment this card draws filled — its own position in its own tour
-    (`class:filled`, ParkCard.svelte). */
 async function filledSegment(card: ReturnType<import('@playwright/test').Page['locator']>): Promise<number> {
   return card
     .locator(FOOTER_SEGMENT)
@@ -397,12 +335,6 @@ async function filledSegment(card: ReturnType<import('@playwright/test').Page['l
 test('advances two cards of different page counts on the same tick — neither moves early, and the shorter wraps home as the longer takes its last page', async ({
   page,
 }) => {
-  // Different page counts are what make this a reading of the cards' agreement rather than of one
-  // card twice: seven rides tour in two pages, nine in three, so the positions the pair holds are
-  // `tick % 2` and `tick % 3`, and the shorter card wraps home on the very tick the longer one
-  // takes to its last page. Each position is read a step BEFORE its tick as well as after, which is
-  // what pins the two advances to the same tick rather than to two moments inside one interval —
-  // a card a fraction of an interval out of phase fails that reading.
   const ROTATION_S = 8;
   await holdHostClock(page, HOST_TIME);
   await serveModuleData(page, () => ({
@@ -416,14 +348,10 @@ test('advances two cards of different page counts on the same tick — neither m
 
   const shorter = cardNamed(page, EPCOT);
   const longer = cardNamed(page, MAGIC_KINGDOM);
-  // Self-check the fixture: the two cards really do tour different numbers of pages, so a shared
-  // position below is not two cards drawing the same tour.
   await expect(shorter.locator(FOOTER_SEGMENT), 'four remaining rides, two pages').toHaveCount(2);
   await expect(longer.locator(FOOTER_SEGMENT), 'six remaining rides, three pages').toHaveCount(3);
   expect([await filledSegment(shorter), await filledSegment(longer)]).toEqual([0, 0]);
 
-  // A step short of the interval, neither has moved — which is what pins the two advances below to
-  // the same tick rather than to two moments inside the same interval.
   await advanceHostClock(page, ROTATION_S * 1000 - 500);
   expect([await filledSegment(shorter), await filledSegment(longer)]).toEqual([0, 0]);
   await advanceHostClock(page, 500);
@@ -432,8 +360,6 @@ test('advances two cards of different page counts on the same tick — neither m
     'both cards advanced across the one tick',
   ).toEqual([1, 1]);
 
-  // The tick the shorter card wraps on and the longer one does not: still one counter, read modulo
-  // each card's own page count.
   await advanceHostClock(page, ROTATION_S * 1000 - 500);
   expect([await filledSegment(shorter), await filledSegment(longer)]).toEqual([1, 1]);
   await advanceHostClock(page, 500);
@@ -460,8 +386,6 @@ test('TST077: lays its cards out in the column and row counts its configuration 
   }));
   expect(firstShape).toEqual({ columns: 3, rows: 1 });
 
-  // The same three parks, a second shape — the layout follows the configuration rather than the
-  // roster it happens to have been built for.
   await render(page, placed(roster, { columns: 1, rows: 3 }));
   const secondShape = await grid.evaluate((element) => ({
     columns: getComputedStyle(element).gridTemplateColumns.trim().split(/\s+/).length,
@@ -475,8 +399,6 @@ test('TST077: lays its cards out in the column and row counts its configuration 
 test('TST078: draws a ride’s wait as the mark its own payload names, not the page’s clock or the park’s hours', async ({
   page,
 }) => {
-  // The park's own hours say it is open right now, and the clock is held to a moment inside them —
-  // and yet what each ride draws is read off its own wait field alone.
   const openNow = { open: '2026-08-31T09:00:00-04:00', close: '2026-08-31T22:00:00-04:00' };
   await holdHostClock(page, HOST_TIME);
   await serveModuleData(page, () => ({
@@ -498,17 +420,9 @@ test('TST078: draws a ride’s wait as the mark its own payload names, not the p
   await expect(minutes).toHaveText('25');
   await expect(state).toHaveText('Closed');
 
-  // A length of time and a state are different kinds of mark, not merely different text
-  // (SRS061<!-- The park-wait-times module draws a wait as the time or the not-operating state it
-  // is handed -->; the UI design spec § The wait slot) — read as a class distinction between the
-  // two.
   await expect(minutes).not.toHaveClass(/state/);
   await expect(state).toHaveClass(/state/);
 
-  // And the state a ride draws is the payload's, not a computation this component made from the
-  // hours or the clock: a ride the payload calls `Closed` draws `Closed` beside another ride, at the
-  // same park, at the same moment, that the payload calls a numeric wait — if the drawing followed
-  // the hours or the clock instead, the two rides could not disagree.
   await expect(minutes).not.toHaveText(/Closed/);
 });
 
@@ -525,13 +439,11 @@ test('TST079: follows its source to a new reading inside the freshness bound, wi
   const wait = page.locator(WAIT).first();
   await expect(wait).toHaveText('10');
 
-  // A mark on the page a reload would clear, so the change below is attributable to the module
-  // re-reading rather than to the display having started over.
+  // A mark a reload would clear.
   await page.evaluate(() => {
     (window as unknown as { standing?: boolean }).standing = true;
   });
 
-  // The source now says something else, staged as the answer a later poll receives.
   const afterTheChange = await serveModuleData(page, () => ({
     status: 200,
     data: parksPayload([onePark(MAGIC_KINGDOM, { rides: [ride('The Barnstormer', 35)] })]),
@@ -554,8 +466,6 @@ test('TST082: draws the wait times its own route answered with, and reads no oth
   page,
   baseURL,
 }) => {
-  // Registered before the page loads: a listener added afterwards would miss the load's own asks,
-  // and an absence measured over nothing is not an absence.
   const traffic = watchTraffic(page);
   const served = await serveModuleData(page, () => ({
     status: 200,
@@ -566,8 +476,6 @@ test('TST082: draws the wait times its own route answered with, and reads no oth
   await expect(page.locator(WAIT).first()).toHaveText('10');
   expect(served.urls.length, 'the module asked its own route').toBeGreaterThan(0);
 
-  // And nothing else was asked — the shell's own two asks are named rather than every request being
-  // permitted, so a second source would be left over rather than absorbed.
   expect([...new Set(asksBeyondTheShell(traffic))]).toEqual(['/api/park-wait-times']);
   expect(channelsBeyondTheTier(traffic, baseURL)).toEqual([]);
 });
@@ -575,9 +483,6 @@ test('TST082: draws the wait times its own route answered with, and reads no oth
 test('holds a park’s place in the grid and shows why, when that park’s own reading could not be produced', async ({
   page,
 }) => {
-  // One park fails, the other answers — the owner's per-park graceful-degradation ruling (WI-3),
-  // read from the render side: the failing park holds its place and shows a reason, the healthy one
-  // is unaffected.
   const REASON = 'The wait-times source did not answer for this park.';
   await serveModuleData(page, (_asked, body) => {
     const { parks } = body as { parks: string[] };
@@ -601,9 +506,6 @@ test('holds a park’s place in the grid and shows why, when that park’s own r
   await expect(failing.locator(LEADERBOARD_ROW)).toHaveCount(0);
   await expect(healthy.locator(LEADERBOARD_ROW)).toContainText('Test Track');
 
-  // The failing park's own header — icon and name — stays drawn: the README's own wording is
-  // "in place of its rides" (§ States, Park unavailable), not the whole card, so a viewer can tell
-  // which park failed rather than reading only its grid position.
   await expect(failing.locator('[data-pwt-header]')).toBeVisible();
   await expect(failing.locator('[data-pwt-header]')).toContainText(MAGIC_KINGDOM);
 });
@@ -611,12 +513,6 @@ test('holds a park’s place in the grid and shows why, when that park’s own r
 test('renders each unavailable park’s own message verbatim, transient or permanent — the card never branches on the wording', async ({
   page,
 }) => {
-  // The permanent unsupported-park outcome and a transient failure are both `available: false`,
-  // told apart only by the message the backend sends (#309 build spec decision 1). The card draws
-  // whatever text it is handed, the same way for either — it never matches on the wording to treat
-  // one specially. Two unavailable parks carrying distinct messages, each shown its own, is the
-  // proof: these strings are the test's own data, not a copy of a backend contract this side
-  // depends on — the exact unsupported wording is the backend's own, tested there.
   const transient = 'the source did not answer in time';
   const unsupported = 'the source has no such park';
   await serveModuleData(page, (_asked, body) => {
@@ -702,9 +598,7 @@ test('holds every card to a full card’s own height when every park is unavaila
 });
 
 test('shows that it is reading while its route has not answered yet', async ({ page }) => {
-  // The one state `serveModuleData` cannot drive: every answer it gives is an answer, and this is
-  // what is on screen before there is one. The route is taken and never fulfilled, which is the
-  // ask-in-flight the module first paints against.
+  // The route is taken and never fulfilled: the ask in flight.
   await page.route('**/api/*', () => {});
   await render(page, placed([MAGIC_KINGDOM]));
 
@@ -735,17 +629,6 @@ test('renders why its own route failed, in its own place, while the backend is r
 test('sets the module’s own left default against the region’s inherited centring — a guard, not proof of a visible fix', async ({
   page,
 }) => {
-  // Round 4 read L2/L3 as the ride-name bug's own class: the loading, module-unavailable and
-  // park-unavailable lines inheriting the region's own `text-align` (`placementStyle()`, regions.ts).
-  // Measured directly (Range over each line's own text node, against a card/region given deliberate
-  // slack) and found neither one actually moves under `text-align: center` — `.waiting`
-  // (ParkWaitTimes.svelte) shrink-wraps to its own text with the region's own `align-items` (no
-  // slack for centring to show, in any region width tried, including a full-width band); `.unavailable`
-  // (ParkCard.svelte) is positioned by its own `display: flex` default `justify-content: flex-start`,
-  // which text-align does not govern — reproducibly zero shift even with ~265px of deliberate slack.
-  // L2/L3 are not visible, reproducible defects; `.park-wait-times`'s own `text-align: left` stays as
-  // defensive hygiene (the same contract-only status L1's hours-weight drift holds) rather than a
-  // claim this test can back with geometry.
   await serveModuleData(page, () => ({
     status: 200,
     data: parksPayload([onePark(MAGIC_KINGDOM)]),
@@ -759,11 +642,6 @@ test('sets the module’s own left default against the region’s inherited cent
 test('lays out uniform, aligned cards that do not run past the viewport, with real park and ride names', async ({
   page,
 }) => {
-  // The card is a fixed width (ParkWaitTimes.svelte's measured `--pwt-card-width`), not one grown to
-  // its own content — a name too wide for its column scrolls to reveal itself (`ParkCard.svelte`'s
-  // `marquee`) rather than widening the card or wrapping the grid past the viewport, and every card
-  // takes the same width regardless of what its own park's names are. Read at the deployed
-  // three-column shape (config.json), over a real (unabbreviated) roster.
   const roster = [
     MAGIC_KINGDOM,
     EPCOT,
@@ -822,8 +700,6 @@ test('lays out uniform, aligned cards that do not run past the viewport, with re
   const widths = new Set(boxes.map((box) => box.width));
   expect(widths.size, 'every card the same width').toBe(1);
 
-  // The two rows of three: each row's own three cards share one top, proving the grid holds its
-  // shape rather than one card (an empty leaderboard, an overflowing name) sitting off the line.
   const tops = new Set(boxes.map((box) => box.top));
   expect(tops.size, 'exactly two distinct row positions').toBe(2);
 
@@ -852,8 +728,6 @@ test('leaves a park’s leaderboard at its own real row count — no permanent b
 
   const card = page.locator(CARD);
   await expect(card.locator(LEADERBOARD_ROW)).toHaveCount(2);
-  // The mechanism that reserved a third slot regardless of how many rides a park holds is gone —
-  // not merely unfilled here, absent from the DOM.
   await expect(card.locator('[data-pwt-leaderboard-placeholder]')).toHaveCount(0);
 });
 
@@ -883,9 +757,7 @@ test('holds the footer’s own position across the tour’s pages, including a l
   const card = page.locator(CARD);
   const footerY = async () => (await card.locator(FOOTER_SEGMENT).first().boundingBox())?.y;
 
-  // Held: Seven Dwarfs Mine Train, Big Thunder Mountain Railroad, Pirates of the Caribbean.
-  // Remaining, in source order: Carousel of Progress, Tomorrowland Speedway, Jungle Cruise, Small
-  // World, Haunted Mansion — five, an odd count, three pages (2, 2, 1).
+  // Five remaining: three pages (2, 2, 1).
   const footer0 = await footerY();
   await expect(card.locator(TOUR_ROW)).toHaveCount(2);
 
@@ -894,17 +766,12 @@ test('holds the footer’s own position across the tour’s pages, including a l
   expect(await footerY()).toBe(footer0);
 
   await advanceHostClock(page, 8 * 1000);
-  // The odd last page: one real row, padded by exactly one blank row so the footer beneath it does
-  // not move up for having one fewer ride to show — padding the two full pages above never carried.
   await expect(card.locator(TOUR_ROW)).toHaveCount(1);
   await expect(card.locator('[data-pwt-tour-placeholder]')).toHaveCount(1);
   expect(await footerY()).toBe(footer0);
 });
 
 test('anchors the footer to the card’s own bottom edge, with nothing beneath it', async ({ page }) => {
-  // Read here even against a single card, the footer must sit flush with the card's own inner
-  // bottom edge (inside its padding and border) rather than leaving trailing space below it — a
-  // card is its own natural height, so nothing beneath the footer is left to fill.
   await serveModuleData(page, () => ({
     status: 200,
     data: parksPayload([onePark(EPCOT, { rides: rankedRoster() })]),
@@ -917,8 +784,6 @@ test('anchors the footer to the card’s own bottom edge, with nothing beneath i
   if (!cardBox || !footerBox) {
     throw new Error('the card or its footer did not render a box');
   }
-  // `boundingBox` reads the card's own border box; its inner (padding) bottom edge is that box's
-  // bottom less its own bottom border and padding.
   const { paddingBottom, borderBottomWidth } = await card.evaluate((element) => {
     const style = getComputedStyle(element);
     return {
@@ -934,10 +799,6 @@ test('anchors the footer to the card’s own bottom edge, with nothing beneath i
 test('holds two full cards — a leaderboard and its own More Waits block — to the same natural height, neither forced by a min-height', async ({
   page,
 }) => {
-  // Two different real rosters, each with a full three-ride leaderboard plus at least one page of
-  // touring rides, so a coincidence of ride counts cannot explain the two landing on the same height
-  // — every real park draws the same structure, so with nothing forcing it they line up on their own
-  // (owner ruling, #309).
   const rides: Record<string, ParkWaitTimesRide[]> = {
     [MAGIC_KINGDOM]: rankedRoster(),
     [EPCOT]: [
@@ -957,10 +818,6 @@ test('holds two full cards — a leaderboard and its own More Waits block — to
   const heights = await cards.evaluateAll((els) => els.map((el) => el.getBoundingClientRect().height));
   expect(Math.abs(heights[0] - heights[1]), 'both full cards land at the same natural height').toBeLessThan(1);
 
-  // Neither card carries a forced floor: an open card's `min-height` is left at the property's own
-  // initial value — `auto`, not `0px`, being a grid item (a grid item's `auto` does not stretch a
-  // card past its own content the way it would default `align-items` to do; `.grid`'s own
-  // `align-items: start` is what leaves each card at its own height, ParkWaitTimes.svelte).
   const minHeights = await cards.evaluateAll((els) => els.map((el) => getComputedStyle(el).minHeight));
   expect(minHeights).toEqual(['auto', 'auto']);
 });
@@ -983,11 +840,6 @@ test('leaves no slack between the leaderboard and the More Waits divider — the
   }
   const headerToLeaderboardGap = leaderboardBox.y - (headerBox.y + headerBox.height);
   const leaderboardToMoreGap = moreBox.y - (leaderboardBox.y + leaderboardBox.height);
-  // `.card`'s own single flex `gap` (the styling contract's `md` step) is what sets every one of its
-  // children apart, header-to-leaderboard the same as leaderboard-to-More-Waits — proving there is no
-  // extra slack between the leaderboard and More Waits beyond that one gap. The bug this rewrites
-  // forced a taller card and pushed More Waits down (`margin-top: auto`) to fill it, landing the
-  // difference here instead.
   expect(
     Math.abs(leaderboardToMoreGap - headerToLeaderboardGap),
     'the leaderboard-to-More-Waits gap is the same as the header-to-leaderboard gap',
@@ -1032,25 +884,16 @@ test('holds the Closed card to a full card’s own height, without forcing an op
       ),
   );
 
-  // The Closed card (no ride reporting a length of time) matches a full leaderboard-plus-More-Waits
-  // card's own height — not forced by anything external, but because its own hidden skeleton
-  // (`ParkCard.svelte`'s `.full-frame`) draws that same structure itself.
   expect(
     Math.abs(heights[ISLANDS_OF_ADVENTURE] - heights[MAGIC_KINGDOM]),
     'the Closed card matches the full card’s height',
   ).toBeLessThan(1);
 
-  // epcot holds a leaderboard (two numeric rides) but nothing left to tour — open, its own natural
-  // height, smaller than the Closed card's own reserved full-card footprint (owner ruling, #309).
   expect(
     heights[MAGIC_KINGDOM] - heights[EPCOT],
     'an open card with less to show is left shorter, not forced to match',
   ).toBeGreaterThan(10);
 
-  // Neither `.card`'s own min-height nor `.grid`'s own item-stretch (its default `align-items`,
-  // ParkWaitTimes.svelte) may leave epcot's own box taller than its own content: the card's inner
-  // bottom edge (its border, one card-padding below the leaderboard) sits flush against the
-  // leaderboard itself, not against the row's tallest neighbour.
   const epcotCard = cardNamed(page, EPCOT);
   const epcotBox = await epcotCard.boundingBox();
   const epcotLeaderboardBox = await epcotCard.locator(LEADERBOARD).boundingBox();
@@ -1089,9 +932,6 @@ test('holds every card to a full card’s own height when every park is Closed, 
     'every Closed card the same height, with no open card on screen for a live-measured floor to borrow from',
   ).toBe(1);
 
-  // The same roster, every park filled — the reference a Closed card's own hidden skeleton
-  // (`ParkCard.svelte`'s `.full-frame`) draws, whether or not any other card on the page happens
-  // to be filled too.
   await serveModuleData(page, (_asked, body) => {
     const { parks } = body as { parks: string[] };
     return { status: 200, data: parksPayload(parks.map((configured) => onePark(configured, { rides: rankedRoster() }))) };
@@ -1110,14 +950,8 @@ test('holds every card to a full card’s own height when every park is Closed, 
 test('draws every ride name flush left in its own column, whatever its own length — the wait stays right', async ({
   page,
 }) => {
-  // `placed`'s own default region (middle_center) is centre-anchored — the exact case that
-  // centred every ride name before this fix: RegionFrame's own `text-align` (`placementStyle()`,
-  // regions.ts) inherits straight through ParkCard.svelte's rows unless a row explicitly
-  // overrides it, the same way `.wait`'s own `text-align: right` already does. The park's own
-  // name is long enough that the card — and so the ride-name column, which the park's own header
-  // sizes (ParkWaitTimes.svelte's measured `--pwt-card-width`), never a ride name — is wider than the shorter
-  // ride name below: a column no wider than every name in it would leave a centred name
-  // indistinguishable from a left-aligned one, both overflowing the same way.
+  // A long park name makes the column wider than the shorter ride name, so a centred name would
+  // show.
   await serveModuleData(page, () => ({
     status: 200,
     data: parksPayload([
@@ -1146,8 +980,6 @@ test('draws every ride name flush left in its own column, whatever its own lengt
       1,
     );
   }
-  // The direct proof a shorter name is not centred within a column a longer one fills: both start
-  // at the very same x regardless of the name's own length.
   expect(
     Math.abs(names[0].textLeft - names[1].textLeft),
     'a shorter ride name starts at the same x as a longer one',
@@ -1173,11 +1005,8 @@ test('sizes every card to the widest rendered header, and no wider — the true 
   });
   await render(page, placed(roster, { columns: 3, rows: 1 }));
 
-  // 'Islands of Adventure' is the widest header in this roster — read its own true rendered content
-  // span (identity's own left edge to hours' own right edge) directly off the DOM, rather than
-  // re-deriving ParkWaitTimes.svelte's own probe formula: a probe that has drifted from the CSS it
-  // measures (L1 — the hours were probed at the wrong font-weight) computes the same wrong number
-  // every card shares, so comparing cards only to each other cannot catch it.
+  // The true content span, read off the DOM rather than ParkWaitTimes.svelte's formula, so a
+  // drifted probe is caught.
   const widest = cardNamed(page, ISLANDS_OF_ADVENTURE);
   const measured = await widest.evaluate((card) => {
     const identity = card.querySelector('.identity') as HTMLElement;
@@ -1231,8 +1060,6 @@ test('draws every wait right-aligned and tabular, the column never moving under 
     expect(variant, 'a numeric wait renders tabular figures').toContain('tabular-nums');
   }
 
-  // The column's own reserved box — not the glyphs' own position, which text-align already covers
-  // above — never moves, whether the figure is one, two or three digits.
   const lefts = await waits.evaluateAll((els) => els.map((el) => el.getBoundingClientRect().x));
   expect(new Set(lefts).size, 'the wait column’s own left edge holds across 1, 2 and 3 digits').toBe(1);
 });
@@ -1240,12 +1067,6 @@ test('draws every wait right-aligned and tabular, the column never moving under 
 test('reserves one constant wait column across a numeric wait and the longest not-operating word alike, neither wider than the other', async ({
   page,
 }) => {
-  // The column's reservation must clear the widest reading it is ever handed — a six-letter
-  // not-operating word ("REFURB"/"CLOSED"), wider on the page than a three-digit "999" — so it
-  // never moves between a numeric row and a state row (SRS058, SRS061). A card whose leaderboard
-  // holds numeric waits and whose tour holds those two words shows both kinds at once: every wait
-  // box the same width is the proof the reservation covers the longest word rather than that word
-  // growing its own box past a shorter one's.
   await holdHostClock(page, HOST_TIME);
   await serveModuleData(page, () => ({
     status: 200,
@@ -1276,36 +1097,26 @@ test('reserves one constant wait column across a numeric wait and the longest no
 test('scrolls a ride name too wide for its own column — held home, one constant-speed pass to the end, then home until the next tick', async ({
   page,
 }) => {
-  // The motion is the name COLUMN's own `scrollLeft` — `.ride-name`, the clipping scroll container
-  // the placement's marquee clock writes (marquee-clock.ts) — never a transform on the oversized
-  // text inside it.
-  //
-  // Every instant below is derived from the distance THIS render measures, so the schedule is read
-  // at each viewport's own geometry rather than against a figure written here. The name is
-  // deliberately short: it only has to overflow, and a smaller distance is a shorter cycle to drive.
+  // Instants derive from the distance this render measures; the name only has to overflow.
   const overflowingName = 'Cosmic Rewind';
   await holdHostClock(page, HOST_TIME);
   await serveModuleData(page, () => ({
     status: 200,
     data: parksPayload([onePark(EPCOT, { rides: [ride(overflowingName, 40)] })]),
   }));
-  // A rotation interval longer than the whole cycle read below: the tick that starts the next pass
-  // must not land inside this one.
+  // Longer than the cycle, so the next tick cannot land inside it.
   await render(page, placed([EPCOT], { rotationIntervalSeconds: 60 }));
 
   const column = page.locator(`${CARD} ${RIDE_NAME_COLUMN}`).first();
   await expect(column, 'the full name is in the DOM, not truncated').toHaveText(overflowingName);
   await page.clock.runFor(MEASURE_FRAME_MS);
 
-  // The distance the clock is registered with, and so the schedule's own scale: the column's own
-  // `scrollWidth - clientWidth` (marquee-clock.ts's `registerMarquee`).
   const distance = await column.evaluate((el) => el.scrollWidth - el.clientWidth);
   expect(distance, 'the fixture’s name really does overflow its own column').toBeGreaterThan(0);
   const moveSeconds = distance / MARQUEE_PX_PER_S;
 
-  /** Drives the held clock to `seconds` after the cycle began, and reads the column's own offset.
-      The cycle begins on the first frame of the run above, so a reading lags its instant by at most
-      that frame's own worth of travel (`FRAME_SLACK_PX`). */
+  /** Drives the clock to `seconds` into the cycle and reads `scrollLeft`; lags by at most
+      `FRAME_SLACK_PX`. */
   let drivenMs = MEASURE_FRAME_MS;
   const scrolledAt = async (seconds: number): Promise<number> => {
     const target = Math.round(seconds * 1000);
@@ -1316,8 +1127,6 @@ test('scrolls a ride name too wide for its own column — held home, one constan
 
   expect(await scrolledAt(HOLD_HOME_S - 0.2), 'still home through the opening hold').toBe(0);
 
-  // One pace, not a duration fitted to the name: two samples a second apart each land where
-  // MARQUEE_PX_PER_S alone puts them, while the column still has travel left to give.
   expect(
     2 * MARQUEE_PX_PER_S,
     'the later ramp sample still has travel left, so it reads the ramp rather than the clamp',
@@ -1342,10 +1151,6 @@ test('scrolls a ride name too wide for its own column — held home, one constan
     'home again once the closing hold elapses',
   ).toBe(0);
 
-  // One pass per rotation tick, never a loop of its own: `startMarqueeCycle` is the only thing that
-  // begins another, and ParkWaitTimes.svelte calls it on the tick the cards flip on. A name long
-  // enough that one pass at this pace shows only part of it is read in part — the designed reading,
-  // not a shortfall the scroll should make up by going faster.
   expect(
     await scrolledAt(HOLD_HOME_S + moveSeconds + HOLD_END_S + 6),
     'still home six seconds on — nothing but the next tick restarts the pass',
@@ -1355,17 +1160,8 @@ test('scrolls a ride name too wide for its own column — held home, one constan
 test('leaves a ride name that already fits its own column unregistered, while an overflowing name on the same card scrolls', async ({
   page,
 }) => {
-  // A park with a long enough name/hours that its own header — the ride-name column's own width,
-  // never a ride name — leaves genuine room for 'Test Track' to fit: a short park name (this
-  // fixture's own default) produces too narrow a column, and 'Test Track' would overflow it for an
-  // unrelated reason, a false positive for this specific invariant.
-  //
-  // The overflowing ride beside it is the control that makes the fitting row's bare absence of
-  // `.marquee` mean something. The action sets that class on the same animation frame it registers
-  // the column with the clock, so waiting for it on the overflowing row is what proves the
-  // measurement pass has run at all: an absence read before that pass would pass over a column that
-  // does get registered a frame later, and it is this one row rather than both that goes red if a
-  // pass ever registers every row regardless of overflow.
+  // A long park name widens the column enough for `fittingName` to fit. The overflowing row is the
+  // control: its `.marquee` proves the measurement frame has run.
   const fittingName = 'Test Track';
   await serveModuleData(page, () => ({
     status: 200,
@@ -1395,9 +1191,6 @@ test('leaves a ride name that already fits its own column unregistered, while an
     'a name that already fits its column is not',
   ).not.toHaveClass(/marquee/);
 
-  // Self-check the fixture at this render's own geometry, and at the distance registration is
-  // measured on — the column's own, never the text node's against its parent. The two rows really
-  // are the two cases, rather than both overflowing or both fitting.
   const overflowOf = (locator: typeof columns) => locator.evaluate((el) => el.scrollWidth - el.clientWidth);
   expect(await overflowOf(overflowingRow), 'the long name really does overflow its own column').toBeGreaterThan(0);
   expect(await overflowOf(fittingRow), 'the short one really does fit').toBeLessThanOrEqual(0);
@@ -1406,19 +1199,12 @@ test('leaves a ride name that already fits its own column unregistered, while an
 test('re-measures the marquee after a poll refresh reorders rows in place, not just at mount', async ({
   page,
 }) => {
-  // The leaderboard's `{#each ... (index)}` keeps each row's DOM node across a reorder, so the ride
-  // shown under a row changes without the row remounting — `use:marquee={ride.name}` (ParkCard.svelte)
-  // re-runs the measurement on that change (the action's `update`) and reconciles the registration
-  // both ways, which is what this asserts: a row that gains an overflowing name is registered with
-  // the marquee clock, one that loses it is dropped. `.marquee` is the probe because registration
-  // is the only thing that changes in the shrinking direction — a column with nothing left to
-  // scroll sits at offset zero whether or not a stale registration is still driving it, so its own
-  // `scrollLeft` cannot tell the two apart.
+  // Index-keyed rows persist across a reorder, so `update` must re-measure. `.marquee` is the probe:
+  // a column with nothing left to scroll reads `scrollLeft` 0 whether or not it is still registered.
   const SHORT = 'A';
   const LONG = OVERFLOWING_RIDE_NAME;
 
-  // Driving the five-minute read interval costs some eighty times more under `page.clock` with the
-  // marquee's frame loop running (marquee-clock.ts).
+  // The marquee's frame loop makes driving the read interval slow under `page.clock`.
   test.setTimeout(3 * 60 * 1000);
 
   await holdHostClock(page, HOST_TIME);
@@ -1435,20 +1221,12 @@ test('re-measures the marquee after a poll refresh reorders rows in place, not j
   await expect(row0, 'the higher wait ranks first').toHaveText(SHORT);
   await expect(row1).toHaveText(LONG);
 
-  // Self-check the fixture, at this render's own geometry and at the distance registration is
-  // measured on: the COLUMN's own `scrollWidth - clientWidth` (marquee-clock.ts), never the text
-  // node's against its parent. A fixture where the long name did not actually overflow, or the
-  // short one did, could pass the invariant below without ever exercising the bug.
   const columns = page.locator(`${CARD} ${RIDE_NAME_COLUMN}`);
   await expect(columns).toHaveCount(2);
   const overflowOf = (locator: typeof columns) => locator.evaluate((el) => el.scrollWidth - el.clientWidth);
   expect(await overflowOf(columns.nth(1)), 'the long name overflows its own column').toBeGreaterThan(0);
   expect(await overflowOf(columns.nth(0)), 'the short name does not').toBeLessThanOrEqual(0);
 
-  // A poll refresh of the same card, not a remount: the waits reorder so the long name now ranks
-  // first (row 0, previously the short name's) and the short name second (row 1, previously the long
-  // name's) — the index-keyed rows persist across this, the precondition that makes the
-  // stale-measurement bug reachable.
   await serveModuleData(page, () => ({
     status: 200,
     data: parksPayload([onePark(EPCOT, { rides: [ride(SHORT, 5), ride(LONG, 80)] })]),
@@ -1456,14 +1234,9 @@ test('re-measures the marquee after a poll refresh reorders rows in place, not j
   await advanceHostClock(page, READ_INTERVAL_MS);
   await expect(row0, 'the reorder landed').toHaveText(LONG);
   await expect(row1).toHaveText(SHORT);
-  // `page.clock` fakes requestAnimationFrame along with the timers `holdHostClock`/`advanceHostClock`
-  // drive, so `marquee`'s rAF-scheduled measurement stays queued rather than firing on a real frame —
-  // one more run of the fake clock is what lets it fire.
+  // `page.clock` fakes rAF; this runs the queued measurement.
   await page.clock.runFor(1000);
 
-  // The invariant itself: a row is registered with the marquee clock iff its own COLUMN overflows —
-  // derived from each row's live geometry, not a hardcoded "row 0 marquees", so it stays correct
-  // regardless of which name is overflowing.
   await expect
     .poll(
       () =>
@@ -1481,10 +1254,6 @@ test('re-measures the marquee after a poll refresh reorders rows in place, not j
 test('starts every overflowing name on the placement’s one clock — two columns of different widths leave home together and share a pace, not a duration', async ({
   page,
 }) => {
-  // One loop over one cycle timestamp, read by every registered column (marquee-clock.ts), is what
-  // starts them together. Two cards whose names need different distances is what tells that apart
-  // from both alternatives: columns given a shared DURATION would sit at different offsets at the
-  // same instant, and columns started separately would leave home at different ones.
   const shorterName = 'Guardians of the Galaxy: Cosmic Rewind';
   const longerName = 'Tron Lightcycle Run: The Complete Extended Experience';
   await holdHostClock(page, HOST_TIME);
@@ -1501,8 +1270,6 @@ test('starts every overflowing name on the placement’s one clock — two colum
   await expect(columns).toHaveCount(2);
   await page.clock.runFor(MEASURE_FRAME_MS);
 
-  // Self-check the fixture: both names overflow, and by genuinely different distances — the grid
-  // gives both cards one width, so the two columns differ only in the name each holds.
   const distances = await columns.evaluateAll((els) => els.map((el) => el.scrollWidth - el.clientWidth));
   const [shorter, longer] = distances;
   expect(shorter, 'the shorter name still overflows its own column').toBeGreaterThan(0);
@@ -1518,17 +1285,12 @@ test('starts every overflowing name on the placement’s one clock — two colum
 
   expect(await scrolledAt(HOLD_HOME_S - 0.2), 'both still home through the one opening hold').toEqual([0, 0]);
 
-  // Together, and at the one pace: the same offset on both columns at the same instant, while each
-  // still has travel left to give.
   expect(2 * MARQUEE_PX_PER_S, 'both columns are still ramping at the later sample').toBeLessThan(shorter);
   const afterOneSecond = await scrolledAt(HOLD_HOME_S + 1);
   expect(afterOneSecond[0], 'a second into the pass, the columns have left home').toBeGreaterThan(0);
   expect(new Set(afterOneSecond).size, 'and are at the one offset between them').toBe(1);
   expect(new Set(await scrolledAt(HOLD_HOME_S + 2)).size, 'two seconds in, still the one offset').toBe(1);
 
-  // The shorter column reaches its own end first and is held there while the longer one carries on
-  // past it — one velocity across the rows. A shared duration would have read as the two arriving
-  // together instead.
   const atShorterEnd = await scrolledAt(HOLD_HOME_S + shorter / MARQUEE_PX_PER_S + 0.5);
   expect(atShorterEnd[0], 'the shorter name is clamped at its own end').toBe(shorter);
   expect(atShorterEnd[1], 'the longer one is already past that offset').toBeGreaterThan(shorter);
@@ -1538,11 +1300,6 @@ test('starts every overflowing name on the placement’s one clock — two colum
 test('restarts every scroll on the rotation tick the cards flip on, rather than on a clock of its own', async ({
   page,
 }) => {
-  // ParkWaitTimes.svelte's single rotation interval both advances the tick the cards page on and
-  // calls `startMarqueeCycle` (marquee-clock.ts) — a card flip and a marquee restart are one event
-  // on one clock rather than two that drift apart. Read on either side of a single tick: the
-  // footer's own filled segment advances, and a scroll that was in flight is back home and sets off
-  // again.
   const ROTATION_S = 8;
   await holdHostClock(page, HOST_TIME);
   await serveModuleData(page, () => ({
@@ -1550,9 +1307,7 @@ test('restarts every scroll on the rotation tick the cards flip on, rather than 
     data: parksPayload([
       onePark(EPCOT, {
         rides: [
-          // Ranked first, so this row keeps its place across the flip and its column is the one
-          // thing on the card a restart can be read off. The rest make the four remaining rides the
-          // tour needs for two pages, so the footer has a position to advance.
+          // Ranked first, so its row survives the flip; the rest give the tour two pages.
           ride(OVERFLOWING_RIDE_NAME, 80),
           ride('Soarin', 50),
           ride('Spaceship Earth', 20),
@@ -1579,18 +1334,14 @@ test('restarts every scroll on the rotation tick the cards flip on, rather than 
   const scrollLeft = () => column.evaluate((el) => el.scrollLeft);
   const tickMs = ROTATION_S * 1000;
 
-  // Just short of the tick: the first page is still the one marked, and the scroll is under way.
   await driveTo(tickMs - 200);
   await expect(segments.nth(0), 'the tour has not advanced yet').toHaveClass(/filled/);
   expect(await scrollLeft(), 'the scroll is in flight when the tick lands').toBeGreaterThan(0);
 
-  // Across it: the card flipped, and that same tick put the column back home.
   await driveTo(tickMs + 300);
   await expect(segments.nth(1), 'the tour advanced on the tick').toHaveClass(/filled/);
   expect(await scrollLeft(), 'and the scroll is home again on that one tick').toBe(0);
 
-  // Home because the cycle restarted, not because the column stopped: the new cycle's own opening
-  // hold elapses and it sets off again at the module's own pace.
   await driveTo(tickMs + (HOLD_HOME_S + 1) * 1000);
   expect(
     Math.abs((await scrollLeft()) - MARQUEE_PX_PER_S),
@@ -1615,8 +1366,6 @@ test('draws the Closed card’s icon and label centred — the one deliberate ex
     alignItems: getComputedStyle(el).alignItems,
     textAlign: getComputedStyle(el).textAlign,
   }));
-  // A guard against a future left-align sweep wrongly straightening this: the Closed content is
-  // explicitly opted back into centring, not left to inherit the module's own left default.
   expect(style.alignItems, 'the Closed content stays centred, not the module’s own left default').toBe('center');
   expect(style.textAlign, 'the Closed content’s own text-align stays centred too').toBe('center');
 });
@@ -1658,10 +1407,6 @@ test('draws a park’s hours to the right of its name, both on the header’s ow
     hoursBox.x + 1,
   );
 
-  // "One row" (`.header`'s own `align-items: baseline`) read as a real measurement: the two
-  // elements' vertical centres land close together rather than the hours sitting a whole line away
-  // — which `justify-content: space-between` alone (checked above) would not rule out, since that
-  // only anchors the two horizontally.
   const verticalGap = Math.abs(nameBox.y + nameBox.height / 2 - (hoursBox.y + hoursBox.height / 2));
   expect(verticalGap, 'the name and the hours sit on the header’s one row').toBeLessThan(
     Math.min(nameBox.height, hoursBox.height),
@@ -1697,8 +1442,7 @@ test('keeps a long park name on one line, never wrapping the header', async ({ p
   const whiteSpace = await name.evaluate((el) => getComputedStyle(el).whiteSpace);
   expect(whiteSpace, 'the park name is set to never wrap').toBe('nowrap');
 
-  // A wrapped text node renders as more than one client rect, one per visual line — a single-line
-  // nowrap name renders as exactly one, whatever its own length.
+  // One client rect per rendered line.
   const rectCount = await name.evaluate((el) => el.getClientRects().length);
   expect(rectCount, 'the name renders as a single line, not wrapped onto a second').toBe(1);
 });
@@ -1706,8 +1450,6 @@ test('keeps a long park name on one line, never wrapping the header', async ({ p
 test('draws the park’s own icon beside its name in the header, for a park the module has a glyph for', async ({
   page,
 }) => {
-  // The fixture supplies no id, so this proves the icon set is keyed on the
-  // park's own pretty name.
   await serveModuleData(page, () => ({
     status: 200,
     data: parksPayload([onePark(MAGIC_KINGDOM)]),
@@ -1754,16 +1496,9 @@ test('stands down to nothing while the backend is unreachable, and stops asking 
 test('is drawn again once the backend answers, the outage having left the page live', async ({
   page,
 }) => {
-  // The tier's own recovery case (../../../tests/render/backend-unreachable.spec.ts) reads a stub
-  // module, which holds no element of its own across the transition. This one reads the real module,
-  // because what the outage tears down here is the measured grid: the width effect outlives the
-  // `{#if reachable}` block that owns the element, and Svelte writes `null` back through `bind:this`
-  // as that block goes. An effect that throws on it takes the whole page's rendering with it — the
-  // display then holds the outage report with the backend answering behind it, for as long as it
-  // runs, while every timer on the page goes on firing into a screen nothing reaches.
-  //
-  // Staged over one page rather than a load that is already unreachable: a page that never drew the
-  // grid never tears one down, which is the tier's blind spot rather than a second case.
+  // The real module: its width effect outlives the `{#if reachable}` grid and sees `bind:this`
+  // write `null` as the outage tears it down
+  // (SRS070<!-- The display comes back on its own when the backend does -->).
   const thrown: string[] = [];
   page.on('pageerror', (error) => thrown.push(String(error)));
 
@@ -1780,41 +1515,23 @@ test('is drawn again once the backend answers, the outage having left the page l
   });
   await expect(page.locator(MODULE)).toHaveCount(0);
 
-  // Stood down rather than faulted, read while the outage is up. The defect this case exists for
-  // throws during exactly this teardown, and once a boundary is catching it the throw is no longer
-  // visible at the page at all — the marker is, and only for as long as the fault lasts, so it is read
-  // here rather than only after the recovery has cleared it.
+  // Read during the outage: the marker exists only while the fault lasts.
   await expect(page.locator(MODULE_FAULTED)).toHaveCount(0);
 
   await serveLiveness(page, 'ok');
 
-  // Two intervals, the ask that reaches the restored backend being the next one after the answer
-  // changes. The card, not the module box alone: a page still rendering draws the grid it measured.
   await expect(page.locator(CARD)).toHaveCount(1, { timeout: 2 * LIVENESS_INTERVAL_MS });
   await expect(page.locator('[data-backend-unreachable]')).toHaveCount(0);
 
-  // What it drew, read on the far side of the transition: the park's own header and its ride, the
-  // things the measured grid holds. The count above is a module that came back; these are a module
-  // that came back with its content, which is what the effect that threw was measuring.
   await expect(page.locator(`${CARD} ${HEADER}`)).toHaveCount(1);
   await expect(page.locator(`${CARD} ${RIDE_NAME_COLUMN}`)).toHaveText(['Space Mountain']);
 
-  // Read last, and separately: the recovery above is the symptom, and this is the cause. Both spellings
-  // of it, because the fix for this defect is a boundary at the module's mount point
-  // (../../../tests/render/fault-containment.spec.ts), and a boundary is exactly what stops a throw
-  // reaching the page as an uncaught error — so once one is there, the absence below is satisfied
-  // whether this module threw or not, and the marker is what tells the two apart. A module that
-  // recovers while having thrown is one that was lucky about ordering.
+  // Both: a boundary swallows the throw, so only the marker tells a caught throw from none.
   await expect(page.locator(MODULE_FAULTED)).toHaveCount(0);
   expect(thrown, 'the outage raised no uncaught error').toEqual([]);
 });
 
 test('stops the marquee’s frame loop when the placement is torn down', async ({ page }) => {
-  // The placement's marquee clock runs one `requestAnimationFrame` loop for as long as any column is
-  // registered with it (marquee-clock.ts). Nothing on a torn-down page can drop a column left behind
-  // in it — the row that would is gone — so a teardown that does not unregister its own columns
-  // leaves that loop running for the life of the document: a frame callback every frame, forever, on
-  // a display that runs for weeks (SRS021<!-- Frontend runs on a Pi Zero-class browser host -->).
   await holdHostClock(page, HOST_TIME);
   await serveModuleData(page, () => ({
     status: 200,
@@ -1826,9 +1543,6 @@ test('stops the marquee’s frame loop when the placement is torn down', async (
   await expect(column).toHaveText(OVERFLOWING_RIDE_NAME);
   await page.clock.runFor(MEASURE_FRAME_MS);
 
-  // The precondition, read rather than assumed: this column is registered, so there is a running
-  // loop for the teardown to leave behind. Torn down before the measurement fires, nothing would be
-  // registered and the case would pass whether or not a teardown drops anything.
   await expect(
     column.locator('.ride-name-text'),
     'the column is registered with the clock, so its loop is running',

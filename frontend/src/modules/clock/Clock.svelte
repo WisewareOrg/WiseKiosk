@@ -5,29 +5,22 @@
   import type { CommonProps } from '../../lib/modules';
   import { partValue } from './parts';
 
-  // No `reachable` prop is declared: the module fetches nothing, so an outage takes nothing from it
-  // (docs/contracts/module-contract.md § An unavailable module and an unreachable backend are
-  // different states). Svelte drops the prop the frame forwards to every module alike.
+  // No `reachable` prop: a local module (docs/contracts/module-contract.md § An unavailable module
+  // and an unreachable backend are different states).
   const { config }: CommonProps = $props();
 
-  // Narrowed to the concrete options type — safe because config validation already ran by the
-  // time this does (ADR 0007 rev 2), same basis as modules.ts's `read` cast. `$derived` keeps the
-  // cast reactive to `config`.
+  // Safe once config validation has run (ADR 0007 rev 2).
   const clockConfig = $derived(config as ClockOptions);
 
-  // Read as given: the validator writes each key's schema default into the configuration, so an
-  // absent key arrives already at its default rather than being defaulted a second time here.
+  // The validator writes schema defaults, so no key arrives absent.
   const twentyFourHour = $derived(clockConfig.twenty_four_hour);
   const showSeconds = $derived(clockConfig.show_seconds);
   const showDate = $derived(clockConfig.show_date);
 
-  // The host clock is re-read every second, so the shown time stays current to the second whether or
-  // not seconds are drawn. A cadence, not a phase: the reading trails the host by wherever in the
-  // second the page mounted, and each reading takes the host's value afresh, so nothing accumulates.
   const READ_INTERVAL_MS = 1000;
 
-  // Seconds are written to the node directly, off the reactive graph (meta-wisekiosk #100
-  // gpu-compositing); minute and day go through `$state`. `bind:this` writes `null` on teardown.
+  // Seconds off the reactive graph (./README.md § The reading — time and date as peers).
+  // `bind:this` writes `null` on teardown.
   let secondsEl: HTMLElement | null | undefined = $state();
   let minuteDate = $state(new Date());
   let dayDate = $state(new Date());
@@ -114,8 +107,6 @@
     display: flex;
     align-items: center;
     gap: var(--space-lg);
-    /* The region holds its track and the content leaves it, which is the frame's rule rather than
-       something this module decides for itself. */
     min-width: 0;
   }
 
@@ -132,7 +123,7 @@
     line-height: 1;
   }
 
-  /* Seconds above the meridiem, stretched to the time's own height (./README.md § The reading). */
+  /* ./README.md § The reading — time and date as peers */
   .annotations {
     display: flex;
     flex-direction: column;
@@ -147,8 +138,7 @@
     line-height: 1;
   }
 
-  /* Fixed-width slot with the reading out of flow under size containment: a relayout boundary
-     for the once-a-second text. */
+  /* Relayout boundary (./README.md § The reading — time and date as peers). */
   .seconds-slot {
     position: relative;
   }
@@ -171,15 +161,12 @@
     contain: size layout;
   }
 
-  /* Pinned to the bottom by its own margin rather than by `justify-content: space-between` on the
-     parent, so the meridiem still sits low when it is the annotations column's only child (seconds
-     off, twelve-hour form) rather than reverting to the column's top. */
+  /* A margin, not `space-between`, so a lone meridiem still sits low. */
   .meridiem {
     margin-top: auto;
   }
 
-  /* The dim divider between time and date (./README.md § Grouping), rendered only alongside the
-     date it separates. */
+  /* ./README.md § Grouping, and coherence with the rest of the display */
   .rule {
     align-self: stretch;
     width: var(--divider-stroke-width);
@@ -192,11 +179,8 @@
     gap: var(--space-sm);
   }
 
-  /* Two lines, never more: `.clock`'s own `min-width: 0` is the one place this module lets its box
-     shrink to its track (../README.md's composition is two date lines, not three from a wrapped
-     one); `nowrap` keeps each line unbreakable so a region too narrow for it is exceeded rather than
-     folded onto a further line, the same overflow the frame itself leaves to the content
-     (../../../lib/RegionFrame.svelte's `.region`, no clipping rule of its own). */
+  /* Never wrapped: a region too narrow is exceeded, not folded (../../lib/RegionFrame.svelte's
+     `.region`). */
   .weekday,
   .full-date {
     margin: 0;

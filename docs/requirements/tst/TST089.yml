@@ -34,14 +34,14 @@ references:
 - keyword: test('goes on reporting the outage it is in, and stops reporting it on
     recovery'
   path: frontend/tests/render/fault-containment.spec.ts
-  sha: 33ffe20f6b8d2373e67b7ff98fab6ddc7f5a506d13a644e23ee2074f532c4c9d
+  sha: a3422659b1e16032a878c3be87a35a099e153f01865e9ec27bfb79dafee981a3
   type: file
 - keyword: test('draws the module again once the fault clears, and takes the marker
     away with it'
   path: frontend/tests/render/fault-containment.spec.ts
-  sha: 33ffe20f6b8d2373e67b7ff98fab6ddc7f5a506d13a644e23ee2074f532c4c9d
+  sha: a3422659b1e16032a878c3be87a35a099e153f01865e9ec27bfb79dafee981a3
   type: file
-reviewed: yzov-n1w7bUhCcVN2_g7plcPy26SyJe4v2xTaZ5ZGUc=
+reviewed: jtwU1EcKAmH-z663fP7GHYKDR3yOayrvcP_37N1n5U4=
 status: accepted
 text: |
   Render tests driving a display through an outage and out of it again on one loaded page - one with a

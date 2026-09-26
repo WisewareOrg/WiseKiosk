@@ -30,9 +30,9 @@ references:
 - keyword: test('advances two cards of different page counts on the same tick — neither
     moves early, and the shorter wraps home as the longer takes its last page'
   path: frontend/src/modules/park_wait_times/park_wait_times.spec.ts
-  sha: 48cb249126b82aac01643f18e2e49f43f2399a1dca9f6f8c308b4b65cca30817
+  sha: 7ee9318df3e98b3179e70dc3384252d2c86fca1c19a342539b3788fe9e9314a7
   type: file
-reviewed: 5UPXgfTancM0Y7uTG3LYIOOcreeI9JsyjHiKd-KvmDI=
+reviewed: -1jSsGlaYoIdldhufCv4oUUobYnKdiRtwWAeJX9Yk0c=
 status: accepted
 text: |
   A render test over a configuration placing two parks whose payloads give them different numbers of

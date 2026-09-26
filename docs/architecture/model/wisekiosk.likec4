@@ -1,16 +1,6 @@
-// WiseKiosk architecture model — C4 System Context (L1), Container (L2),
-// Component (L3) and Deployment, the last in ./deployment.likec4.
-//
-// Single source of truth for the diagrams in ../../ARCHITECTURE.md. Edit here, then
-// run `just arch-export` (ADR 0003 rev 4).
-//
-// A tag parses only as the first entry of an element or relationship body.
-//
-// A `link` path resolves against this directory, the workspace LikeC4 is given,
-// rather than against the file carrying it.
-//
-// The boundary, what earns an element a place at each level, and where a tag sits
-// are ADR 0019 rev 7's.
+// WiseKiosk architecture model (ADR 0019 rev 7). Edit here, then `just arch-export`
+// (ADR 0003 rev 4).
+// A tag parses only as the first entry of a body. A `link` path resolves against this directory.
 
 specification {
   element person {
@@ -22,14 +12,12 @@ specification {
   element container
   element component
 
-  // The three kinds ADR 0019 rev 7 names: hosts, the processes on them, and the
-  // files placed beside them.
+  // ADR 0019 rev 7
   deploymentNode host
   deploymentNode process
   deploymentNode artifact
 
-  // Each tag is a Doorstop identifier. Which item belongs on what, and at which
-  // tier, is ADR 0019 rev 7.
+  // Doorstop identifiers (ADR 0019 rev 7).
   tag SYS001
   tag SYS002
   tag SYS003
@@ -124,8 +112,7 @@ model {
       deploys: the published container image and what it serves.
     '''
 
-    // Why an obligation over every output this container produces binds here, and
-    // not on one of the edges carrying them, is ADR 0019 rev 7.
+    // ADR 0019 rev 7
     backend = container 'Backend' {
       #SYS004
       #SYS006
@@ -430,9 +417,6 @@ model {
     }
   }
 
-  // The first external system in the model. An upstream is drawn once the module
-  // reading it has a need in the tree (ADR 0019 rev 7), and the weather module's
-  // has landed.
   openMeteo = system 'Open-Meteo' {
     description '''
       The weather service the weather module reads. Run by somebody else and

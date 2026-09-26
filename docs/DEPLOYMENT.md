@@ -62,6 +62,9 @@ served a configuration at all. Nothing else is edited and `up` is given no argum
 reference, the port and the mount are all the recipe's. #138 bring-up check is what runs this sequence
 against a clean host and fails on a step that does not.
 
+`config.json` is the installation's own and carries its coordinates, so it is never committed: a
+checkout ignores `deploy/config.json`, and `config.example.json` is the tracked shape.
+
 **The image reference is a movable tag.** The recipe names `ghcr.io/tjwise99/wisekiosk:latest`, which
 tracks the newest release ([`CI.md`](CI.md) § *Publishing and provenance*), so `up` against a
 re-pulled tag brings up the newest published image; an operator wanting a fixed one pins a digest in

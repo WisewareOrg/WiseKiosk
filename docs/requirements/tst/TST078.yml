@@ -11,9 +11,9 @@ references:
 - keyword: 'test(''TST078: draws a ride’s wait as the mark its own payload names,
     not the page’s clock or the park’s hours'', async ({'
   path: frontend/src/modules/park_wait_times/park_wait_times.spec.ts
-  sha: 48cb249126b82aac01643f18e2e49f43f2399a1dca9f6f8c308b4b65cca30817
+  sha: 7ee9318df3e98b3179e70dc3384252d2c86fca1c19a342539b3788fe9e9314a7
   type: file
-reviewed: oj_UgVDE5VSkmS0HpWL80Q9r9DLIhAbCAOfMF7EOXAE=
+reviewed: TVwk-05LtsMxhiSVpkn0FSxD_3QsfrpJe_hIgYS5Rs0=
 status: accepted
 text: |
   Render test that, handed one park whose own hours say it is open at the clock's held moment, a ride

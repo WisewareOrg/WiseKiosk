@@ -24,14 +24,14 @@ ref: ''
 references:
 - keyword: test('says so where a module that threw stood, and nowhere else'
   path: frontend/tests/render/fault-containment.spec.ts
-  sha: 33ffe20f6b8d2373e67b7ff98fab6ddc7f5a506d13a644e23ee2074f532c4c9d
+  sha: a3422659b1e16032a878c3be87a35a099e153f01865e9ec27bfb79dafee981a3
   type: file
 - keyword: test('leaves every other module rendering, including one sharing the faulting
     region'
   path: frontend/tests/render/fault-containment.spec.ts
-  sha: 33ffe20f6b8d2373e67b7ff98fab6ddc7f5a506d13a644e23ee2074f532c4c9d
+  sha: a3422659b1e16032a878c3be87a35a099e153f01865e9ec27bfb79dafee981a3
   type: file
-reviewed: Sd_yPC43MXLb5U7WXXuXTSvpgjImw69hAykfQ8odK9I=
+reviewed: i0phwCY_Bi1h-VEOEif7HzvqFC4JHio9CRAqbH45RbU=
 status: accepted
 text: |
   Render test staging a module that fails while rendering on a display that was whole, with a module
