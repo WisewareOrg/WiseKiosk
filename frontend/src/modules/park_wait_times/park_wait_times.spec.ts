@@ -1161,7 +1161,7 @@ test('leaves a ride name that already fits its own column unregistered, while an
   page,
 }) => {
   // A long park name widens the column enough for `fittingName` to fit. The overflowing row is the
-  // control: its `.marquee` proves the measurement frame has run.
+  // control: its `[data-marquee]` proves the measurement frame has run.
   const fittingName = 'Test Track';
   await serveModuleData(page, () => ({
     status: 200,
@@ -1185,11 +1185,11 @@ test('leaves a ride name that already fits its own column unregistered, while an
   await expect(
     overflowingRow.locator('.ride-name-text'),
     'the overflowing name is registered with the marquee clock',
-  ).toHaveClass(/marquee/);
+  ).toHaveAttribute('data-marquee');
   await expect(
     fittingRow.locator('.ride-name-text'),
     'a name that already fits its column is not',
-  ).not.toHaveClass(/marquee/);
+  ).not.toHaveAttribute('data-marquee');
 
   const overflowOf = (locator: typeof columns) => locator.evaluate((el) => el.scrollWidth - el.clientWidth);
   expect(await overflowOf(overflowingRow), 'the long name really does overflow its own column').toBeGreaterThan(0);
@@ -1199,8 +1199,9 @@ test('leaves a ride name that already fits its own column unregistered, while an
 test('re-measures the marquee after a poll refresh reorders rows in place, not just at mount', async ({
   page,
 }) => {
-  // Index-keyed rows persist across a reorder, so `update` must re-measure. `.marquee` is the probe:
-  // a column with nothing left to scroll reads `scrollLeft` 0 whether or not it is still registered.
+  // Index-keyed rows persist across a reorder, so `update` must re-measure. `[data-marquee]` is the
+  // probe: a column with nothing left to scroll reads `scrollLeft` 0 whether or not it is still
+  // registered.
   const SHORT = 'A';
   const LONG = OVERFLOWING_RIDE_NAME;
 
@@ -1243,7 +1244,7 @@ test('re-measures the marquee after a poll refresh reorders rows in place, not j
         columns.evaluateAll((els) =>
           els.every((el) => {
             const overflows = el.scrollWidth > el.clientWidth;
-            return el.querySelector('.ride-name-text')?.classList.contains('marquee') === overflows;
+            return el.querySelector('.ride-name-text')?.hasAttribute('data-marquee') === overflows;
           }),
         ),
       { message: 'each ride name is registered iff its own column overflows, after the reorder' },
@@ -1546,7 +1547,7 @@ test('stops the marquee’s frame loop when the placement is torn down', async (
   await expect(
     column.locator('.ride-name-text'),
     'the column is registered with the clock, so its loop is running',
-  ).toHaveClass(/marquee/);
+  ).toHaveAttribute('data-marquee');
 
   // Counted from here, so what is measured is the frames the page asks for *after* it is torn down.
   await page.evaluate(() => {

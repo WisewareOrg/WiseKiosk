@@ -57,11 +57,11 @@
         const distance = column.scrollWidth - column.clientWidth;
         if (distance <= 0) {
           unregisterMarquee(column);
-          node.classList.remove('marquee');
+          node.removeAttribute('data-marquee');
           return;
         }
         registerMarquee(column, distance);
-        node.classList.add('marquee');
+        node.setAttribute('data-marquee', '');
       });
     }
 
