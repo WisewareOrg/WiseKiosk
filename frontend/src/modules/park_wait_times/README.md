@@ -232,4 +232,7 @@ Confirmed against a photograph of the deployed display, not a monitor (the desig
   `nCol` × `nRows` for the placed region is set (a denser grid draws smaller cards);
 - the marquee's scroll speed and hold timing read comfortably at the deployed viewing distance, and
   whether a name long enough to be cut short by the rotation interval is a real loss at the deployed
-  geometry.
+  geometry;
+- whether the eight-second floor's reach still covers the longest ride name after a roster or grid
+  change — the floor was measured against one configured roster at one card width, and nothing
+  re-checks it.
