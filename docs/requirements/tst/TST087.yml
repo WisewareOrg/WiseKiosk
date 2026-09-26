@@ -16,9 +16,9 @@ references:
 - keyword: test('renders each unavailable park’s own message verbatim, transient or
     permanent — the card never branches on the wording', async ({
   path: frontend/src/modules/park_wait_times/park_wait_times.spec.ts
-  sha: e67164d489d6c5513f2c6601f15956ac903c25b27c0e584adef8d18094e44164
+  sha: e908784a8e2c6e5be8eec8dd37e3f3bb20f9d5a8464643f89103223639279876
   type: file
-reviewed: 1jPojcEdVZFEpkAYMaSmTGC_JagKpjMDV4t9YZoJ1Uw=
+reviewed: PTSi1U1Cc1C7PQZAx9EFWG3A1zeogrAQDb9wcJWm79w=
 status: accepted
 text: |
   Two checks. A unit test that serves a request naming two configured parks, one whose upstream call

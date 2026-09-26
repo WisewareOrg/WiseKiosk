@@ -23,8 +23,8 @@ let cycleStartMs = 0;
 
 /**
  * One frame: hold home, scroll at `MARQUEE_PX_PER_S`, hold at the end, then home until
- * `startMarqueeCycle`. A name needing more than
- * `MARQUEE_PX_PER_S × (rotation_interval_seconds - HOLD_HOME_S - HOLD_END_S)` is cut short.
+ * `startMarqueeCycle`. Reach, the distance travelled before the rotation tick, is
+ * `(rotation_interval_seconds - HOLD_HOME_S) × MARQUEE_PX_PER_S`; a longer name is cut short.
  */
 function step(nowMs: number): void {
   // Floored at zero: a cycle reset timestamped inside an interval callback can sit later than the

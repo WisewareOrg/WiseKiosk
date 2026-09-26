@@ -1334,6 +1334,11 @@ test('restarts every scroll on the rotation tick the cards flip on, rather than 
   };
   const scrollLeft = () => column.evaluate((el) => el.scrollLeft);
   const tickMs = ROTATION_S * 1000;
+  const distance = await column.evaluate((el) => el.scrollWidth - el.clientWidth);
+  expect(
+    HOLD_HOME_S + distance / MARQUEE_PX_PER_S,
+    'the name is still scrolling, not held at its end, when the tick lands',
+  ).toBeGreaterThan(ROTATION_S);
 
   await driveTo(tickMs - 200);
   await expect(segments.nth(0), 'the tour has not advanced yet').toHaveClass(/filled/);

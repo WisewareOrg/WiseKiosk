@@ -117,9 +117,11 @@ loop per row, so the motion costs a single callback whatever the roster size.
 The scroll runs **once per rotation tick**, not on a loop of its own: the tick that turns the cards'
 pages is the tick that returns every column home and starts it moving again, so a page turn and a
 name restarting are one event on one clock rather than two cadences drifting apart. A name needing
-more travel than a single interval allows is cut short by that reset rather than scrolling faster to
-fit — at the schema's default interval, the reach the formula in `marquee-clock.ts` gives is well
-above the width these rows draw at, but a long enough name is read in part rather than in full.
+more travel than its reach — `(rotation_interval_seconds − HOLD_HOME_S) × MARQUEE_PX_PER_S`, the
+distance travelled before the rotation tick (`marquee-clock.ts`) — is cut short by that reset rather
+than scrolling faster to fit. At the schema's eight-second floor the reach covers the longest
+configured-park ride name measured at the deployed viewport, but a long enough name is read in part
+rather than in full.
 
 ## Type and spacing
 
