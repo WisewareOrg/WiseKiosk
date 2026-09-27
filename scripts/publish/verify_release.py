@@ -50,7 +50,7 @@ SCHEMA_PATH = Path(__file__).resolve().parent / "spdx-schema-2.3.json"
 # Pinned separately from the syft/cosign action inputs because this invocation lives in Python
 # rather than in publish.yml; the Renovate customManagers entry for it points at this file and
 # matches this literal spec string.
-CHECK_JSONSCHEMA_PIN = "check-jsonschema==0.38.0"
+CHECK_JSONSCHEMA_PIN = "check-jsonschema==0.38.2"
 
 IDENTITY_REGEXP = r"^https://github\.com/tjwise99/WiseKiosk/\.github/workflows/publish\.yml@refs/tags/v"
 OIDC_ISSUER = "https://token.actions.githubusercontent.com"
