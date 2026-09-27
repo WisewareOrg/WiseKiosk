@@ -1,0 +1,48 @@
+active: true
+derived: false
+header: |
+  An overflowing ride name is revealed, and a still one stays still
+level: 112
+links:
+- SRS071: FnH-ftZqUa0MJ_iRWXFV4ky-APVRbSaB_3Trk1q4B88=
+normative: true
+rationale: |
+  Two cases because the parent has two clauses and each is passed by a module that fails the other.
+  A module that moves every name alike passes the reveal and fails the name that already fits; a module
+  that moves nothing passes the name that already fits and fails the reveal.
+  Each case checks its own fixture first - that the name really does overflow the column it is in -
+  because a column with nothing to reveal does not move either, and the two are the same reading. The
+  fitting case goes further and puts an overflowing name on the same card, so a card where nothing at
+  all is moving cannot be read as a name correctly left alone.
+  The clock is driven rather than waited on, so what the cases read is where the name is at an instant
+  they choose; none of them asserts how long the module takes to get there, which the parent does not
+  oblige.
+ref: ''
+references:
+- keyword: test('scrolls a ride name too wide for its own column — held home, one
+    constant-speed pass to the end, then home until the next tick'
+  path: frontend/src/modules/park_wait_times/park_wait_times.spec.ts
+  sha: 47cc00b211005aa3bb51fede5a0c05991f91f41da56a31cdc81cd0db0481ea52
+  type: file
+- keyword: test('leaves a ride name that already fits its own column unregistered,
+    while an overflowing name on the same card scrolls'
+  path: frontend/src/modules/park_wait_times/park_wait_times.spec.ts
+  sha: 47cc00b211005aa3bb51fede5a0c05991f91f41da56a31cdc81cd0db0481ea52
+  type: file
+reviewed: yVXtdOLBU-HaY8yRbsIaofaZEp1QmEP0GUdnXK1LCtQ=
+status: accepted
+text: |
+  Render tests over a fixture carrying a ride name that overflows the column it is drawn in, asserting
+  under a driven clock that the name leaves its start, reaches the end of what the column does not show
+  and returns there; and that a name the column already holds, drawn on the same card as an
+  overflowing one, never leaves its start.
+verification-justification: |
+  Settles that an overflowing ride name is brought into view by moving through its column and that a
+  name needing no reveal is left alone - each read off the column's own offset rather than off a marker
+  the module sets, so a module that records the decision and then does the opposite is caught.
+  Leaves unproven that a viewer reads the whole of a long name: the reveal is bounded by one pass, and
+  a name longer than a pass covers is read in part, which is intended and asserted nowhere. Leaves
+  unproven anything about pace or the waits at either end, which the parent does not oblige. And it is
+  bounded by the names the fixtures carry and the viewports the tier renders at - a name that first
+  fails to be revealed at a viewport nothing samples passes.
+verification-method: test

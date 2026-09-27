@@ -1,0 +1,51 @@
+active: true
+derived: false
+header: |
+  A module's failure is contained to that module
+level: 110
+links:
+- SRS069: 2uue1XX1wNcv1k0etxyA81-GRuFlvkqneSenDgG2eUE=
+normative: true
+rationale: |
+  Read against a stub written to fail rather than against a module, because what the framework owes is
+  owed whichever module failed: a check staged on the module that last carried the defect would be
+  discharged by that module's own fix rather than by containment existing at all.
+  Two neighbours are on the display and not one, because the parent's containment clause names two
+  different ones - a module elsewhere on the display, and a module sharing the faulting module's own
+  region. A boundary drawn around the region rather than around the placement passes the first and
+  fails the second.
+  The surviving neighbour that carries the evidence is one whose reading moves on its own, and the
+  reading is taken across a change it cannot fake. A page whose rendering has stopped holds every
+  element it last drew, so presence, counts and visibility are all satisfied by the exact failure this
+  item exists to catch; only something that has to be drawn again to change tells the two apart.
+  The absence of an escaped error is read after the report rather than before it: an absence is also
+  what a stub that never failed would show, and the report is what says one did.
+ref: ''
+references:
+- keyword: test('says so where a module that threw stood, and nowhere else'
+  path: frontend/tests/render/fault-containment.spec.ts
+  sha: a3422659b1e16032a878c3be87a35a099e153f01865e9ec27bfb79dafee981a3
+  type: file
+- keyword: test('leaves every other module rendering, including one sharing the faulting
+    region'
+  path: frontend/tests/render/fault-containment.spec.ts
+  sha: a3422659b1e16032a878c3be87a35a099e153f01865e9ec27bfb79dafee981a3
+  type: file
+reviewed: i0phwCY_Bi1h-VEOEif7HzvqFC4JHio9CRAqbH45RbU=
+status: accepted
+text: |
+  Render test staging a module that fails while rendering on a display that was whole, with a module
+  sharing its region and a module elsewhere whose reading advances on its own, asserting that the page
+  carries one report of the failure, in the faulting module's place and nowhere else; that the report
+  carries text; that the faulting module is no longer drawn; that both neighbours are still drawn and
+  the advancing one is still advancing across a change it cannot hold; and that no error escaped to the
+  page.
+verification-justification: |
+  Settles that a module failing mid-render is caught where the module is mounted rather than at the
+  page, that the display says so in that module's place alone, and that every other module - including
+  one sharing the faulting module's region - goes on rendering.
+  Leaves unproven the wording of the report, which is asserted non-empty and not judged; every manner
+  of failing but the one staged, and every point in a module's life but the one it is raised at; and
+  every module but the stub the tier supplies, the obligation quantifying over all of them while this
+  reads one written for the purpose.
+verification-method: test

@@ -331,7 +331,7 @@ describe('the configuration validator', () => {
     expect(zeroRows.faults).toContainEqual({ where: '/modules/0/options/rows', what: 'must be >= 1' });
   });
 
-  it('rejects a park-wait-times rotation interval below the two-second floor', () => {
+  it('rejects a park-wait-times rotation interval below the eight-second floor', () => {
     const result = validateConfiguration({
       modules: [
         {
@@ -348,7 +348,7 @@ describe('the configuration validator', () => {
     }
     expect(result.faults).toContainEqual({
       where: '/modules/0/options/rotation_interval_seconds',
-      what: 'must be >= 2',
+      what: 'must be >= 8',
     });
   });
 

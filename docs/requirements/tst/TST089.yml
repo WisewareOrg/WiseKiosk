@@ -1,0 +1,62 @@
+active: true
+derived: false
+header: |
+  The display recovers when the backend answers again
+level: 111
+links:
+- SRS070: 3sth-H1jcQn8KXFLG6py87HV0FW17RvM13cX5L69W9s=
+normative: true
+rationale: |
+  Three readings rather than one, because the parent names two things the display takes down and one it
+  puts back: the outage report, the report standing where a module stopped drawing, and the module
+  itself. A display that withdrew the outage report and left a module dark would pass a check reading
+  only the first.
+  Every reading is taken on the page the failure was raised on. Nothing reloads and nothing asks the
+  page to retry, which is the whole of the unattended clause - a fresh load recovers trivially and
+  settles nothing, and a display on a wall has nobody to give it one.
+  The faulting case is staged over a page that was live rather than one loaded already in the failure,
+  because the failure this parent was written against is raised by the teardown the transition does,
+  and a page that never drew the element never tears one down. That gap is what let a display hold an
+  outage report for fifty-two minutes with the backend answering behind it while the tier's own
+  recovery case stayed green.
+  That the page is still rendering while it recovers is read off a module whose content advances on its
+  own, presence being worth nothing on a page whose rendering has stopped.
+ref: ''
+references:
+- keyword: test('clears the state on its own once the backend answers again'
+  path: frontend/tests/render/backend-unreachable.spec.ts
+  sha: 9d0b12bd6f9dc82b8ad7711c775b05a8c619b55a647a6ac2ecdce51a7d25d684
+  type: file
+- keyword: test('draws a stood-down module again once the backend answers'
+  path: frontend/tests/render/backend-unreachable.spec.ts
+  sha: 9d0b12bd6f9dc82b8ad7711c775b05a8c619b55a647a6ac2ecdce51a7d25d684
+  type: file
+- keyword: test('goes on reporting the outage it is in, and stops reporting it on
+    recovery'
+  path: frontend/tests/render/fault-containment.spec.ts
+  sha: a3422659b1e16032a878c3be87a35a099e153f01865e9ec27bfb79dafee981a3
+  type: file
+- keyword: test('draws the module again once the fault clears, and takes the marker
+    away with it'
+  path: frontend/tests/render/fault-containment.spec.ts
+  sha: a3422659b1e16032a878c3be87a35a099e153f01865e9ec27bfb79dafee981a3
+  type: file
+reviewed: jtwU1EcKAmH-z663fP7GHYKDR3yOayrvcP_37N1n5U4=
+status: accepted
+text: |
+  Render tests driving a display through an outage and out of it again on one loaded page - one with a
+  module standing down behind the page's outage report, one with a module that failed while rendering -
+  asserting that once the backend answers the outage report is gone, the report standing where the
+  failed module was is gone, and each module is drawn again with its own content, with nothing
+  reloading the page and nothing asking it to retry.
+verification-justification: |
+  Settles that the outage report is withdrawn, that a module stood down by the outage is drawn again,
+  and that a module held behind a report of its having stopped is drawn again with that report taken
+  away - each on the page the failure was raised on, with nothing reloading it and nothing asking it to
+  retry.
+  Leaves unproven any recovery not driven by the backend answering again: a failure whose cause is not
+  a reachability change is not obliged to clear here and does not. Leaves unproven how long recovery
+  takes, the parent obliging no bound. One manner of outage is staged, so this is evidence that the
+  display can change what it says on the far side of one rather than proof that no manner of outage
+  strands it. And every module but the ones these cases drive is unasserted.
+verification-method: test

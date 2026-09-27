@@ -1,0 +1,58 @@
+active: true
+derived: false
+header: |
+  Cards of unequal page counts turn their pages on the one tick
+level: 113
+links:
+- SRS072: NaW5tl0FB7Ctx0d7J5fBT-x8TFpVVNIt1STESFdvvFQ=
+normative: true
+rationale: |
+  Two properties are read, and the fixture's unequal page counts serve both.
+  Each card's marked position is read a step short of its tick as well as across it. That pairing is
+  what bounds the two advances into the one window, rather than establishing only that both had moved
+  by the time an interval had passed: a card running a fraction of an interval out of phase has already
+  advanced at the earlier reading and fails there. Staged at a half-interval offset, it does.
+  The second reading is taken across the tick on which the shorter tour wraps home while the longer
+  takes its last page. That is where the two cards must show different positions while still changing
+  at the one moment, which separates a position derived from the shared count modulo each card's own
+  page total from one that saturates at its last page. Staged as that saturating derivation, it fails.
+  The unequal counts are also the fixture's own self-check: the segment counts are asserted before
+  anything is driven, so a pair agreeing below is not one tour drawn twice.
+  What the shape cannot reach is recorded here because it is not visible from the assertions. Under a
+  driven clock this case cannot tell one interval shared across the cards from an interval per card
+  created in the same flush - driven time advances every pending timer at once, so identically
+  configured per-card timers reproduce these readings exactly, and staged that way the case passes.
+  Timer identity is not observable here; phase is. What a per-card implementation costs is drift
+  accumulated against real time, which this tier does not model.
+ref: ''
+references:
+- keyword: test('advances two cards of different page counts on the same tick — neither
+    moves early, and the shorter wraps home as the longer takes its last page'
+  path: frontend/src/modules/park_wait_times/park_wait_times.spec.ts
+  sha: 47cc00b211005aa3bb51fede5a0c05991f91f41da56a31cdc81cd0db0481ea52
+  type: file
+reviewed: W4pQn4eHCu1s-M1t_1mnwuVqA8b0gU2Et2lR8mjHBDg=
+status: accepted
+text: |
+  A render test over a configuration placing two parks whose payloads give them different numbers of
+  pages to tour, asserting under a driven clock that neither card's marked position has moved a step
+  short of the interval and that both have moved across it, so each advance is pinned to the tick
+  rather than to some moment inside the interval; and reading the pair the same way across the later
+  tick on which the shorter tour returns to its first page while the longer takes its last.
+verification-justification: |
+  Settles that the cards agree on the moment they turn, read off each card's own marked position rather
+  than off a count the module exposes, and bounds both advances into the window between the reading a
+  step short of the interval and the reading across it - so a card out of phase by an appreciable
+  fraction of an interval is caught, which was staged rather than assumed. Settles too that each card's
+  position is derived from the shared count modulo its own page total, the wrapping tick distinguishing
+  that from a position held at its last page, also staged.
+  Leaves unproven that the module keeps one interval rather than one per card. Driven time advances
+  every pending timer at once, so per-card timers created in the same flush produce these same
+  readings, and staged that way the case passes. What separates them is drift accumulated against real
+  time, which this tier does not model - so the parent's obligation could be breached slowly, over the
+  hours a display stays up, with this check still green. The parent obliges agreement rather than a
+  single timer, so this is a limit of the evidence rather than a clause going unread.
+  Leaves unproven any agreement closer than that window, the parent obliging no margin. And it is
+  bounded by the two-park roster, the page counts the fixture carries and the number of turns it
+  drives, so a drift appearing only after more turns, or at a card count nothing samples, passes.
+verification-method: test

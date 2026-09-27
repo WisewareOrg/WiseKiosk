@@ -15,25 +15,42 @@ rationale: |
   discharged by items that each read one instance, and this one's scope is the clock alone.
   Advancing is asserted rather than presence alone, because a clock frozen at the moment the backend
   went away is the failure that would otherwise read as survival.
+
+  Three things about how the outage is staged, each of which the item was blind to before and each of
+  which is a way the clock stops without this reading it.
+  The outage is driven onto a page that was live rather than served to a page already in one, because
+  what the transition does is tear the upstream-backed modules down, and a page that never drew them
+  never tears one down. A sibling that fails while rendering is on the display for the same reason:
+  what the clock owes an outage is nothing, and what it owes a neighbour that broke in one is also
+  nothing, and a display carrying only the clock has nothing on it that could take the clock with it.
+  Between them those two gaps let a shipped display hold a frozen clock for fifty-two minutes while
+  this item stayed green.
+  And the clock is advanced past a whole minute rather than by seconds alone. The seconds are written
+  straight to their own node, off the reactive graph, so they go on moving on a page whose rendering has
+  stopped and cannot tell a live display from a dead one; the minute is the reading that can.
 ref: ''
 references:
 - keyword: 'test(''TST055: goes on showing an advancing time while the backend is
     unreachable'', async ({'
   path: frontend/src/modules/clock/clock.spec.ts
-  sha: e3014597b1bfc6b23b1a9ba9048c156ae678a44d98b87082c36dec62e618f5bf
+  sha: 54117c34b8a35eec74c44b6537ae96ba0f37bd88edf518b9cb846eddd29b2363
   type: file
-reviewed: dasS1IKb-6CevabYFjE_nCOxODEraWQWUW3NcxguF-4=
+reviewed: Qbxtp7DDR7X4kB7f3whGQQIl_dVKb_8lCTBbUS3V7FA=
 status: proposed
 text: |
-  Render test loading the page with the backend staged unreachable and asserting the clock's region
-  still carries a time, that it is the held host clock's, and that it still moves as that clock
-  advances - with the clock's own content in place and no state of its own where the time was.
+  Render test driving one loaded page from a serving backend into an outage, with a module that fails
+  while rendering placed beside the clock, asserting that the clock's region still carries a time, that
+  it is the held host clock's, and that it goes on moving as that clock is advanced past a whole minute
+  - with the clock's own content in place and no state of its own where the time was.
 verification-justification: |
-  Settles that an unreachable backend takes neither the clock's content nor its advancing away, and
-  that the clock puts no state of its own where the time was.
+  Settles that neither an outage arriving under a live page nor a neighbour failing in it takes the
+  clock's content or its advancing away, and that the clock puts no state of its own where the time was.
+  Advancing past a whole minute is what makes that evidence: the reading that changes is one a page
+  whose rendering has stopped cannot produce.
   Leaves unproven the other ways a backend can be gone: one manner of failure is staged, so this is
   evidence that the clock does not depend on the backend rather than proof no manner of outage can
   disturb it. It also leaves unproven every module its parent obliges that is not the clock - the
   obligation quantifies over all of them and this reads one, so the parent's coverage is the union of
-  such items rather than this one alone. It asserts nothing about what the page says about the outage.
+  such items rather than this one alone. It asserts nothing about what the page says about the outage,
+  nor about what becomes of the neighbour that failed.
 verification-method: test

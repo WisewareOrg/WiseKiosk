@@ -1,0 +1,55 @@
+active: true
+derived: false
+header: |
+  The park-wait-times module brings the hidden part of a ride name into view
+level: 74
+links:
+- SYS011: a3bqZRtHE8ujrhIgBKFUtcxWGSCLRHsqU6GgDgwwR38=
+normative: true
+rationale: |
+  A wait a viewer cannot attach to a ride answers nothing, so knowing which ride is half of what
+  SYS011<!-- A viewer can know how long the ride waits are across the parks without looking
+  elsewhere --> asks for, and a name permanently cut off defeats it as completely as an absent wait
+  would. The module has no room to give the name instead: every card is one width, the grid's
+  (SRS060<!-- The park-wait-times module arranges its parks in a grid its configuration shapes -->), so
+  a name cannot widen its own card, and the alternatives that keep the card are a second line every
+  card must then reserve whether it needs one or not, or a name shown in part with no way to see the
+  rest. Moving the name is the one response that keeps the card, keeps the row, and still reaches the
+  end of the name.
+
+  It does not oblige the whole name to be read. The reveal runs once per turn of what the cards show,
+  so a name long enough to outlast one pass is read in part, which is the module's UI design spec's
+  record and is intended (owner, 2026-09-23). That ruling is what this item lands under:
+  SRS031's<!-- Content too large for its region overflows --> rationale carries an earlier ruling
+  against scrolling as an answer to content that does not fit, and it is a ruling about a **region** -
+  what the page does when a module is given less room than its content needs. A fixed card's name
+  column is not a region, and what happens inside a module's own composition is the module's. Both
+  hold at once.
+
+  The pace the name moves at, how long it waits at each end, and that every moving name on the
+  placement leaves and returns together are composition, and are the module's UI design spec's rather
+  than this item's. Reworded to another module the sentence names a different content that outgrows its
+  slot; abstracted, it reads that a module reveals what it cannot show at once, which a module with
+  nothing too large satisfies vacuously and is therefore not a framework universal - the same ground on
+  which SRS059's<!-- The park-wait-times module tours the remaining rides on an interval its
+  configuration sets --> rotation stayed this module's.
+ref: ''
+reviewed: w0Rfntd2WHYyaaQEZVtGcB7VdYvF7r4iy6orKswy6cM=
+status: accepted
+text: |
+  The park-wait-times module shall bring into view the part of a ride's name that the name's own column
+  cannot hold at once, by moving the name through that column; a name the column already holds shall
+  not move.
+verification-justification: |
+  Read from a rendered page under a driven clock, over a fixture whose name genuinely overflows its own
+  column - checked as part of the reading, so a column that never moves is a failure to reveal rather
+  than a column with nothing to reveal. Two readings: the overflowing name leaves its
+  start, reaches the end of what the column does not show, and returns; and a name that fits, on a card
+  beside it, never moves.
+  What it does not settle. That a viewer reads the whole of a long name: the reveal is bounded by how
+  long one pass runs, and a name longer than that pass covers is read in part, which is intended and is
+  asserted nowhere. How fast the name moves and how long it waits at either end, which this item does
+  not oblige and no check reads against any figure stated here. And it is bounded by the names the
+  suite supplies and the viewports it renders at, so a name that first fails to be revealed at a
+  viewport nothing samples passes.
+verification-method: test

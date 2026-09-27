@@ -1,0 +1,53 @@
+active: true
+derived: false
+header: |
+  The display comes back on its own when the backend does
+level: 73
+links:
+- SYS001: VGhozQiiHRgx8gA75WcFC3WXgp9KCc4dS_FDyA8tuGg=
+normative: true
+rationale: |
+  A failure state that outlives its failure degrades the display for longer than the failure requires,
+  which is the clause SYS001<!-- Failure is legible and proportionate --> states: once the failure has
+  ended, what it requires is nothing. It is also the point at which a legible report stops being one -
+  a display announcing an outage with the backend answering behind it is not reporting a failure, it is
+  asserting a false one.
+
+  Nothing obliged it before. SRS026<!-- The display says when the backend is gone --> obliges the
+  display to raise the report and SRS069<!-- A module that stops drawing says so in its own place -->
+  obliges it to say where a module stopped; a display that raised both and then held them for ever
+  satisfies the pair completely. So this sits beside them rather than under either, and the display is
+  only right when all three hold. A shipped display held an outage report, with every module standing
+  down behind it, for fifty-two minutes after the backend had come back.
+
+  The condition is the backend answering again, rather than a fault's own cause clearing, because
+  reachability is the one change in a module's conditions the framework observes (owner, 2026-09-23).
+  A fault raised by something the framework cannot see stands until reachability next changes, and this
+  item does not pretend otherwise. **No retry on a timer is obliged here and no interval is chosen**:
+  what an unattended display needs is recovery without a person, which is the clause below, not
+  recovery within a stated time. An interval would be a figure nobody has argued.
+
+  With nobody attending the display is the operative half. A wall display has no one to press a key, so
+  a fault that needs a reload to clear has only moved the outage from the whole display to one part of
+  it - and every assertion made about recovery would otherwise be satisfied by a display that recovers
+  because it was restarted.
+ref: ''
+reviewed: B27l6QUiGfzFgkSrpwt9PTQ07s202uycvm-LugOXniU=
+status: accepted
+text: |
+  Once the backend is reachable again, the display shall stop reporting the outage and shall draw again
+  a module it is holding behind a failure state, with nobody attending the display.
+verification-justification: |
+  Both halves are read on the page the failure was raised on, never on a fresh one, since what is in
+  question is whether that page can still change what it says: the outage report is gone once the
+  backend answers, and a module held behind a report of its having stopped is drawing again with the
+  report gone with it. Nothing reloads the page and nothing asks it to retry, which is what makes the
+  readings evidence of the unattended clause. That the page is still rendering while it does this is
+  read off a module whose content moves on its own, presence being worth nothing on a page whose
+  rendering has stopped.
+  What it does not settle. A fault whose cause is not a reachability change is not obliged to clear and
+  does not: what is proven is recovery across that one transition, staged once, in one manner. Nothing
+  bounds how long recovery takes, this item obliging none. And the modules an outage stood down are
+  read as drawing again for the ones a suite drives, the obligation quantifying over every module the
+  display is holding.
+verification-method: test

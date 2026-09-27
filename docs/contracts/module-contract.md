@@ -187,6 +187,13 @@ undeclared draws its own unavailable state beneath the page's outage report, and
 Svelte ignores a prop the component does not declare, and the render tier reads the stand-down
 against a module it supplies rather than against this one.
 
+A module still renders only these three states; the host's own `[data-module-faulted]` marker
+(`ModuleHost`'s per-module `<svelte:boundary>`) is not a fourth. It stands in the module's place when
+the module itself faults, is drawn by the host rather than reached by the module, and a fault raised
+while the backend is reachable holds until the backend next comes back from an outage
+(SRS069<!-- A module that stops drawing says so in its own place -->,
+SRS070<!-- The display comes back on its own when the backend does -->).
+
 ## Dependency direction
 
 Modules depend on the shared framework; the framework does not depend on a module. **The whole of

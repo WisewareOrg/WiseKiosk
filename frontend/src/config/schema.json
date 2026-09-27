@@ -175,9 +175,9 @@
         },
         "rotation_interval_seconds": {
           "title": "Rotation interval seconds",
-          "description": "Seconds each pair of \"more waits\" rides is shown before the rotation advances to the next pair (SRS059<!-- The park-wait-times module tours the remaining rides on an interval its configuration sets -->). Floored at two seconds, below which the rotation would strobe.",
+          "description": "Seconds each pair of \"more waits\" rides is shown before the rotation advances to the next pair (SRS059<!-- The park-wait-times module tours the remaining rides on an interval its configuration sets -->). Floored at eight seconds, the smallest whose marquee reach reveals the longest configured-park ride name measured at the deployed viewport before the rotation cuts it short (SRS071<!-- The park-wait-times module brings the hidden part of a ride name into view -->).",
           "type": "number",
-          "minimum": 2,
+          "minimum": 8,
           "default": 8
         },
         "use_default_blacklist": {

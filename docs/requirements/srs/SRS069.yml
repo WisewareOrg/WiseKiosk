@@ -1,0 +1,62 @@
+active: true
+derived: false
+header: |
+  A module that stops drawing says so in its own place
+level: 72
+links:
+- SYS001: VGhozQiiHRgx8gA75WcFC3WXgp9KCc4dS_FDyA8tuGg=
+normative: true
+rationale: |
+  SYS001's<!-- Failure is legible and proportionate --> two clauses reach a module whose own rendering
+  fails, and until this item nothing carried them there.
+  SRS001<!-- A failed module shows why, and only that module --> is scoped to a module's data request
+  failing - the backend answered something other than a reading - so a module that never got as far as
+  drawing falls outside it, and the widest breach of the parent the display can suffer had no item
+  forbidding it. It is the parent's own case rather than a new want: a module failing mid-render
+  degraded all of the display, which is the disproportion
+  SYS001<!-- Failure is legible and proportionate --> exists to forbid, and it left the display
+  illegible about it - every module held the frame it was last given and nothing said one had stopped.
+  SRS040<!-- A module that fetches nothing renders on through an outage --> was breached by the same
+  fault, a module that fetches nothing having stopped rendering for a reason that was not its own.
+
+  A failed reading and a module that has stopped drawing are different states, with different causes
+  and different remedies, so the display says which it is rather than sharing one report between them.
+  A failed reading is the module's own and the module draws it from the body it was handed
+  (SRS001<!-- A failed module shows why, and only that module -->); a module that has stopped drawing
+  cannot report anything, so what stands in its place is the framework's to say and says only that -
+  what the module would have shown is not recoverable from a fault, and a report inventing a cause
+  would be worse than one that does not claim to know it.
+
+  Containment is to the module's own place rather than to its region, for the reason
+  SRS001<!-- A failed module shows why, and only that module --> gives: a region may carry several
+  modules, and a neighbour sharing the faulting module's region is a module the failure did not
+  require degrading.
+
+  It is stated once, for every module, rather than per module. What the display owes when a module
+  stops drawing does not vary with which module stopped - the sentence is the same sentence each time -
+  so it stays on the framework need and no module restates it
+  (ADR 0012 rev 2, docs/contracts/module-contract.md).
+  What the display does once the fault clears is not here: that is
+  SRS070's<!-- The display comes back on its own when the backend does -->, and a display that
+  contained a fault and then held the report for ever would satisfy this item completely.
+ref: ''
+reviewed: 1wxv6oNvlEEnjmtG3zNI0rh3qyUu1cMb-Jf5S9RdVyU=
+status: accepted
+text: |
+  When a module's own rendering fails, the display shall say in that module's place that the module
+  has stopped drawing, and no other module shall be affected, including one sharing its region.
+verification-justification: |
+  Read from a rendered page carrying a module that fails while rendering, a module sharing its region,
+  and a module elsewhere whose reading moves on its own: the page carries one report, in the faulting
+  module's place and nowhere else; the faulting module is no longer drawing; the neighbours are still
+  drawing, and the one that moves is still moving.
+  Movement rather than presence is what the third of those rests on, because a page whose rendering has
+  stopped holds every element it last drew and so passes any count or visibility read over it.
+  Three things it does not settle. The report's wording is asserted to be non-empty and not judged -
+  whether it reads usefully to somebody who did not write it is what
+  SYS001<!-- Failure is legible and proportionate --> routes to review. One manner of failing is staged,
+  raised at one point in a module's life, so this is evidence that a module's failure is caught where
+  the module is mounted rather than proof that no way of failing escapes. And the obligation quantifies
+  over every module while the evidence is read against a module the suite supplies for the purpose: a
+  module that no check drives is unasserted here rather than covered by the stub's reading.
+verification-method: test

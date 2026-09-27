@@ -41,6 +41,11 @@ configuration selects them
 (SRS048<!-- The clock shows or omits seconds per its configuration -->), and the meridiem only in
 twelve-hour form (SRS038<!-- The clock's hour form is the one its configuration selects -->).
 
+The seconds are written straight to their own node rather than through the reactive graph, because a
+reactive re-render once a second is what paces the host's periodic full GC (meta-wisekiosk #100
+gpu-compositing). They sit out of flow in a fixed-width slot under size containment, so the
+once-a-second change is a relayout boundary rather than a whole-page layout.
+
 ## Type and spacing
 
 | Element | Step |

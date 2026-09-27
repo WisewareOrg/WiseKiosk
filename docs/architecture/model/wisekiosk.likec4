@@ -1,16 +1,6 @@
-// WiseKiosk architecture model — C4 System Context (L1), Container (L2),
-// Component (L3) and Deployment, the last in ./deployment.likec4.
-//
-// Single source of truth for the diagrams in ../../ARCHITECTURE.md. Edit here, then
-// run `just arch-export` (ADR 0003 rev 4).
-//
-// A tag parses only as the first entry of an element or relationship body.
-//
-// A `link` path resolves against this directory, the workspace LikeC4 is given,
-// rather than against the file carrying it.
-//
-// The boundary, what earns an element a place at each level, and where a tag sits
-// are ADR 0019 rev 7's.
+// WiseKiosk architecture model (ADR 0019 rev 7). Edit here, then `just arch-export`
+// (ADR 0003 rev 4).
+// A tag parses only as the first entry of a body. A `link` path resolves against this directory.
 
 specification {
   element person {
@@ -22,14 +12,12 @@ specification {
   element container
   element component
 
-  // The three kinds ADR 0019 rev 7 names: hosts, the processes on them, and the
-  // files placed beside them.
+  // ADR 0019 rev 7
   deploymentNode host
   deploymentNode process
   deploymentNode artifact
 
-  // Each tag is a Doorstop identifier. Which item belongs on what, and at which
-  // tier, is ADR 0019 rev 7.
+  // Doorstop identifiers (ADR 0019 rev 7).
   tag SYS001
   tag SYS002
   tag SYS003
@@ -103,6 +91,10 @@ specification {
   tag SRS066
   tag SRS067
   tag SRS068
+  tag SRS069
+  tag SRS070
+  tag SRS071
+  tag SRS072
 }
 
 model {
@@ -120,8 +112,7 @@ model {
       deploys: the published container image and what it serves.
     '''
 
-    // Why an obligation over every output this container produces binds here, and
-    // not on one of the edges carrying them, is ADR 0019 rev 7.
+    // ADR 0019 rev 7
     backend = container 'Backend' {
       #SYS004
       #SYS006
@@ -266,12 +257,16 @@ model {
       pageShell = component 'Page shell' {
         #SRS004
         #SRS026
+        #SRS070
         description '''
           Loads and renders before any configuration is applied, so a
           configuration that cannot be applied at all is reported on a page
           that exists rather than on a blank one. Asks the backend whether it
           is still serving, and reports a backend that is not once for the
-          page, beside the modules that need none.
+          page, beside the modules that need none. It keeps asking while the
+          backend is gone, so the report is withdrawn on the page it was raised
+          on once the backend answers again, without anybody attending the
+          display.
         '''
       }
 
@@ -301,6 +296,8 @@ model {
 
       moduleHost = component 'Module host' {
         #SRS026
+        #SRS069
+        #SRS070
         description '''
           Stands between the layout and one module's component, one host per
           placement. Fetches that module's payload on the module's own
@@ -312,7 +309,12 @@ model {
           receives. Whether the backend can be reached at all is not inferred
           here — the page shell decides that from its own liveness ask — but
           it is acted on: an unreachable backend stops the fetching, and what
-          is held from before is dropped rather than drawn on as current.
+          is held from before is dropped rather than drawn on as current, and a
+          module held behind a fault is drawn again once the backend answers.
+          A module that fails while rendering is caught here rather than at the
+          region or the page, one catch per placement, and what stands in its
+          place says only that it has stopped drawing — so a placement beside
+          it, in its own region or sharing one, goes on rendering.
         '''
       }
 
@@ -364,13 +366,20 @@ model {
         #SRS060
         #SRS061
         #SRS062
+        #SRS071
+        #SRS072
         description '''
           Renders the park wait times into the region the configuration gives
           it: a card for every configured park, all of them held on screen at
           once, each card keeping the park's longest current waits in view and
-          touring the rest of its rides on a configured interval, and drawing
+          touring the rest of its rides on a configured interval, every card
+          with more than one page to show turning to its next at the same
+          moment as the others rather than on a cadence of its own, and drawing
           each wait as the length of time or the not-operating state it is
           handed rather than deciding for itself whether a ride can be ridden.
+          A card is one width whatever it holds, so a ride name the card leaves
+          no room for is moved through its own column to bring the rest of it
+          into view rather than widening the card or being cut off in place.
           Reports on the parks its configuration names, arranged in a grid its
           configuration shapes. It draws what it is given and fetches nothing:
           the reading is its host's, on the cadence that keeps what a viewer
@@ -408,9 +417,6 @@ model {
     }
   }
 
-  // The first external system in the model. An upstream is drawn once the module
-  // reading it has a need in the tree (ADR 0019 rev 7), and the weather module's
-  // has landed.
   openMeteo = system 'Open-Meteo' {
     description '''
       The weather service the weather module reads. Run by somebody else and

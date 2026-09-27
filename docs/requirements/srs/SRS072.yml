@@ -1,0 +1,72 @@
+active: true
+derived: false
+header: |
+  The park-wait-times module advances every card's tour together
+level: 75
+links:
+- SYS011: a3bqZRtHE8ujrhIgBKFUtcxWGSCLRHsqU6GgDgwwR38=
+normative: true
+rationale: |
+  A grid of cards each turning its own page at its own moment reads as several things happening rather
+  than one, and a viewer taking in the whole placement at a glance has no instant at which the board is
+  settled: whatever they look at last has just changed, or is about to. Turning every card at once
+  gives the reading a rhythm - the board is still, then it is different, then it is still - and that is
+  what makes a grid of parks one thing to read rather than a wall of independent tickers. It is a
+  formal obligation rather than a note in the module's UI design spec because a module whose cards
+  drift apart is one a viewer can catch out, which is a way the software can fail rather than a
+  preference about how it looks (owner, 2026-09-24).
+
+  SRS059<!-- The park-wait-times module tours the remaining rides on an interval its configuration
+  sets --> does not carry this and is not weakened by it. That item obliges the tour to advance, and to
+  advance on the interval the configuration names rather than one fixed in the module; a module giving
+  every card a timer of its own meets it completely and still comes apart, each timer accumulating its
+  own error against the others over the hours a wall display stays up. The two wants separate cleanly -
+  one is how often a card advances, the other is whether the cards agree on when - so this is an item
+  of its own rather than a clause added to that one.
+
+  It says nothing about where the tick comes from, only that the cards share it. Whether the module
+  keeps one interval for the placement, derives each card's page from a count the placement holds, or
+  reaches agreement some other way is implementation, and an item naming the mechanism would make
+  changing it a specification change.
+
+  The boundary against the marquee is worth stating, because the two look alike and only one is an
+  obligation. That every moving ride name leaves and returns together is composition, and
+  SRS071's<!-- The park-wait-times module brings the hidden part of a ride name into view --> rationale
+  rules it the module's UI design spec's rather than the tree's: a name that set off a moment late
+  would still be revealed, so nothing about the reveal is defeated by it. A card that turns its page
+  late is different in kind - the page it shows is the wrong page for that moment, and the board it
+  sits in disagrees with itself - which is why this one is carried here and that one is not.
+
+  A card with a single page to show has nothing to advance to, so the obligation is over the cards that
+  do, rather than a claim that every card visibly changes. Reworded to another module the sentence
+  names a different content laid out more than once on a placement; abstracted, it reads that a module
+  advances its repeated parts in step, which a module drawing one of anything satisfies vacuously and
+  is therefore not a framework universal - the same ground on which the rotation itself stayed this
+  module's.
+ref: ''
+reviewed: WepNGmkQndLdvks4dJ7R6o6cFOpGqrLtNgXABSAqGJs=
+status: accepted
+text: |
+  The park-wait-times module shall advance its cards' tours together, a card with more than one page of
+  rides to show taking its next page at the same moment as every other such card it is drawn beside.
+verification-justification: |
+  Read from a rendered page under a driven clock, over a configuration placing more than one park and a
+  payload giving those parks different numbers of pages to tour, so that agreement is read where the
+  cards show different positions rather than only where they would coincide anyway. Each card's marked
+  position is read a step short of the interval as well as across it, which bounds both advances into
+  the one window rather than finding only that both had moved by the time the interval had passed; and
+  read again across the tick on which the shorter tour returns to its first page while the longer takes
+  its last, which is where a position derived from the shared count modulo each card's own page total
+  parts company with one that holds at its last page.
+  What it does not settle, and this is the part that is not obvious. Whether the module keeps one
+  interval for the placement or one per card: driven time advances every pending timer at once, so
+  per-card timers created in the same flush reproduce these readings exactly, and that was staged
+  rather than assumed. Timer identity is not observable under a driven clock; phase is. What separates
+  the two is drift accumulated against real time, which no check in a render tier models - so a
+  deployment whose cards crept apart over the hours a wall display stays up would breach this item with
+  every check still green. That is a gap in the evidence rather than in the obligation: what is
+  obliged is that the cards agree, not that one timer produces the agreement.
+  Whether the cards agree any more closely than that window, this item obliging no margin. And it is
+  bounded by the rosters and page counts the suite supplies and the intervals it drives, so a drift
+  appearing only after more turns than a check runs, or at a card count nothing samples, passes.
+verification-method: test

@@ -11,14 +11,14 @@ references:
 - keyword: func TestUpstream404IsUnsupportedDistinctFromATransientFailure(t *testing.T)
     {
   path: backend/internal/modules/park_wait_times/park_wait_times_test.go
-  sha: c5d56cf6d91a0c7d5689b09733a03b0ca3fe09016b0476d63c712bf972f2ab3e
+  sha: 7422d42576631468b3ef6769823fcc57cbddba5fd65e3952cc2968e9ed195cb7
   type: file
 - keyword: test('renders each unavailable park’s own message verbatim, transient or
     permanent — the card never branches on the wording', async ({
   path: frontend/src/modules/park_wait_times/park_wait_times.spec.ts
-  sha: 78eb517e4dece93bf01b5763ecb95e0f20cce59e67ab0919fff2e2766987fbad
+  sha: 47cc00b211005aa3bb51fede5a0c05991f91f41da56a31cdc81cd0db0481ea52
   type: file
-reviewed: 4hNKvlMc8Mo2LlECmOk04aqmj3XY5Tmkpzf6vT2CdTM=
+reviewed: OdWmyQoR-ufPWdPX_a-UYh9jaT0V24SFD2g59UX9oyM=
 status: accepted
 text: |
   Two checks. A unit test that serves a request naming two configured parks, one whose upstream call

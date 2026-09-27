@@ -63,7 +63,14 @@ does not hold a leaderboard place — it still reads, in the rotation below.
 Beneath a plain divider (the label dropped to save vertical space; owner ruling, #309), the rest of
 the park's rides tour through **two at a
 time**, advancing on a configured interval (the same on-an-interval idiom as the weather module's
-series toggle). Each card's tour runs on its own timer, independent of every other card's.
+series toggle). Every card advances on **one clock the placement owns**, so the cards turn their
+pages together on the same tick rather than each running its own timer from its own mount moment and
+drifting out of step with the others.
+
+A deployment may set that interval to anything the schema admits, and **production leaves it at the
+schema's default** (owner, 2026-09-23). That is the interval every timing below is read against — the
+marquee's reach in particular — so a deployment that overrides it is reading this composition at a
+pace it was not drawn for.
 
 ### Footer — the rotation counter
 
@@ -95,8 +102,26 @@ the region it is placed in.
 
 A park name is drawn on a single line and never wraps. A ride name is too, but where the fixed card
 leaves it no room, it scrolls to reveal itself rather than wrapping, truncating, or widening the card
-— paused, scrolled left to the end, paused, reset, on loop (a Spotify-style marquee); a name that
-already fits is left static.
+— held at home, scrolled left to the end, held there, returned home; a name that already fits is left
+static. The hold at home also keeps the scroll clear of the card flip's repaint, which otherwise reads
+as a stutter.
+
+What moves is the **name column's own `scrollLeft`**, not a transform on the text inside it. On a Pi
+Zero-class host, painting a clipped container's scroll offset costs a fraction of translating the
+text with every overflowing row in motion
+(SRS021<!-- Frontend runs on a Pi Zero-class browser host -->, measured in
+meta-wisekiosk #100 gpu-compositing), and no row is promoted to a compositor layer of its own. One
+`requestAnimationFrame` loop across the whole placement drives every scrolling column rather than one
+loop per row, so the motion costs a single callback whatever the roster size.
+
+The scroll runs **once per rotation tick**, not on a loop of its own: the tick that turns the cards'
+pages is the tick that returns every column home and starts it moving again, so a page turn and a
+name restarting are one event on one clock rather than two cadences drifting apart. A name needing
+more travel than its reach — `(rotation_interval_seconds − HOLD_HOME_S) × MARQUEE_PX_PER_S`, the
+distance travelled before the rotation tick (`marquee-clock.ts`) — is cut short by that reset rather
+than scrolling faster to fit. At the schema's eight-second floor the reach covers the longest
+configured-park ride name measured at the deployed viewport, but a long enough name is read in part
+rather than in full.
 
 ## Type and spacing
 
@@ -186,6 +211,8 @@ module does.
 | a card per park, every configured park held on screen at once | SRS057<!-- The park-wait-times module holds every configured park on screen at once --> |
 | a persistent three-ride leaderboard of the longest current waits | SRS058<!-- The park-wait-times module keeps each park's longest current waits in view --> |
 | the remaining rides rotate two at a time, on a configured interval | SRS059<!-- The park-wait-times module tours the remaining rides on an interval its configuration sets --> |
+| a ride name too wide for its column scrolls to reveal itself rather than wrapping or truncating | SRS071<!-- The park-wait-times module brings the hidden part of a ride name into view --> |
+| every card's rotation advances on one clock the placement owns | SRS072<!-- The park-wait-times module advances every card's tour together --> |
 | the wait slot carries a wait in minutes, or a `Down` / `Closed` / `Refurb` state | SRS056<!-- The park-wait-times module puts each park's identity, hours, and ride waits across the boundary --> / SRS061<!-- The park-wait-times module draws a wait as the time or the not-operating state it is handed --> |
 | the grid shape (`nCol` × `nRows`) is configuration | SRS060<!-- The park-wait-times module arranges its parks in a grid its configuration shapes --> |
 | the hours line is absent, with no placeholder, when a park's hours cannot be read | SRS067<!-- The park-wait-times module confines a failure to the part of its own response the failure touches --> |
@@ -203,6 +230,9 @@ Confirmed against a photograph of the deployed display, not a monitor (the desig
   ceiling, since the bar is chrome rather than a datum;
 - the type steps against the type-size floor at the deployed viewing distance, once the grid's
   `nCol` × `nRows` for the placed region is set (a denser grid draws smaller cards);
-- the marquee's scroll speed and pause timing read comfortably at the deployed viewing distance, and
-  that the deployment's own Pi Zero-class host holds the frame rate the compositor-only animation
-  assumes (SRS021<!-- Frontend runs on a Pi Zero-class browser host -->).
+- the marquee's scroll speed and hold timing read comfortably at the deployed viewing distance, and
+  whether a name long enough to be cut short by the rotation interval is a real loss at the deployed
+  geometry;
+- whether the eight-second floor's reach still covers the longest ride name after a roster or grid
+  change — the floor was measured against one configured roster at one card width, and nothing
+  re-checks it.

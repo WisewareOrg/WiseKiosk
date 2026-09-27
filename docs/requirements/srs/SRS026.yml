@@ -16,8 +16,19 @@ rationale: |
   content rather than a rephrasing of the diagnosis, or an item could satisfy the clause by saying the
   same thing twice. Cadence, what the page displays, and whether one endpoint serves both the page and
   an orchestrator are mechanism, and are #72's.
+
+  What the text forbids is the outage restated once per module, and nothing wider. A module that has
+  stopped drawing carries a report of its own beside the outage report, and that is not the
+  restatement: it is a different state, with a different cause and a different remedy, and the display
+  saying which it is discharges
+  SRS069<!-- A module that stops drawing says so in its own place -->. Collapsing the two would put the
+  display back where this item found it - an operator unable to tell the service being gone from one
+  part of the display having broken.
+  Nor does this item oblige the report to ever come down; that is
+  SRS070's<!-- The display comes back on its own when the backend does -->, and a display holding this
+  report for ever with the backend answering behind it satisfies every clause here.
 ref: ''
-reviewed: J23XsIdVZ_-23ju6VwTnghbQfTzfROKs6brnxwJW-8A=
+reviewed: Kk2sYxHjjpYD_-oVos4qZ9lBoq7VLBuCBcLamIqDfTs=
 status: accepted
 text: |
   When the backend is unreachable, the display shall say so rather than showing each module as
