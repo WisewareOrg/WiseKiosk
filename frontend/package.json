@@ -15,7 +15,7 @@
     "@types/istanbul-lib-report": "3.0.3",
     "@types/istanbul-lib-source-maps": "4.0.4",
     "@types/istanbul-reports": "3.0.4",
-    "@types/node": "26.6.2",
+    "@types/node": "26.6.3",
     "@typescript/native": "npm:typescript@7.0.2",
     "@vitest/coverage-istanbul": "5.0.2",
     "ajv": "8.20.0",
