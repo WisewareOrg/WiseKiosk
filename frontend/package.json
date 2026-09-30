@@ -27,7 +27,7 @@
     "istanbul-lib-source-maps": "5.0.6",
     "istanbul-reports": "3.2.0",
     "json-schema-to-typescript": "16.0.0",
-    "orval": "8.33.0",
+    "orval": "8.38.0",
     "prettier": "3.9.9",
     "svelte": "5.57.1",
     "svelte-check": "4.7.6",
