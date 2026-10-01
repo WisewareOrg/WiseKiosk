@@ -72,7 +72,7 @@ jobs:
       - name: Every tracked document outside a dot-directory is claimed by the documentation index
         run: just check-docs-index
 
-      - name: No manifest at the repository root, no recipe is a shell script, and renovate.json extends the pinned tjwise99/wise-renovate preset
+      - name: No manifest at the repository root, no recipe is a shell script, and renovate.json extends the pinned WisewareOrg/wise-renovate preset
         run: just check-repo-silo
 
       - name: Workflow supply-chain and privilege audit (zizmor, pedantic persona, offline audit set)

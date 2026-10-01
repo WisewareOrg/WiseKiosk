@@ -16,7 +16,7 @@ where a gate is unbuilt its ticket is named. That is how this project records sc
 
 Not everything CI does is a gate. These produce material a person acts on.
 
-- **Dependency update proposals.** Renovate runs every six hours from `tjwise99/wise-renovate`,
+- **Dependency update proposals.** Renovate runs every six hours from `WisewareOrg/wise-renovate`,
   opening pull requests under the runner's GitHub App `[bot]` login on `renovate/*` branches. Every
   dependency bump is its own pull request, except the Node runtime, which travels as one grouped
   pull request across `engines` fields, `setup-node` inputs and the `Dockerfile` base image; the run
@@ -947,7 +947,7 @@ changed, which the citation resolver above decides without anyone declaring anyt
   shape is whatever `just` resolves it to.
 - A depth-1 listing of the repository root holds no `package.json`, `go.mod`, `pyproject.toml`,
   `requirements*.txt` or `.venv/` — tooling is siloed with the feature it serves. The root
-  `renovate.json` parses as JSON and its `extends` list names the `github>tjwise99/wise-renovate`
+  `renovate.json` parses as JSON and its `extends` list names the `github>WisewareOrg/wise-renovate`
   preset, pinned to a tag — the one dependency-update configuration the repository carries directly,
   the policy itself living in the preset the runner repository publishes. The gate stops at that: it
   does not verify that a manifest exists wherever a dependency lives, because Renovate discovers
