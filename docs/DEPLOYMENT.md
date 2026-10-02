@@ -84,7 +84,11 @@ afterward, its assets and tag do not
 carry exactly one line naming the published digest, which the workflow replaces rather than
 duplicates on a re-dispatch before that tag's release publishes
 ([ADR 0020 rev 5](decisions/0020-release-artifact-set-and-operator-tooling.md)). A failed
-verification fails the release run; the release is re-cut.
+verification fails the release run; the release is re-cut. A `latest` job that fails on its own,
+after verification has already passed, is recovered by re-running the run's failed jobs
+(`gh run rerun <run-id> --failed`) rather than a re-cut — publish and verify already succeeded, so
+there is nothing left to redo but the retag
+([ADR 0020 rev 5](decisions/0020-release-artifact-set-and-operator-tooling.md)).
 
 **Optional, and recommended: verify the image before trusting it.** An operator who pulls an image is
 trusting a stranger's build, so the check against its signature and provenance ships with the

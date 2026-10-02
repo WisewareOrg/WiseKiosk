@@ -13,11 +13,14 @@ on #9 backend skeleton and the 2026-08-09 design discussion on #71 release artif
   the moment it publishes, so a workflow triggered by that publish could never attach anything to
   the release that triggered it. The workflow creates or reuses a draft release for the
   dispatched tag, fills it over its own later steps, and publishes it last; `latest` moves to the
-  published digest only once that publish step has run, not at build. image-swap's
-  previous-release lookup excludes drafts, so an in-flight one is never picked as the swap target. A
-  run failing before the publish step is re-dispatched on the same tag rather than re-cut. What the
-  release itself is made of is unchanged; the trigger and its ordering move, so the Decided date
-  moves with them (#418 publish under immutable releases).
+  published digest in its own job, once `verify` passes, not at build and not in the publish job
+  itself — an image failing verification would otherwise already be `latest` by the time `verify`
+  caught it. `bring-up` and `image-swap` gain that job alongside `verify` in their own gate.
+  image-swap's previous-release lookup excludes drafts, so an in-flight one is never picked as the
+  swap target. A run failing before the publish step is re-dispatched on the same tag rather than
+  re-cut; a `latest` job failing on its own needs neither. What the release itself is made of is
+  unchanged; the trigger and its ordering move, so the Decided date moves with them
+  (#418 publish under immutable releases).
 - **rev 4** — 2026-09-06 — corrects "referring artifacts" to "attached under the signing tools'
   conventions" everywhere it appears: GHCR implements no OCI referrers API, so cosign's own tag
   convention and GitHub's attestation store are what the registry-side material actually attaches
@@ -124,13 +127,15 @@ run rather than publishing from anything else. The workflow creates or reuses a 
 that tag, fills it over its own later steps, and publishes it only once everything else has landed —
 GitHub locks a release's assets and its tag the moment it publishes, so a workflow triggered by that
 publish could never attach anything to the release that triggered it. The image is tagged by that
-same version, and `latest` moves to the published digest, after publish, only when the release is
-not a pre-release — a pre-release publishes its own version tag and never moves the tag the
-committed recipe references ([`../DEPLOYMENT.md`](../DEPLOYMENT.md) § *Bring-up*). The push that
-published `latest` from every commit on the default branch is retired with it: nothing publishes
-from `main`. A run failing before the publish step is re-dispatched on the same tag — the draft is
-reused, its `prerelease` flag re-synced, its assets `--clobber`ed and the digest line replaced; once
-a release has published, a bad one is re-cut under a new version rather than re-run.
+same version, and `latest` moves to the published digest in its own job, once `verify` passes, only
+when the release is not a pre-release — a pre-release publishes its own version tag and never moves
+the tag the committed recipe references ([`../DEPLOYMENT.md`](../DEPLOYMENT.md) § *Bring-up*). The
+push that published `latest` from every commit on the default branch is retired with it: nothing
+publishes from `main`. A run failing before the publish step is re-dispatched on the same tag — the
+draft is reused, its `prerelease` flag re-synced, its assets `--clobber`ed and the digest line
+replaced; once a release has published, a bad one is re-cut under a new version rather than re-run.
+A `latest` job failing on its own, after `verify` has already passed, needs neither: publish and
+verify succeeded, so only the run's failed jobs are re-run.
 
 **No operator tooling program ships as part of a release**, and the release carries an example
 configuration file instead.
@@ -230,6 +235,12 @@ the flag has nowhere else to come from.
 a draft's image before that draft is known to ever reach publish. A run that failed between build
 and publish would leave `latest` resolving to a digest whose release had never published, with
 nothing in the recipe's own procedure to notice or correct it.
+
+**`latest` moves in the publish job, right after it publishes the release, before `verify` runs.**
+Rejected: an image failing verification would already be `latest` by the time `verify` caught it,
+defeating what gating the move on verification is for. The chosen shape moves `latest` in its own
+job, after `verify` passes, so a bad signature or attestation is caught before the floating tag ever
+points at it.
 
 ## Consequences
 

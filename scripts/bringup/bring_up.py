@@ -7,8 +7,8 @@ unedited, in a fixed working directory (`bring-up/` at the repository root) hold
 `gh release download` fetches for the given release tag.
 
 Before the block runs, `ghcr.io/wisewareorg/wisekiosk:latest` is asserted to resolve to the given
-digest — the one assertion in the tree that `latest` moved to the release this run was handed, and
-the poll that waits out registry propagation.
+digest — a second, independent confirmation beside the `latest` job's own assertion that it moved
+there, and the poll that waits out registry propagation.
 
 Serving is two assertions, both required (docs/CI.md § Deployment and bring-up): the compose
 service's container reaches Docker health status `healthy` within a deadline derived from the

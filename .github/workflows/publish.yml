@@ -3,11 +3,11 @@ name: publish
 # Builds the container image and publishes it to GHCR, signs and attests it, fills a draft release
 # for the dispatched tag with the uploaded recipe and example configuration and the digest line,
 # then publishes it. `contents: write`, `packages: write`, `id-token: write` and
-# `attestations: write` are held by the publish job alone; the verify job holds none. Runs on
-# `workflow_dispatch` against a pushed tag, whose shape the first step asserts, with one boolean
-# input, `prerelease`. The bring-up and image-swap jobs, and moving `latest`, run only for a
-# non-pre-release, once verify passes (docs/CI.md § Deployment and bring-up, § Publishing and
-# provenance).
+# `attestations: write` are held by the publish job alone; the verify job holds none; the latest job
+# holds `packages: write` alone. Runs on `workflow_dispatch` against a pushed tag, whose shape the
+# first step asserts, with one boolean input, `prerelease`. The latest, bring-up and image-swap jobs
+# run only for a non-pre-release, once verify passes (docs/CI.md § Deployment and bring-up,
+# § Publishing and provenance).
 
 on:
   workflow_dispatch:
@@ -166,22 +166,6 @@ jobs:
           TAG: ${{ github.ref_name }}
         run: gh release edit "$TAG" --draft=false
 
-      # With one index source and no `--annotation`, `imagetools create` copies that index's bytes
-      # and descriptor unchanged — `--prefer-index=false` only matters for a single-manifest source,
-      # not an index one. This build's attestations are cosign/GitHub sigstore bundles, not the
-      # attestation-manifest artifact type that would pull a referrer in and change that. The
-      # assertion below is the guard either way.
-      - name: Move `latest` to the published digest
-        if: ${{ !inputs.prerelease }}
-        env:
-          DIGEST: ${{ steps.build.outputs.digest }}
-        run: |
-          docker buildx imagetools create --prefer-index=false \
-            --tag ghcr.io/wisewareorg/wisekiosk:latest "ghcr.io/wisewareorg/wisekiosk@$DIGEST"
-          LATEST_DIGEST=$(docker buildx imagetools inspect ghcr.io/wisewareorg/wisekiosk:latest \
-            --format '{{json .Manifest.Digest}}' | tr -d '"')
-          [[ "$LATEST_DIGEST" == "$DIGEST" ]]
-
   # Verifies the published digest against the registry, the public transparency log, and GitHub's
   # release and attestation APIs, read only. Runs on every release, pre-release included — there is
   # no pre-release skip — and a failed verification fails this run rather than being reported and
@@ -246,11 +230,42 @@ jobs:
           TAG: ${{ github.ref_name }}
         run: python3 scripts/publish/verify_release.py --step attached
 
+  # `latest` moves to the release this dispatch just published, on a non-pre-release only, once
+  # verify passes (docs/CI.md § Publishing and provenance).
+  latest:
+    name: latest
+    needs: [publish, verify] # publish for its digest output, verify as the gate
+    if: ${{ !inputs.prerelease }}
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write # retag ghcr.io/wisewareorg/wisekiosk:latest
+    steps:
+      - uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # With one index source and no `--annotation`, `imagetools create` copies that index's bytes
+      # and descriptor unchanged — `--prefer-index=false` only matters for a single-manifest source,
+      # not an index one. This build's attestations are cosign/GitHub sigstore bundles, not the
+      # attestation-manifest artifact type that would pull a referrer in and change that. The
+      # assertion below is the guard either way.
+      - name: Move `latest` to the published digest
+        env:
+          DIGEST: ${{ needs.publish.outputs.digest }}
+        run: |
+          docker buildx imagetools create --prefer-index=false \
+            --tag ghcr.io/wisewareorg/wisekiosk:latest "ghcr.io/wisewareorg/wisekiosk@$DIGEST"
+          LATEST_DIGEST=$(docker buildx imagetools inspect ghcr.io/wisewareorg/wisekiosk:latest \
+            --format '{{json .Manifest.Digest}}' | tr -d '"')
+          [[ "$LATEST_DIGEST" == "$DIGEST" ]]
+
   # The documented bring-up procedure, against the release this dispatch published, on a
   # non-pre-release only, once verify passes (docs/CI.md § Deployment and bring-up).
   bring-up:
     name: bring-up
-    needs: [publish, verify] # publish for its digest output, verify as the gate
+    needs: [publish, verify, latest] # publish for its digest output, verify and latest as the gate
     if: ${{ !inputs.prerelease }}
     runs-on: ubuntu-latest
     permissions:
@@ -292,7 +307,7 @@ jobs:
   # passes.
   image-swap:
     name: image-swap
-    needs: [publish, verify] # publish for its digest output, verify as the gate
+    needs: [publish, verify, latest] # publish for its digest output, verify and latest as the gate
     if: ${{ !inputs.prerelease }}
     runs-on: ubuntu-latest
     permissions:

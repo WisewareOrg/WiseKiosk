@@ -442,8 +442,8 @@ publish landed, #268 release from a manual tag keyed to `release: published`, an
 under immutable releases moved to `workflow_dispatch` on a pushed tag, against the set
 [ADR 0020 rev 5](decisions/0020-release-artifact-set-and-operator-tooling.md) decides. That workflow
 runs only when the owner pushes a `vMAJOR.MINOR.PATCH` tag and dispatches it, tags the image by that
-semver, and creates and fills a draft release for that tag before publishing it and then moving
-`latest` to it for a non-pre-release
+semver, and creates, fills and publishes a draft release for that tag; a separate `latest` job then
+moves `latest` to the published digest once verification passes, for a non-pre-release
 ([ADR 0020 rev 5](decisions/0020-release-artifact-set-and-operator-tooling.md)); the committed recipe
 references `latest` so it runs unedited ([`DEPLOYMENT.md`](DEPLOYMENT.md) § *Bring-up*); the release
 notes carry exactly one line naming that digest,
@@ -553,7 +553,8 @@ release run, the first run included; the release is re-cut, and there is no roll
 
 What the published material must let an operator do, checked by running it rather than by reading it.
 What each of these obligations *is*, and why, is [`DEPLOYMENT.md`](DEPLOYMENT.md)'s. Both jobs below
-run only once the `verify` job (§ *Publishing and provenance*) passes, so neither exercises a release
+run only once the `verify` job (§ *Publishing and provenance*) passes and the `latest` job
+(§ *Publishing and provenance*) has moved `latest` for this release, so neither exercises a release
 whose signature or attestation failed to verify.
 
 - **The documented procedure executes.** `just check-bringup`, run by the `bring-up` job in
@@ -567,8 +568,8 @@ whose signature or attestation failed to verify.
   `GET /config.json` returns the downloaded `config.example.json` byte for byte — health status
   alone cannot see a missing configuration mount, `/healthz` being configuration-blind by design.
   Before the block runs, `ghcr.io/wisewareorg/wisekiosk:latest` is asserted to resolve to the digest
-  the publish job just produced, which is the one assertion in the tree that `latest` moved to the
-  release this dispatch published. The job runs only on a non-pre-release: `latest` does not move for
+  the publish job produced — a second, independent confirmation beside the `latest` job's own
+  assertion that it moved there. The job runs only on a non-pre-release: `latest` does not move for
   one ([`DEPLOYMENT.md`](DEPLOYMENT.md) § *Bring-up*), so the recipe's unedited `:latest` would
   otherwise exercise the previous release's digest against the new assets. What is run is the
   documented default path, which edits nothing and verifies nothing: attestation verification is
