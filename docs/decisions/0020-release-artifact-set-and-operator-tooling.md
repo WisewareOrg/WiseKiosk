@@ -12,15 +12,15 @@ on #9 backend skeleton and the 2026-08-09 design discussion on #71 release artif
   pushed tag, carrying one boolean input, `prerelease`, so the draft-first shape below can attach
   everything before the immutable-release lock the Decision names takes hold. The workflow creates
   or reuses a draft release for the dispatched tag, fills it over its own later steps, and publishes
-  it last; `latest` moves to the published digest in its own job, once `verify` passes, not at build
-  and not in the publish job itself — an image failing verification would otherwise already be
-  `latest` by the time `verify` caught it. `bring-up` and `image-swap` gain that job alongside
-  `verify` in their own gate. image-swap's previous-release lookup excludes drafts, so an in-flight
-  one is never picked as the swap target. A run failing before the publish step is re-dispatched on
-  the same tag rather than re-cut; a `latest` job failing transiently needs neither, but a failed
-  digest assertion is repointed by hand rather than re-run. What the release itself is made of is
-  unchanged; the trigger and its ordering move, so the Decided date moves with them
-  (#418 publish under immutable releases).
+  it as the publish job's last step; `latest` moves to the published digest in its own job, once
+  `verify` passes, not at build and not in the publish job itself — an image failing verification
+  would otherwise already be `latest` by the time `verify` caught it. `bring-up` and `image-swap`
+  gain that job alongside `verify` in their own gate. image-swap's previous-release lookup excludes
+  drafts, so an in-flight one is never picked as the swap target. A run failing before the publish
+  step is re-dispatched on the same tag rather than re-cut; a `latest` job failing transiently needs
+  neither, but a failed digest assertion is repointed by hand rather than re-run. What the release
+  itself is made of is unchanged; the trigger and its ordering move, so the Decided date moves with
+  them (#418 publish under immutable releases).
 - **rev 4** — 2026-09-06 — corrects "referring artifacts" to "attached under the signing tools'
   conventions" everywhere it appears: GHCR implements no OCI referrers API, so cosign's own tag
   convention and GitHub's attestation store are what the registry-side material actually attaches
