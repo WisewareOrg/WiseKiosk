@@ -2,9 +2,7 @@
 """Create or reuse a draft release for one tag, so `publish.yml` can attach assets and amend notes
 before anything is immutable.
 
-Publishing is draft-first (ADR 0020 rev 5): `publish.yml` creates or reuses this tag's draft release
-before any registry write, fills it over its own later steps, then publishes it last. This script
-owns only the draft's existence and its `prerelease` flag.
+This script owns only the draft's existence and its `prerelease` flag (ADR 0020 rev 5).
 
 Looks the tag up in the full release list — drafts included, for a token with write access —
 rather than inferring absence from a `gh release view` error, so "absent" is never a guess from a
@@ -20,9 +18,9 @@ values into an invoked script):
   TAG         the tag this release is cut on, e.g. v1.2.3
   PRERELEASE  'true' or 'false'
 
-`gh` reads `GH_TOKEN`/`GH_REPO` itself, as it is run by hand elsewhere in this tree. Any `gh`
-failure is surfaced as `gh`'s own error text, unaltered — no text of this script's own authorship
-stands in for it.
+`gh` reads `GITHUB_TOKEN` from the environment and resolves the target repository from the
+checked-out git remote; no `GH_REPO` is set. Any `gh` failure is surfaced as `gh`'s own error text,
+unaltered — no text of this script's own authorship stands in for it.
 
 This is authored Python rather than a `run:` block with branching, per ADR 0017 rev 9: a workflow
 `run:` block carrying control flow is authored sh, and sh authors nothing here.

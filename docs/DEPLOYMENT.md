@@ -66,9 +66,9 @@ against a clean host and fails on a step that does not.
 checkout ignores `deploy/config.json`, and `config.example.json` is the tracked shape.
 
 **The image reference is a movable tag.** The recipe names `ghcr.io/wisewareorg/wisekiosk:latest`, which
-tracks the newest release ([`CI.md`](CI.md) § *Publishing and provenance*), so `up` against a
-re-pulled tag brings up the newest published image; an operator wanting a fixed one pins a digest in
-their own copy, as the verification note below describes.
+tracks the newest non-pre-release to pass verification ([`CI.md`](CI.md) § *Publishing and
+provenance*), so `up` against a re-pulled tag brings up the newest such image; an operator wanting a
+fixed one pins a digest in their own copy, as the verification note below describes.
 
 **Releases are cut by pushing a tag and dispatching the workflow.** An operator does nothing to
 produce one: the repository owner runs

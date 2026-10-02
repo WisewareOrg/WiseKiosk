@@ -437,9 +437,7 @@ in a separate job, `verify`, that reads three surfaces only — the registry, th
 log via cosign, and GitHub's release and attestation APIs — and holds no write scope. Installing the
 job's own tools — the cosign and syft installers, and the `pipx` fetch of `check-jsonschema` from
 PyPI — is the job's only other network activity, distinct from the three evidence surfaces above.
-What builds and pushes the image is `.github/workflows/publish.yml`, which #54 container build and
-publish landed, #268 release from a manual tag keyed to `release: published`, and #418 publish
-under immutable releases moved to `workflow_dispatch` on a pushed tag, against the set
+What builds and pushes the image is `.github/workflows/publish.yml`, against the set
 [ADR 0020 rev 5](decisions/0020-release-artifact-set-and-operator-tooling.md) decides. That workflow
 runs only when the owner pushes a `vMAJOR.MINOR.PATCH` tag and dispatches it, tags the image by that
 semver, and creates, fills and publishes a draft release for that tag; a separate `latest` job then
@@ -450,7 +448,11 @@ notes carry exactly one line naming that digest,
 `Image: ghcr.io/wisewareorg/wisekiosk@sha256:<digest>`, which the workflow replaces rather than
 duplicates on a re-dispatch before the release publishes
 ([ADR 0020 rev 5](decisions/0020-release-artifact-set-and-operator-tooling.md)), and it is what an
-operator who chooses to verify checks against.
+operator who chooses to verify checks against. Before any registry write, the publish job's draft
+step fails the run when the tag's release is already published, or when more than one release
+carries the tag — a re-dispatch must never move a published release's semver image tag onto a
+rebuilt digest its `Image:` line does not name. Recorded in
+[`../scripts/cases/publish-draft.md`](../scripts/cases/publish-draft.md).
 
 **The `verify` job's write-scope property is decided, not proposed.**
 `scripts/publish/verify_permissions.py` reads `publish.yml` at the release commit, locates the

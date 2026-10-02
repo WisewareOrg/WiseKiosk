@@ -43,9 +43,7 @@ jobs:
         with:
           persist-credentials: false
 
-      # Checked before any registry write: a dispatch against an already-published or ambiguous tag
-      # fails here rather than after a rebuild, so a re-dispatch never moves a published release's
-      # semver tag onto a rebuilt digest that its `Image:` line does not name.
+      # Runs before any registry write (docs/CI.md § Publishing and provenance).
       - name: Create or reuse this tag's draft release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -68,9 +66,7 @@ jobs:
       # on; `.documentation` is not defaulted and is supplied as a literal, on both surfaces
       # (ADR 0015 rev 4). The annotation levels are declared here rather than restated elsewhere,
       # because the annotation check reads them from this workflow (docs/CI.md § Publishing and
-      # provenance). `latest` is not tagged here: the `latest` job moves it to the published digest
-      # once the release has published and verify has passed, so a run that never reaches that job
-      # never points it at an unpublished or unverified image (docs/DEPLOYMENT.md § Bring-up).
+      # provenance). `latest` is not tagged here; the `latest` job moves it (ADR 0020 rev 5).
       # `flavor: latest=false` disables the action's own automatic `latest` tag, which `type=semver`
       # triggers regardless.
       - id: meta
@@ -159,7 +155,7 @@ jobs:
           printf '%s\n' "$DIGEST_LINE" >> "$RUNNER_TEMP/notes.md"
           gh release edit "$TAG" --notes-file "$RUNNER_TEMP/notes.md"
 
-      # Every step above only ever touches the draft; this is what publishes it.
+      # Every release edit above is to the draft; this step publishes it.
       - name: Publish the draft release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -246,11 +242,8 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # With one index source and no `--annotation`, `imagetools create` copies that index's bytes
-      # and descriptor unchanged — `--prefer-index=false` only matters for a single-manifest source,
-      # not an index one. This build's attestations are cosign/GitHub sigstore bundles, not the
-      # attestation-manifest artifact type that would pull a referrer in and change that. The
-      # assertion below is the guard either way.
+      # Copies the index at $DIGEST to :latest; the last line fails the job unless :latest resolves
+      # to $DIGEST.
       - name: Move `latest` to the published digest
         env:
           DIGEST: ${{ needs.publish.outputs.digest }}
@@ -262,7 +255,7 @@ jobs:
           [[ "$LATEST_DIGEST" == "$DIGEST" ]]
 
   # The documented bring-up procedure, against the release this dispatch published, on a
-  # non-pre-release only, once verify passes (docs/CI.md § Deployment and bring-up).
+  # non-pre-release only, once verify and latest pass (docs/CI.md § Deployment and bring-up).
   bring-up:
     name: bring-up
     needs: [publish, verify, latest] # publish for its digest output, verify and latest as the gate
@@ -302,7 +295,7 @@ jobs:
         run: docker compose down --volumes
 
   # The release this dispatch just published swaps for the newest older non-pre-release under the
-  # same mounts, on a non-pre-release only, once verify passes (docs/CI.md § Deployment and
+  # same mounts, on a non-pre-release only, once verify and latest pass (docs/CI.md § Deployment and
   # bring-up). With no such release, the swap step's own `if:` condition skips it and the job
   # passes.
   image-swap:

@@ -100,9 +100,11 @@ signed too, so an operator who pins a child digest can verify it on its own.
 workflow `run:` block carrying that same loop would be authored sh, which nothing here authors
 ([ADR 0017 rev 9](0017-authored-language-set.md)).
 
-**Bring-up and the image swap run only once verification passes.** Both depend on the `verify` job
-as well as `publish`, so a release whose signature or attestation fails to verify never reaches
-either exercise.
+**Bring-up and the image swap run only once verification passes and `latest` has moved.** Both
+depend on `publish`, `verify` and `latest`, so a release whose signature or attestation fails to
+verify, or whose `latest` retag fails, never reaches either exercise. image-swap's own
+previous-release lookup excludes drafts (`--exclude-drafts`), so an in-flight draft on another tag
+is never picked as the swap target.
 
 The release notes name the digest, which is what ties the tag to the registry: the publish
 workflow keeps exactly one line naming it, `Image: ghcr.io/wisewareorg/wisekiosk@sha256:<digest>`,
@@ -124,18 +126,20 @@ project does not produce.
 `gh workflow run publish.yml --ref vMAJOR.MINOR.PATCH`, with `-f prerelease=true` for a
 pre-release; `publish.yml`'s first step asserts the dispatched ref against that shape and fails the
 run rather than publishing from anything else. The workflow creates or reuses a draft release for
-that tag, fills it over its own later steps, and publishes it only once everything else has landed —
-GitHub locks a release's assets and its tag the moment it publishes, so a workflow triggered by that
-publish could never attach anything to the release that triggered it. The image is tagged by that
-same version, and `latest` moves to the published digest in its own job, once `verify` passes, only
-when the release is not a pre-release — a pre-release publishes its own version tag and never moves
-the tag the committed recipe references ([`../DEPLOYMENT.md`](../DEPLOYMENT.md) § *Bring-up*). The
-push that published `latest` from every commit on the default branch is retired with it: nothing
-publishes from `main`. A run failing before the publish step is re-dispatched on the same tag — the
-draft is reused, its `prerelease` flag re-synced, its assets `--clobber`ed and the digest line
-replaced; once a release has published, a bad one is re-cut under a new version rather than re-run.
-A `latest` job failing on its own, after `verify` has already passed, needs neither: publish and
-verify succeeded, so only the run's failed jobs are re-run.
+that tag, fills it over its own later steps, and publishes it once the image, its signatures and
+attestations, the two assets and the digest line are in place — GitHub locks a release's assets and
+its tag the moment it publishes, though its notes and title stay editable, so a workflow triggered
+by that publish could never attach anything to the release that triggered it. The image is tagged
+by that same version, and `latest` moves to the published digest in its own job, once `verify`
+passes, only when the release is not a pre-release — a pre-release publishes its own version tag and
+never moves the tag the committed recipe references
+([`../DEPLOYMENT.md`](../DEPLOYMENT.md) § *Bring-up*). The push that published `latest` from every
+commit on the default branch is retired with it: nothing publishes from `main`. A run failing before
+the publish step is re-dispatched on the same tag — the draft is reused, its `prerelease` flag
+re-synced, its assets `--clobber`ed and the digest line replaced; once a release has published, a
+bad one is re-cut under a new version rather than re-run. A `latest` job failing on its own, after
+`verify` has already passed, needs neither: publish and verify succeeded, so only the run's failed
+jobs are re-run.
 
 **No operator tooling program ships as part of a release**, and the release carries an example
 configuration file instead.
@@ -218,10 +222,9 @@ runs, and it would be version-locked to the image serving it. It costs a second 
 one. Nothing here forecloses it: ADR 0007 rev 2 already states that a live-apply path is not designed
 out.
 
-**Publish on `release: published`, attaching assets and notes afterward.** The shape rev 4 and
-earlier ran. Rejected: GitHub locks a release's assets and its tag the moment it publishes, so a
-workflow triggered by that publish can never attach anything to the release that triggered it —
-the immutable-release refusal this revision exists to fix.
+**Publish on `release: published`, attaching assets and notes afterward.** The shape revs 3 and 4
+ran. Rejected: GitHub locks a release's assets and its tag the moment it publishes, so a workflow
+triggered by that publish can never attach anything to the release that triggered it.
 
 **The owner creates the draft by hand; the workflow only fills it.** Rejected: create-or-reuse is one
 branch of logic either way, so making the workflow decide it unconditionally costs nothing the
