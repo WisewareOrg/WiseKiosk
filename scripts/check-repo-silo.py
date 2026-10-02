@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Tooling is siloed with the feature it serves: a depth-1 listing of the
 repository root holds no manifest or environment directory, and the root
-renovate.json parses as JSON and extends the tjwise99/wise-renovate
+renovate.json parses as JSON and extends the WisewareOrg/wise-renovate
 preset, tag-pinned. See docs/CI.md § Repository shape.
 
 No dependencies: Python stdlib only, plain text scanning (no YAML parser).
@@ -41,10 +41,10 @@ for entry in listing("."):
             f"'{entry.name}' sits at the repository root — silo it with the feature it serves"
         )
 
-# The tjwise99/wise-renovate preset, tag-pinned: renovate.json must exist at the root, parse as
+# The WisewareOrg/wise-renovate preset, tag-pinned: renovate.json must exist at the root, parse as
 # JSON, and extend it. See docs/CI.md § Repository shape.
 RENOVATE_CONFIG = ROOT / "renovate.json"
-RUNNER_PRESET_PREFIX = "github>tjwise99/wise-renovate"
+RUNNER_PRESET_PREFIX = "github>WisewareOrg/wise-renovate"
 
 if not RENOVATE_CONFIG.is_file():
     problems.append("renovate.json is missing at the repository root")
@@ -111,5 +111,5 @@ if problems:
     sys.exit(1)
 print(
     "Repository root holds no manifest, no justfile recipe is a shell script, and renovate.json "
-    "extends the pinned tjwise99/wise-renovate preset."
+    "extends the pinned WisewareOrg/wise-renovate preset."
 )

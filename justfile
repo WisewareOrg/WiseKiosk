@@ -57,7 +57,7 @@ check-docs-index:
     python3 scripts/check-docs-index.py
 
 [group('checks')]
-[doc('No manifest or .venv/ at the repository root, no recipe is a shell script, and renovate.json extends the pinned tjwise99/wise-renovate preset')]
+[doc('No manifest or .venv/ at the repository root, no recipe is a shell script, and renovate.json extends the pinned WisewareOrg/wise-renovate preset')]
 check-repo-silo:
     python3 scripts/check-repo-silo.py
 

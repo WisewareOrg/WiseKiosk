@@ -1,8 +1,9 @@
 name: checks
 
 # Repo-wide invariant gates that need no application code. They encode what must
-# always be true of the repo and hold through any rewrite. CI holds no custom
-# credential — the only token is the GitHub-provided read-only GITHUB_TOKEN.
+# always be true of the repo and hold through any rewrite. The only token is the
+# GitHub-provided read-only GITHUB_TOKEN; the one custom credential is the
+# gitleaks-action license, which grants no access to the repository or its secrets.
 on:
   push:
     branches: [main]
@@ -72,7 +73,7 @@ jobs:
       - name: Every tracked document outside a dot-directory is claimed by the documentation index
         run: just check-docs-index
 
-      - name: No manifest at the repository root, no recipe is a shell script, and renovate.json extends the pinned tjwise99/wise-renovate preset
+      - name: No manifest at the repository root, no recipe is a shell script, and renovate.json extends the pinned WisewareOrg/wise-renovate preset
         run: just check-repo-silo
 
       - name: Workflow supply-chain and privilege audit (zizmor, pedantic persona, offline audit set)
@@ -547,3 +548,4 @@ jobs:
         uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3.0.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
