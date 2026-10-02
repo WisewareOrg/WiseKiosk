@@ -292,6 +292,6 @@ jobs:
           DIGEST: ${{ needs.publish.outputs.digest }}
           PREVIOUS_TAG: ${{ steps.previous.outputs.tag }}
         run: |
-          PREVIOUS_DIGEST=$(docker buildx imagetools inspect "ghcr.io/tjwise99/wisekiosk:${PREVIOUS_TAG#v}" \
+          PREVIOUS_DIGEST=$(docker buildx imagetools inspect "ghcr.io/wisewareorg/wisekiosk:${PREVIOUS_TAG#v}" \
             --format '{{json .Manifest.Digest}}' | tr -d '"')
           just check-image-swap "$PREVIOUS_TAG" "$PREVIOUS_DIGEST" "$TAG" "$DIGEST"
