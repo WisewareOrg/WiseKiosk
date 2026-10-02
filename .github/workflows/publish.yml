@@ -1,15 +1,21 @@
 name: publish
 
-# Builds the container image and publishes it to GHCR, signs and attests it, and uploads the
-# deployment recipe and example configuration to the release that triggered the run. `contents:
-# write`, `packages: write`, `id-token: write` and `attestations: write` are held by the publish
-# job alone; the verify job holds none. Runs on `release: published`, keyed on the tag whose shape
-# the first step asserts. The bring-up and image-swap jobs run only once verify passes
-# (docs/CI.md § Deployment and bring-up, § Publishing and provenance).
+# Builds the container image and publishes it to GHCR, signs and attests it, fills a draft release
+# for the dispatched tag with the uploaded recipe and example configuration and the digest line,
+# then publishes it. `contents: write`, `packages: write`, `id-token: write` and
+# `attestations: write` are held by the publish job alone; the verify job holds none. Runs on
+# `workflow_dispatch` against a pushed tag, whose shape the first step asserts, with one boolean
+# input, `prerelease`. The bring-up and image-swap jobs, and moving `latest`, run only for a
+# non-pre-release, once verify passes (docs/CI.md § Deployment and bring-up, § Publishing and
+# provenance).
 
 on:
-  release:
-    types: [published]
+  workflow_dispatch:
+    inputs:
+      prerelease:
+        description: "Publish as a pre-release: latest does not move, and bring-up and image-swap are skipped"
+        type: boolean
+        default: false
 
 concurrency:
   group: publish
@@ -31,14 +37,21 @@ jobs:
     outputs:
       digest: ${{ steps.build.outputs.digest }}
     steps:
-      - name: Release tag is vMAJOR.MINOR.PATCH
-        env:
-          TAG: ${{ github.event.release.tag_name }}
-        run: '[[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]'
+      - name: The dispatched ref is a tag, vMAJOR.MINOR.PATCH
+        run: '[[ "$GITHUB_REF" =~ ^refs/tags/v[0-9]+\.[0-9]+\.[0-9]+$ ]]'
 
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+
+      # The draft is created or reused before any registry write, so a run that fails before
+      # publishing leaves nothing in the registry pointing at a release that was never cut.
+      - name: Create or reuse this tag's draft release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
+          PRERELEASE: ${{ inputs.prerelease }}
+        run: python3 scripts/publish/draft_release.py
 
       # arm64 is built under emulation; this runner is amd64.
       - uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4.4.0
@@ -55,10 +68,10 @@ jobs:
       # on; `.documentation` is not defaulted and is supplied as a literal, on both surfaces
       # (ADR 0015 rev 4). The annotation levels are declared here rather than restated elsewhere,
       # because the annotation check reads them from this workflow (docs/CI.md § Publishing and
-      # provenance). `latest` moves to this release's image only when the release is not a
-      # pre-release (docs/DEPLOYMENT.md § Bring-up). `flavor: latest=false` disables the action's
-      # own automatic `latest` tag, which `type=semver` triggers regardless of the `enable=`
-      # condition on the explicit `type=raw` rule below.
+      # provenance). `latest` is not tagged here: a step below moves it to the published digest
+      # only once the release has published, so a run that never reaches that step never points it
+      # at an unpublished image (docs/DEPLOYMENT.md § Bring-up). `flavor: latest=false` disables
+      # the action's own automatic `latest` tag, which `type=semver` triggers regardless.
       - id: meta
         uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
         env:
@@ -69,7 +82,6 @@ jobs:
             latest=false
           tags: |
             type=semver,pattern={{version}}
-            type=raw,value=latest,enable=${{ github.event.release.prerelease == false }}
           labels: |
             org.opencontainers.image.documentation=https://wisewareorg.github.io/WiseKiosk/
           annotations: |
@@ -124,20 +136,21 @@ jobs:
           DIGEST: ${{ steps.build.outputs.digest }}
         run: cosign sign --yes --recursive "$REF@$DIGEST"
 
-      # `--clobber` makes a re-run of this job replace rather than fail on an asset it already
-      # uploaded.
+      # `--clobber` makes a re-dispatch on this tag, before its release publishes, replace rather
+      # than fail on an asset it already uploaded.
       - name: Upload the deployment recipe and example configuration to the release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG: ${{ github.event.release.tag_name }}
+          TAG: ${{ github.ref_name }}
         run: gh release upload "$TAG" deploy/compose.yaml deploy/config.example.json --clobber
 
       # Drops any existing line naming this image's digest before appending the current one, so a
-      # re-run of this job leaves exactly one such line rather than two.
+      # re-dispatch on this tag, before its release publishes, leaves exactly one such line rather
+      # than two.
       - name: Append the published digest to the release notes
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG: ${{ github.event.release.tag_name }}
+          TAG: ${{ github.ref_name }}
           DIGEST_LINE: "Image: ghcr.io/wisewareorg/wisekiosk@${{ steps.build.outputs.digest }}"
         run: |
           gh release view "$TAG" --json body -q .body > "$RUNNER_TEMP/notes.md"
@@ -145,10 +158,32 @@ jobs:
           printf '%s\n' "$DIGEST_LINE" >> "$RUNNER_TEMP/notes.md"
           gh release edit "$TAG" --notes-file "$RUNNER_TEMP/notes.md"
 
+      # The release becomes immutable the moment this runs; every step above only ever touches a
+      # draft.
+      - name: Publish the draft release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
+        run: gh release edit "$TAG" --draft=false
+
+      # Unconfirmed that `--prefer-index=false` reproduces the index under `latest` byte-identically
+      # to the one just published; the assertion below fails closed rather than being loosened if it
+      # does not.
+      - name: Move `latest` to the published digest
+        if: ${{ !inputs.prerelease }}
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: |
+          docker buildx imagetools create --prefer-index=false \
+            --tag ghcr.io/wisewareorg/wisekiosk:latest "ghcr.io/wisewareorg/wisekiosk@$DIGEST"
+          LATEST_DIGEST=$(docker buildx imagetools inspect ghcr.io/wisewareorg/wisekiosk:latest \
+            --format '{{json .Manifest.Digest}}' | tr -d '"')
+          [[ "$LATEST_DIGEST" == "$DIGEST" ]]
+
   # Verifies the published digest against the registry, the public transparency log, and GitHub's
   # release and attestation APIs, read only. Runs on every release, pre-release included — there is
   # no pre-release skip — and a failed verification fails this run rather than being reported and
-  # fixed later. Not a required status check: this job runs on the release event rather than on a
+  # fixed later. Not a required status check: this job runs on a tag dispatch rather than on a
   # pull request (docs/CI.md § Publishing and provenance).
   verify:
     name: verify
@@ -206,15 +241,15 @@ jobs:
         env:
           REF: ghcr.io/wisewareorg/wisekiosk
           DIGEST: ${{ needs.publish.outputs.digest }}
-          TAG: ${{ github.event.release.tag_name }}
+          TAG: ${{ github.ref_name }}
         run: python3 scripts/publish/verify_release.py --step attached
 
-  # The documented bring-up procedure, against the release that fired this workflow, on a
+  # The documented bring-up procedure, against the release this dispatch published, on a
   # non-pre-release only, once verify passes (docs/CI.md § Deployment and bring-up).
   bring-up:
     name: bring-up
     needs: [publish, verify] # publish for its digest output, verify as the gate
-    if: github.event.release.prerelease == false
+    if: ${{ !inputs.prerelease }}
     runs-on: ubuntu-latest
     permissions:
       contents: read # gh release download, the release assets bring_up.py fetches
@@ -240,7 +275,7 @@ jobs:
       - name: The documented bring-up procedure reaches a serving deployment
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG: ${{ github.event.release.tag_name }}
+          TAG: ${{ github.ref_name }}
           DIGEST: ${{ needs.publish.outputs.digest }}
         run: just check-bringup "$TAG" "$DIGEST"
 
@@ -249,13 +284,14 @@ jobs:
         working-directory: bring-up
         run: docker compose down --volumes
 
-  # The release just published swaps for the newest older non-pre-release under the same mounts,
-  # on a non-pre-release only, once verify passes (docs/CI.md § Deployment and bring-up). With no
-  # such release, the swap step's own `if:` condition skips it and the job passes.
+  # The release this dispatch just published swaps for the newest older non-pre-release under the
+  # same mounts, on a non-pre-release only, once verify passes (docs/CI.md § Deployment and
+  # bring-up). With no such release, the swap step's own `if:` condition skips it and the job
+  # passes.
   image-swap:
     name: image-swap
     needs: [publish, verify] # publish for its digest output, verify as the gate
-    if: github.event.release.prerelease == false
+    if: ${{ !inputs.prerelease }}
     runs-on: ubuntu-latest
     permissions:
       contents: read # gh release list/download, the release assets image_swap.py fetches
@@ -279,16 +315,16 @@ jobs:
         name: The newest older non-pre-release, if any
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG: ${{ github.event.release.tag_name }}
+          TAG: ${{ github.ref_name }}
         run: |
-          echo "tag=$(gh release list --exclude-pre-releases --json tagName --jq \
+          echo "tag=$(gh release list --exclude-pre-releases --exclude-drafts --json tagName --jq \
             "[.[].tagName] | map(select(. != \"$TAG\"))[0] // empty")" >> "$GITHUB_OUTPUT"
 
       - name: The newest older non-pre-release swaps for this one under the same mounts
         if: steps.previous.outputs.tag != ''
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG: ${{ github.event.release.tag_name }}
+          TAG: ${{ github.ref_name }}
           DIGEST: ${{ needs.publish.outputs.digest }}
           PREVIOUS_TAG: ${{ steps.previous.outputs.tag }}
         run: |
