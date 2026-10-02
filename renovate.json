@@ -3,7 +3,7 @@
   "extends": ["github>WisewareOrg/wise-renovate#v1.5.0"],
   "rebaseWhen": "conflicted",
   "packageRules": [
-    { "matchDatasources": ["docker"], "matchPackageNames": ["ghcr.io/tjwise99/wisekiosk"], "enabled": false }
+    { "matchDatasources": ["docker"], "matchPackageNames": ["ghcr.io/wisewareorg/wisekiosk"], "enabled": false }
   ],
   "customManagers": [
     {

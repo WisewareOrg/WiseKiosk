@@ -3,7 +3,7 @@
 
 services:
   kiosk:
-    image: ghcr.io/tjwise99/wisekiosk:latest
+    image: ghcr.io/wisewareorg/wisekiosk:latest
     restart: unless-stopped
     ports:
       - "8080:8080"

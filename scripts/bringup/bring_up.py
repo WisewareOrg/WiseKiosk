@@ -6,7 +6,7 @@ release's two assets. This runs the first `sh` fence after the doc's `## Bring-u
 unedited, in a fixed working directory (`bring-up/` at the repository root) holding the two assets
 `gh release download` fetches for the given release tag.
 
-Before the block runs, `ghcr.io/tjwise99/wisekiosk:latest` is asserted to resolve to the given
+Before the block runs, `ghcr.io/wisewareorg/wisekiosk:latest` is asserted to resolve to the given
 digest — the one assertion in the tree that `latest` moved to the release this run was handed, and
 the poll that waits out registry propagation.
 
