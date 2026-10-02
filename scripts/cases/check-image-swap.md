@@ -46,31 +46,3 @@ per-run `RepoDigests` assertion rather than by a seed that would need a builder 
 digest, and the job's `permissions` and trigger condition, are workflow YAML outside
 `image_swap.py` and outside every row above; they are exercised for the first time by a real
 release's job run.
-
-**Decision 3 and decision 4 specified before implementation.** The rows below specify
-`image_swap.py`'s own candidate selection, probe classification and argument-count behavior, ahead
-of the code that implements them — this is the red half of the pair, and each row stays red until
-the implementation fills in its observed result. Each row is marked **runnable now** (the inputs
-and the code it exercises, `argparse` and `common.imagetools_inspect`, already exist) or **pending
-the first org non-pre-release** (`ghcr.io/wisewareorg/wisekiosk` answers 403 — confirmed by hand
-2026-10-02 — until something is first pushed there, which the row needs). A runnable-now row's
-Input cell states the command and the outcome it is expected to produce; the implementation run
-replaces "expected" with what that row's own run printed.
-
-| Direction | Case | Input |
-|---|---|---|
-| Must fail | Exactly 1 positional | `v0.1.0` — **runnable now**; expected: argparse's own usage error to stderr, exit 2 |
-| Must fail | Exactly 3 positionals | `v0.1.0 sha256:27ff…d589a v0.0.1` — **runnable now**; expected: argparse's own usage error to stderr, exit 2 |
-| Must pass | 2-form, `TAG` with no older non-pre-release | `v0.1.0 sha256:27ff…d589a` — **runnable now**; confirmed 2026-10-02 via `gh release list --exclude-pre-releases --json tagName,publishedAt`, which names only `v0.1.0` itself, so no non-pre-release has a `publishedAt` earlier than it and the candidate list is empty before any probe runs; expected stdout `` image-swap: skipped — no non-pre-release older than v0.1.0 has an image in ghcr.io/wisewareorg/wisekiosk (checked: none) ``, exit 0 |
-| Must fail | 2-form, nonexistent `TAG` | `v9.9.9 sha256:00…00` — **runnable now**; `v9.9.9` is not a release of this repository (confirmed 2026-10-02 via the same `gh release list` above); expected: exit 1, an `image-swap: `-prefixed message to stderr (the plan does not specify its exact wording) |
-| Must pass | Probe classification: an existing old-namespace tag | `common.imagetools_inspect("ghcr.io/tjwise99/wisekiosk:0.1.0", ".Manifest.Digest")` — **runnable now**; `docker buildx imagetools inspect` against that reference returned exactly this digest when run by hand 2026-10-02; expected: `(value, None)` with `value` equal to `sha256:27ff2637c52fe1e389a23693bb0c5fd8dcce175e9219c49006884ad46d3e589a` — found |
-| Must pass | Probe classification: a nonexistent old-namespace tag | `common.imagetools_inspect("ghcr.io/tjwise99/wisekiosk:9.9.9", ".Manifest.Digest")` — **runnable now**; `docker buildx imagetools inspect` against that reference printed `` ghcr.io/tjwise99/wisekiosk:9.9.9: not found `` when run by hand 2026-10-02; expected: `(None, stderr)` with `stderr` containing `not found` (case-insensitive) — absent |
-| Must pass | 4-form, unchanged | `v0.0.1 sha256:a233…e1fa7 v0.1.0 sha256:27ff…d589a` — **runnable now**; expected: identical to this table's first row above, since decision 4 leaves the 4-positional form's behavior unchanged |
-| Must pass | Decision 3 walks past an absent candidate to a found one | **pending the first org non-pre-release** — needs two non-pre-releases under `ghcr.io/wisewareorg/wisekiosk`, the newer absent and the next older found; not yet real, since the namespace carries no image until the first org publish |
-| Must pass | Decision 3 swaps against the found candidate | **pending the first org non-pre-release** — the swap itself, run against the TAG under test and the found older candidate; same prerequisite as the row above |
-
-**Decision 3's fail-closed path has no row above.** The "anything else" branch — another error from
-`imagetools_inspect`, or a value that does not match `^sha256:[0-9a-f]{64}$` — has no real input
-that reaches it without a stub standing in for the registry or the probe, which no row above does.
-It stays unverified until a real failure of that shape is observed, or the plan accepts a stub for
-it.
