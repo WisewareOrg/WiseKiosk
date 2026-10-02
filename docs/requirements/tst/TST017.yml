@@ -11,9 +11,9 @@ ref: ''
 references:
 - keyword: func TestAnUnresolvableSecretFailsOnlyItsOwnSource
   path: backend/internal/router/router_test.go
-  sha: 2c061dd504721329b9b0ac0ec064c0b79ed691f015aac59d284130ac0e1b15e1
+  sha: d542983f6f171ef8adf59810de8fa1e696df81bf807e90a04a874919f6d325a9
   type: file
-reviewed: T3GYQ5M-bLlkgU8BJ1nsKQ7ky0Wqa7BoyLytOxV5lZg=
+reviewed: 4_RFn3onYqXbxPDV07KCrqzq8HGTi2w0MazCieHAIDg=
 status: proposed
 text: |
   Route test asserting the backend boots with no secrets delivered, and that a request to a source

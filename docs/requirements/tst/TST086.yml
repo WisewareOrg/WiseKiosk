@@ -10,17 +10,17 @@ ref: ''
 references:
 - keyword: func TestPrettyNameResolvesToItsUUID(t *testing.T) {
   path: backend/internal/modules/park_wait_times/park_wait_times_test.go
-  sha: 7422d42576631468b3ef6769823fcc57cbddba5fd65e3952cc2968e9ed195cb7
+  sha: 25b4470ae4f88046a9e5c92b50e24917d4b81ed1225fe838d69c6f2b0d6348a8
   type: file
 - keyword: func TestPrettyNameMatchIsNormalized(t *testing.T) {
   path: backend/internal/modules/park_wait_times/park_wait_times_test.go
-  sha: 7422d42576631468b3ef6769823fcc57cbddba5fd65e3952cc2968e9ed195cb7
+  sha: 25b4470ae4f88046a9e5c92b50e24917d4b81ed1225fe838d69c6f2b0d6348a8
   type: file
 - keyword: func TestUnrecognizedConfigStringPassesThroughAsIs(t *testing.T) {
   path: backend/internal/modules/park_wait_times/park_wait_times_test.go
-  sha: 7422d42576631468b3ef6769823fcc57cbddba5fd65e3952cc2968e9ed195cb7
+  sha: 25b4470ae4f88046a9e5c92b50e24917d4b81ed1225fe838d69c6f2b0d6348a8
   type: file
-reviewed: jEQZyOCypLtk0ECmErGPMo3cwPikgrKHM7rNc1XpfT8=
+reviewed: 4loOY3PvKFax9fxX3ryCfJI66_RgYfTOdbOC5uSjtEQ=
 status: accepted
 text: |
   Unit tests exercising the module's own HTTP handler, without a network: a configured park whose
