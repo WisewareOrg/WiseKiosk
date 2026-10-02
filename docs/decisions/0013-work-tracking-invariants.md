@@ -15,7 +15,7 @@
 
 ## Context
 
-[ADR 0006 rev 5](0006-process-gates.md) specifies exactly one property of a ticket — that it is open and
+[ADR 0006 rev 6](0006-process-gates.md) specifies exactly one property of a ticket — that it is open and
 type-labelled — and only because `scripts/check-branch.py` can decide it. Everything else about how
 work is tracked was convention, and convention drifted twice in five days. On 2026-07-24, ten of
 sixteen open tickets could not legally be branched on: unlabeled, or carrying stock `enhancement` in
@@ -52,7 +52,7 @@ that carries the definition of done. Both read fields already present in the iss
 **Gated: a sub-issue means a shared merge target.** A parent ticket exists *iff* there is an
 integration branch, and a ticket is that parent's sub-issue *iff* its pull request targets that
 branch. All other grouping is the milestone's. This is forced rather than chosen: an integration
-branch is a branch, so under ADR 0006 rev 5 it links an open type-labelled issue of its own, and that issue
+branch is a branch, so under ADR 0006 rev 6 it links an open type-labelled issue of its own, and that issue
 cannot close until the branch merges. It also separates the two progress bars — the milestone answers
 *is the phase done*, the parent answers *is this branch ready for the mainline*. The gate asserts the
 biconditional in both directions, and a non-default base that is not itself a conforming branch fails
@@ -75,7 +75,7 @@ unrelated one, and it refuses a merge rather than annotating an issue.
 ## Alternatives considered
 
 - **Detect-and-flag on `issues:` events** — an Action labelling `orphan`/`needs-triage`, which is
-  what #64 work-tracking invariants proposed. Rejected: it needs `issues: write`, and ADR 0006 rev 5
+  what #64 work-tracking invariants proposed. Rejected: it needs `issues: write`, and ADR 0006 rev 6
   rejected CI mutation on the ground that gates verify rather than mutate. That stance is **held
   here, not revisited**. The underlying argument is narrower than its wording — what it forbids is CI
   writing the evidence a gate then reads, which a flagger does not do — but the owner chose to keep
@@ -104,7 +104,7 @@ unrelated one, and it refuses a merge rather than annotating an issue.
 
 - **A ticket nobody works is never seen.** The gate reaches an issue only when a branch names it, so
   a malformed ticket left in the backlog stays malformed and stays absent from its milestone's
-  progress. This is the cost of holding ADR 0006 rev 5's read-only line, and it is accepted knowingly.
+  progress. This is the cost of holding ADR 0006 rev 6's read-only line, and it is accepted knowingly.
 - **#64 work-tracking invariants' own timing argument is overturned rather than ignored.** It held
   that a branch-side gate fires too late, when the context that would have made the ticket correct is
   gone. That is sound for body *content*, which decays; it is weak for a milestone and a type label,
@@ -114,7 +114,7 @@ unrelated one, and it refuses a merge rather than annotating an issue.
   silently drops it and the safe path produces an unbranchable ticket again.
 - **The write-time half is advisory by construction.** Nothing at filing time refuses a malformed
   ticket: GitHub cannot decline to create one, and CI does not write. That is why the merge gate is
-  the half with teeth, and the pairing is ADR 0006 rev 5's own — an advisory `commit-msg` hook beside a
+  the half with teeth, and the pairing is ADR 0006 rev 6's own — an advisory `commit-msg` hook beside a
   required title check.
 - **Judgment stays judgment.** Whether a ticket should be rescoped or closed, which close-reason
   applies, whether a scope is correct, and whether a body's acceptance condition is any good are not

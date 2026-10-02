@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""The branch name must follow type_number-snake_name (ADR 0006 rev 5): the shape is
+"""The branch name must follow type_number-snake_name (ADR 0006 rev 6): the shape is
 defined once in scripts/branch-shape.regex, shared with the branch-shape pre-push hook;
 the number resolves via the GitHub API to an open issue carrying a milestone
 and exactly one type label, which is the branch type (ADR 0013 rev 4). main and
@@ -266,7 +266,7 @@ def main():
             fail(
                 f"PR #{pr_number}'s base '{base_ref}' is neither the default branch "
                 "nor a conforming integration branch — an integration branch is a "
-                "branch, so it links a ticket of its own (ADR 0006 rev 5)"
+                "branch, so it links a ticket of its own (ADR 0006 rev 6)"
             )
         anchor = base_ref.partition("_")[2].partition("-")[0]
         if not parent:

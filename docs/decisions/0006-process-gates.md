@@ -5,10 +5,14 @@
 write-scoped-token alternative supplies; gate path corrected by
 [ADR 0016 rev 11](0016-maintained-tools-for-standard-artifacts.md)
 **Decided:** 2026-07-22 (process-gates design discussion, ticket #27)
-**Rev:** 5
+**Rev:** 6
 
 ## Revisions
 
+- **rev 6** — 2026-10-01 — drops "strict" from the required-checks consequence: `main` merges through
+  a merge queue, not strict up-to-date protection, and how the merge path is protected is
+  [`../CI.md`](../CI.md) § *Gate wiring*'s to state, not this record's; what was chosen is
+  unchanged, so the Decided date does not move (#414 merge queue).
 - **rev 5** — 2026-09-04 — replaces two stale Dependabot references — the branch-shape exemption and
   the rationale for it — with timeless statements naming the dependency updater's own branch prefix
   and title convention; what was chosen is unchanged, so the Decided date does not move (#223
@@ -109,8 +113,8 @@ mirrored locally by `just check-branch` and the advisory hooks `pre-commit insta
 
 ## Consequences
 
-- Every gate job the workflow defines is required on `main`, `process` included (strict, admins
-  bound), so a PR from a nonconforming branch cannot merge. That the required set equals that job set
+- Every gate job the workflow defines is required on `main`, `process` included (admins bound),
+  so a PR from a nonconforming branch cannot merge. That the required set equals that job set
   is [`../CI.md`](../CI.md) § *Gate wiring*'s to assert; a count here would be falsified by adding a
   gate job, by someone with no reason to open this record.
 - A branch that predates this rule is blocked until renamed and its ticket labeled, the gate reading
