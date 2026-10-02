@@ -2,7 +2,7 @@
 """Create or reuse a draft release for one tag, so `publish.yml` can attach assets and amend notes
 before anything is immutable.
 
-The fix is draft-first (ADR 0020 rev 5): `publish.yml` creates or reuses this tag's draft release
+Publishing is draft-first (ADR 0020 rev 5): `publish.yml` creates or reuses this tag's draft release
 before any registry write, fills it over its own later steps, then publishes it last. This script
 owns only the draft's existence and its `prerelease` flag.
 

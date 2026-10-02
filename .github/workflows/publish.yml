@@ -2,12 +2,11 @@ name: publish
 
 # Builds the container image and publishes it to GHCR, signs and attests it, fills a draft release
 # for the dispatched tag with the uploaded recipe and example configuration and the digest line,
-# then publishes it. `contents: write`, `packages: write`, `id-token: write` and
-# `attestations: write` are held by the publish job alone; the verify job holds none; the latest job
-# holds `packages: write` alone. Runs on `workflow_dispatch` against a pushed tag, whose shape the
-# first step asserts, with one boolean input, `prerelease`. The latest, bring-up and image-swap jobs
-# run only for a non-pre-release, once verify passes (docs/CI.md § Deployment and bring-up,
-# § Publishing and provenance).
+# then publishes it. `contents: write`, `id-token: write` and `attestations: write` are held by the
+# publish job alone, and `packages: write` by the publish and latest jobs; the verify job holds none.
+# Runs on `workflow_dispatch` against a pushed tag, whose shape the first step asserts, with one
+# boolean input, `prerelease`. The latest, bring-up and image-swap jobs run only for a non-pre-release,
+# once verify passes (docs/CI.md § Deployment and bring-up, § Publishing and provenance).
 
 on:
   workflow_dispatch:
@@ -69,10 +68,11 @@ jobs:
       # on; `.documentation` is not defaulted and is supplied as a literal, on both surfaces
       # (ADR 0015 rev 4). The annotation levels are declared here rather than restated elsewhere,
       # because the annotation check reads them from this workflow (docs/CI.md § Publishing and
-      # provenance). `latest` is not tagged here: a step below moves it to the published digest
-      # only once the release has published, so a run that never reaches that step never points it
-      # at an unpublished image (docs/DEPLOYMENT.md § Bring-up). `flavor: latest=false` disables
-      # the action's own automatic `latest` tag, which `type=semver` triggers regardless.
+      # provenance). `latest` is not tagged here: the `latest` job moves it to the published digest
+      # once the release has published and verify has passed, so a run that never reaches that job
+      # never points it at an unpublished or unverified image (docs/DEPLOYMENT.md § Bring-up).
+      # `flavor: latest=false` disables the action's own automatic `latest` tag, which `type=semver`
+      # triggers regardless.
       - id: meta
         uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
         env:
