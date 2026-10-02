@@ -442,9 +442,9 @@ publish landed, #268 release from a manual tag keyed to `release: published`, an
 under immutable releases moved to `workflow_dispatch` on a pushed tag, against the set
 [ADR 0020 rev 5](decisions/0020-release-artifact-set-and-operator-tooling.md) decides. That workflow
 runs only when the owner pushes a `vMAJOR.MINOR.PATCH` tag and dispatches it, tags the image by that
-semver, and creates, fills and publishes a draft release for that tag before moving `latest` to it
-for a non-pre-release — GitHub locks a release's assets and tag the moment it publishes, so the
-draft is filled first and published last rather than the other way round; the committed recipe
+semver, and creates and fills a draft release for that tag before publishing it and then moving
+`latest` to it for a non-pre-release
+([ADR 0020 rev 5](decisions/0020-release-artifact-set-and-operator-tooling.md)); the committed recipe
 references `latest` so it runs unedited ([`DEPLOYMENT.md`](DEPLOYMENT.md) § *Bring-up*); the release
 notes carry exactly one line naming that digest,
 `Image: ghcr.io/wisewareorg/wisekiosk@sha256:<digest>`, which the workflow replaces rather than

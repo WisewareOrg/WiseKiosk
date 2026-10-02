@@ -11,7 +11,7 @@ on #9 backend skeleton and the 2026-08-09 design discussion on #71 release artif
 - **rev 5** — 2026-10-02 — moves the trigger from `release: published` to `workflow_dispatch` on a
   pushed tag, carrying one boolean input, `prerelease`: GitHub locks a release's assets and its tag
   the moment it publishes, so a workflow triggered by that publish could never attach anything to
-  the release that triggered it. The workflow now creates or reuses a draft release for the
+  the release that triggered it. The workflow creates or reuses a draft release for the
   dispatched tag, fills it over its own later steps, and publishes it last; `latest` moves to the
   published digest only once that publish step has run, not at build. image-swap's
   previous-release lookup excludes drafts, so an in-flight one is never picked as the swap target. A

@@ -159,8 +159,7 @@ jobs:
           printf '%s\n' "$DIGEST_LINE" >> "$RUNNER_TEMP/notes.md"
           gh release edit "$TAG" --notes-file "$RUNNER_TEMP/notes.md"
 
-      # The release becomes immutable the moment this runs; every step above only ever touches a
-      # draft.
+      # Every step above only ever touches the draft; this is what publishes it.
       - name: Publish the draft release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
