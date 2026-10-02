@@ -16,6 +16,11 @@ throwaway tag, and the `gh`-failure row, which is stateless and may run in any o
 the command runs against `WisewareOrg/WiseKiosk` regardless of this checkout's own remote, and `gh`
 reads `GITHUB_TOKEN` from the environment for authentication.
 
+Script md5 `4c213bca38e8b43667be7da8058fe38f` at `788d380 docs(publish): fix rev-docs-fresh's
+mechanical findings`. Every row below ran against the code first committed at `b6a5701 fix(publish):
+create a draft release before any registry write`; nothing but the module docstring has changed
+between that commit and this one.
+
 | Case | Seed / run | Expected outcome | Evidence |
 |---|---|---|---|
 | No release carries the tag; `PRERELEASE=false` | tag `v0.0.99` pushed, no release exists on it — confirmed by `gh api --paginate repos/WisewareOrg/WiseKiosk/releases --jq '[.[] \| select(.tag_name == "v0.0.99")] \| length'` returning `0`; run `TAG=v0.0.99 PRERELEASE=false GH_REPO=WisewareOrg/WiseKiosk python3 scripts/publish/draft_release.py` | runs `gh release create v0.0.99 --draft --verify-tag --title v0.0.99 --generate-notes --prerelease=false`; exactly one release carries the tag — a draft, titled `v0.0.99`, non-empty generated notes, `isPrerelease` false | Ran against `WisewareOrg/WiseKiosk`. Script printed `draft release v0.0.99 created, prerelease=false`, exit 0. `gh release view v0.0.99` afterwards: `databaseId 401879205`, `isDraft true`, `isPrerelease false`, `name "v0.0.99"`, non-empty generated `body` |
