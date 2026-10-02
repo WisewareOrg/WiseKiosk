@@ -10,6 +10,7 @@ on:
   pull_request:
     # edited: the process gate validates the PR title, so title fixes must re-run it
     types: [opened, edited, synchronize, reopened]
+  merge_group:
 
 permissions:
   contents: read
@@ -491,7 +492,7 @@ jobs:
 
   process:
     name: process
-    # Process gates (ADR 0006 rev 5): the branch is named type_number-snake_name and
+    # Process gates (ADR 0006 rev 6): the branch is named type_number-snake_name and
     # links an open issue labeled with its type; the PR title — the commit that
     # reaches main under squash-merge — is a Conventional Commit. The branch check
     # is `just check-branch`, handed the PR's head ref, reading its pattern from
@@ -538,6 +539,9 @@ jobs:
 
   secret-scan:
     name: secret-scan
+    # gitleaks-action refuses merge_group; a one-PR group's commits were scanned on the PR and are
+    # scanned again by the push to main (docs/CI.md § Secret scanning).
+    if: github.event_name != 'merge_group'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

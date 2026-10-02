@@ -257,7 +257,7 @@ unregistered language whatever this record said.
   verified by re-running the cases [`../../scripts/README.md`](../../scripts/README.md) records for
   the original, in both directions, because a conversion that is verified by inspection is a rewrite
   with a clean-looking diff.
-- **`check-branch` loses `curl` and `jq` for `urllib` and `json`.** [ADR 0006 rev 5](0006-process-gates.md)'s
+- **`check-branch` loses `curl` and `jq` for `urllib` and `json`.** [ADR 0006 rev 6](0006-process-gates.md)'s
   *plain sh + curl + jq — no toolchain* property, already corrected by
   [ADR 0016 rev 11](0016-maintained-tools-for-standard-artifacts.md) when `commitlint` and `pre-commit` were
   adopted, ends completely. What replaces it is a weaker but real property: the interpreter the gates

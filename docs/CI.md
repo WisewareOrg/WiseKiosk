@@ -21,8 +21,10 @@ Not everything CI does is a gate. These produce material a person acts on.
   dependency bump is its own pull request, except the Node runtime, which travels as one grouped
   pull request across `engines` fields, `setup-node` inputs and the `Dockerfile` base image; the run
   opens at most two new pull requests an hour and holds at most ten open at once. Patch, minor, pin
-  and digest updates auto-merge through GitHub's native auto-merge once required checks pass; major
-  updates open a pull request and wait. A release sits for three days before its update opens a
+  and digest updates auto-merge: GitHub's native auto-merge places the pull request in the merge
+  queue (§ *Gate wiring*) once its required checks pass, and Renovate rebases a branch only when it
+  conflicts with `main`, since the queue tests each pull request against the current `main` itself;
+  major updates open a pull request and wait. A release sits for three days before its update opens a
   branch. Renovate's default title convention, `chore(deps): …`, is already a Conventional Commit, so
   `checks.yml`'s process job runs its pre-commit install and title-lint steps unconditionally for
   every pull request — the exemption Dependabot's capitalised `build(deps): Bump …` default needed
@@ -401,6 +403,10 @@ finding fails the merge. The scan walks **the commits the event carries** rather
 tip — the pull request's own commits, or the commits a push delivered — so a secret added and then
 removed within one branch still fails: the value is compromised from the moment it is pushed, and the
 commit that removes it changes nothing.
+
+The merge queue's `merge_group` run skips the scan: the pinned `gitleaks-action` refuses that event,
+and a group holds exactly one pull request, whose commits its own pull-request run scanned and the
+push to `main` that lands it scans again.
 
 **What that shape does not reach**, and what may therefore not be read into a green result: history
 behind the branch point, which this gate does not re-read; a commit reachable only through a merge's
@@ -904,7 +910,7 @@ changed, which the citation resolver above decides without anyone declaring anyt
 - **The pull-request title is a Conventional Commit, and so is each local commit message** — one
   obligation at two stages, delegated to `commitlint`
   ([ADR 0016 rev 11](decisions/0016-maintained-tools-for-standard-artifacts.md); the gate itself is
-  [ADR 0006 rev 5](decisions/0006-process-gates.md)'s). Both stages run through the hook layer's
+  [ADR 0006 rev 6](decisions/0006-process-gates.md)'s). Both stages run through the hook layer's
   `repo: local` hooks and one base configuration, `.commitlintrc.json` —
   `@commitlint/config-conventional`, plus a `scope-case` rule restoring the retired check's
   lowercase-scope refusal, which the preset does not carry. The `commit-msg` hook is the
@@ -1160,11 +1166,14 @@ already decided, which is what makes it a check and not a want.
   **What it leaves unproven** is that a reached test asserts anything: discovery decides that a
   runner would execute the file, and what the tiers must guarantee is [`TESTING.md`](TESTING.md)'s.
 - The default branch's required status checks equal the gate jobs the workflow defines — a gate job
-  absent from the required set fails, and so does a required entry naming no defined job. **The
-  protection is strict, and administrators are bound by it**: a branch behind the default branch
-  cannot merge on a stale green, and there is no role that merges past a red gate. Both are repository
-  settings rather than files, so no check here decides them — the same standing as the secret-scanning
-  settings above, and this line rather than a gate is what records it.
+  absent from the required set fails, and so does a required entry naming no defined job. **`main`
+  merges through a merge queue, and administrators are bound by it**: the queue builds and merges
+  one pull request at a time, re-running the required checks on that pull request applied to the
+  current `main`, so nothing merges on a stale green and no pull request's green depends on another
+  not yet merged; there is no role that merges past a red gate. Batching is rejected — every pull
+  request stands alone — and the throughput that costs, one `checks` run per merge, is accepted. Strict up-to-date protection is off, the queue being what it protected. These
+  are repository settings rather than files, so no check here decides them — the same standing as
+  the secret-scanning settings above, and this line rather than a gate is what records it.
   **§ *First-party source scanning*'s required set names five checks**, observed on its own first
   run rather than assumed: the four matrix legs `codeql (go, autobuild)`,
   `codeql (javascript-typescript, none)`, `codeql (python, none)` and `codeql (actions, none)`, which

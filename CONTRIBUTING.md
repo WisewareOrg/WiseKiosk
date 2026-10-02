@@ -43,7 +43,7 @@ configured, this repo's hook layer on demand via `just check-hooks`, and the bin
 ## Tickets, branches, and titles
 
 Open an issue from a template first: the branch name is derived from it. Enforced by the `process` CI
-check ([ADR 0006 rev 5](docs/decisions/0006-process-gates.md)). The `branch-shape` pre-push hook
+check ([ADR 0006 rev 6](docs/decisions/0006-process-gates.md)). The `branch-shape` pre-push hook
 from `pre-commit install` checks the shape only — not the issue conditions below — and only at push, when
 the branch and its commits already exist. **Nothing checks the name at `git switch -c`**, which is
 where it is chosen and where it goes wrong, so this section is in the file

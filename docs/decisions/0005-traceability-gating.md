@@ -200,7 +200,7 @@ The four stored attributes — `verification-method`, `status`, `verification-ju
   from the diff against the tree — a PR-body ID either restates that or contradicts it, and in a
   contradiction the diff is the truth. PR metadata lives outside the checked zone: no scanner reads
   it, no page renders it, nothing fails when it rots. Issues remain as scheduling views over the
-  backlog; branch shape is process-gated by [ADR 0006 rev 5](0006-process-gates.md) but stays outside the
+  backlog; branch shape is process-gated by [ADR 0006 rev 6](0006-process-gates.md) but stays outside the
   traceability evidence channel — the rejection here stands.
   The partition once obliged gate 4's claim mechanism to reach files Doorstop references cannot —
   paths under dot-directories, a limit 0002 records — but that gate is retired, so the obligation

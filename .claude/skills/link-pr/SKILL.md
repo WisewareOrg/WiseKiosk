@@ -22,7 +22,7 @@ That is what makes the failure expensive rather than obvious: the body looks rig
 `link it there manually — body keywords record nothing against base '<the base>'`. **The gate reads
 GitHub's recorded state**, so no wording in the body will satisfy it. Requirement and rationale are
 [`CONTRIBUTING.md`](../../../CONTRIBUTING.md)'s and
-[ADR 0006 rev 5](../../../docs/decisions/0006-process-gates.md)'s; this skill is the mechanism.
+[ADR 0006 rev 6](../../../docs/decisions/0006-process-gates.md)'s; this skill is the mechanism.
 
 **This skill is advisory.** Nothing forces its use. The half with teeth is the `process` job, which
 refuses the merge later — so an unlinked PR is not lost, only expensive.

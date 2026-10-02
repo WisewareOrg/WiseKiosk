@@ -5,7 +5,7 @@ The inputs the adopted gate has been run against, in both directions. The gate r
 (ADR 0016 rev 11; #107 adopt commitlint), and the rows below are that check's recorded cases re-run
 against the adopted tool — including the must-pass rows, since an adopted tool may reject legal
 input the authored check accepted. Why the two stages differ is
-[ADR 0006 rev 5](../../docs/decisions/0006-process-gates.md)'s: `fixup!`/`squash!`/merge subjects
+[ADR 0006 rev 6](../../docs/decisions/0006-process-gates.md)'s: `fixup!`/`squash!`/merge subjects
 never survive the squash, where the pull-request title *becomes* the commit on `main`.
 
 **Tool, pinned as run:** `@commitlint/cli` 21.2.2 with `@commitlint/config-conventional` 21.2.2,
