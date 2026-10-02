@@ -1,5 +1,5 @@
 # The deployment recipe: what it carries, and that it is a sample rather than an obligation on what
-# runs, is ADR 0020 rev 4's.
+# runs, is ADR 0020 rev 5's.
 
 services:
   kiosk:

@@ -23,7 +23,7 @@ values into an invoked script) — only what each `--step` needs:
   REF     the image reference, without a digest (e.g. ghcr.io/wisewareorg/wisekiosk); every step
   DIGEST  the index digest, sha256:<hex>; every step
   COMMIT  the release commit, github.sha; --step provenance only
-  TAG     the release tag, github.event.release.tag_name; --step attached only
+  TAG     the release tag, github.ref_name; --step attached only
   SYFT    the path to the pinned syft binary, `download-syft`'s `cmd` output; --step sbom only
 
 `cosign` and `gh` are invoked by bare name, on the PATH the workflow's setup steps provide. The

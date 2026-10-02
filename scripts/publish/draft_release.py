@@ -2,7 +2,7 @@
 """Create or reuse a draft release for one tag, so `publish.yml` can attach assets and amend notes
 before anything is immutable.
 
-GitHub locks a release's assets and tag the moment it publishes (ADR 0020 rev 4): a workflow
+GitHub locks a release's assets and tag the moment it publishes (ADR 0020 rev 5): a workflow
 triggered by the publish of a release can therefore never upload to the release that triggered it.
 The fix is draft-first — `publish.yml` creates or reuses this tag's draft release before any
 registry write, fills it over its own later steps, then publishes it last. This script owns only

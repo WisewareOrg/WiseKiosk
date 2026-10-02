@@ -30,8 +30,8 @@ reported byte-identical text and near-identical timing, noted per row.
 
 **Real-world confirmation of the no-previous-release path.** At the time these rows were run, this
 repository carries exactly one non-pre-release (`v0.1.0`); `gh release list --exclude-pre-releases
---json tagName --jq` with the current release's tag filtered out returns nothing, which the
-`image-swap` job's `previous` step writes to `$GITHUB_OUTPUT` as an empty `tag`. The swap step's
+--exclude-drafts --json tagName --jq` with the current release's tag filtered out returns nothing,
+which the `image-swap` job's `previous` step writes to `$GITHUB_OUTPUT` as an empty `tag`. The swap step's
 own `if: steps.previous.outputs.tag != ''` condition is then false, so the step — and
 `image_swap.py` with it — is skipped rather than run and passing — confirmed against the live
 repository rather than seeded.

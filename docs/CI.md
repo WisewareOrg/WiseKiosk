@@ -437,15 +437,19 @@ in a separate job, `verify`, that reads three surfaces only — the registry, th
 log via cosign, and GitHub's release and attestation APIs — and holds no write scope. Installing the
 job's own tools — the cosign and syft installers, and the `pipx` fetch of `check-jsonschema` from
 PyPI — is the job's only other network activity, distinct from the three evidence surfaces above.
-What builds and pushes the image is `.github/workflows/publish.yml`, which #54 container build and publish landed and
-#268 release from a manual tag keyed to `release: published`, against the set
-[ADR 0020 rev 4](decisions/0020-release-artifact-set-and-operator-tooling.md) decides. That workflow
-runs only when the owner publishes a `vMAJOR.MINOR.PATCH` release, tags the image by that semver, and
-moves `latest` to it for a non-pre-release; the committed recipe references `latest` so it runs
-unedited ([`DEPLOYMENT.md`](DEPLOYMENT.md) § *Bring-up*); the release notes carry exactly one line
-naming that digest, `Image: ghcr.io/wisewareorg/wisekiosk@sha256:<digest>`, which the workflow replaces
-rather than duplicates on a re-run
-([ADR 0020 rev 4](decisions/0020-release-artifact-set-and-operator-tooling.md)), and it is what an
+What builds and pushes the image is `.github/workflows/publish.yml`, which #54 container build and
+publish landed, #268 release from a manual tag keyed to `release: published`, and #418 publish
+under immutable releases moved to `workflow_dispatch` on a pushed tag, against the set
+[ADR 0020 rev 5](decisions/0020-release-artifact-set-and-operator-tooling.md) decides. That workflow
+runs only when the owner pushes a `vMAJOR.MINOR.PATCH` tag and dispatches it, tags the image by that
+semver, and creates, fills and publishes a draft release for that tag before moving `latest` to it
+for a non-pre-release — GitHub locks a release's assets and tag the moment it publishes, so the
+draft is filled first and published last rather than the other way round; the committed recipe
+references `latest` so it runs unedited ([`DEPLOYMENT.md`](DEPLOYMENT.md) § *Bring-up*); the release
+notes carry exactly one line naming that digest,
+`Image: ghcr.io/wisewareorg/wisekiosk@sha256:<digest>`, which the workflow replaces rather than
+duplicates on a re-dispatch before the release publishes
+([ADR 0020 rev 5](decisions/0020-release-artifact-set-and-operator-tooling.md)), and it is what an
 operator who chooses to verify checks against.
 
 **The `verify` job's write-scope property is decided, not proposed.**
@@ -456,7 +460,7 @@ name. It runs locally as `check-publish-permissions`, a `just verify` dependency
 `docs-and-hygiene` job. #77 Gate CI.md against the workflow it describes fences this document as a
 whole; until then, read anything this gate does not itself assert as intent.
 
-**This job runs on the release event rather than on a pull request**, so it is neither a required
+**This job runs on a tag dispatch rather than on a pull request**, so it is neither a required
 status check nor one of § *Gate wiring*'s no-local-form exceptions. A failed verification fails the
 release run, the first run included; the release is re-cut, and there is no rollback.
 
@@ -476,7 +480,7 @@ release run, the first run included; the release is re-cut, and there is no roll
   **What no check here decides:** the documentation site is deployed from the default branch rather
   than from a tag, so it is not a release asset and nothing asserts any correspondence between what it
   describes and the digest an operator is running. That drift is chosen rather than overlooked, and
-  ADR 0020 rev 4 records the choice.
+  ADR 0020 rev 5 records the choice.
 - **Signature.** Keyless `cosign verify` against the published index digest and each platform child,
   with the certificate identity bound to this workflow's own tag-triggered runs
   (`--certificate-identity-regexp`) and the GitHub Actions OIDC issuer, exits zero; against a
@@ -553,8 +557,8 @@ run only once the `verify` job (§ *Publishing and provenance*) passes, so neith
 whose signature or attestation failed to verify.
 
 - **The documented procedure executes.** `just check-bringup`, run by the `bring-up` job in
-  [`../.github/workflows/publish.yml`](../.github/workflows/publish.yml) against the release that
-  triggered the run: it downloads the release's two assets into an empty directory and runs the
+  [`../.github/workflows/publish.yml`](../.github/workflows/publish.yml) against the release this
+  dispatch published: it downloads the release's two assets into an empty directory and runs the
   first `sh` fence after [`DEPLOYMENT.md`](DEPLOYMENT.md) § *Bring-up*'s heading, line by line,
   unedited. It fails if a documented step does not run, or if the sequence completes without a
   serving deployment — so documentation that omits a step fails here rather than at somebody's first
@@ -564,7 +568,7 @@ whose signature or attestation failed to verify.
   alone cannot see a missing configuration mount, `/healthz` being configuration-blind by design.
   Before the block runs, `ghcr.io/wisewareorg/wisekiosk:latest` is asserted to resolve to the digest
   the publish job just produced, which is the one assertion in the tree that `latest` moved to the
-  release that fired the check. The job runs only on a non-pre-release: `latest` does not move for
+  release this dispatch published. The job runs only on a non-pre-release: `latest` does not move for
   one ([`DEPLOYMENT.md`](DEPLOYMENT.md) § *Bring-up*), so the recipe's unedited `:latest` would
   otherwise exercise the previous release's digest against the new assets. What is run is the
   documented default path, which edits nothing and verifies nothing: attestation verification is
@@ -582,7 +586,7 @@ whose signature or attestation failed to verify.
   **It gates that one key deliberately and no others**: the key is the residue of a
   requirement deleted on #69 tree rebuild, not the beginning of a recipe linter. Every other value in
   the recipe is a sample default an operator is expected to weigh and change
-  ([ADR 0020 rev 4](decisions/0020-release-artifact-set-and-operator-tooling.md)), and gating one would
+  ([ADR 0020 rev 5](decisions/0020-release-artifact-set-and-operator-tooling.md)), and gating one would
   assert a recommendation as an obligation.
 - **The image reports its health in both directions.** `scripts/image/health_signal.py`, run by
   `just check-image` in the `image-tests` job, runs the argument vector the image's own
@@ -609,8 +613,8 @@ whose signature or attestation failed to verify.
   emission specs and fails on a console warning of a rejected policy directive or an unrecognised
   Permissions-Policy feature.
 - **An image swap preserves the deployment.** `just check-image-swap`, run by the `image-swap` job in
-  [`../.github/workflows/publish.yml`](../.github/workflows/publish.yml): the release that fired the
-  run swaps for the newest older non-pre-release, both under the same mounted configuration and
+  [`../.github/workflows/publish.yml`](../.github/workflows/publish.yml): the release this dispatch
+  published swaps for the newest older non-pre-release, both under the same mounted configuration and
   ephemeral published port — a secret directory is #261 secret mount's, this check is config-only.
   Each digest runs, is asserted healthy and serving that configuration, and is
   stopped and removed before the other runs, with no builder invoked at either step — made observable

@@ -54,7 +54,7 @@ function docsSite(): Plugin {
 
 /**
  * The docs silo's own, self-contained dev server (#195, ADR 0029 rev 2): serves the built docs site
- * and proxies `/api`,`/healthz` to the backend on its fixed port (ADR 0020 rev 4) — the same proxy
+ * and proxies `/api`,`/healthz` to the backend on its fixed port (ADR 0020 rev 5) — the same proxy
  * target `frontend/vite.config.ts` also hardcodes (ADR 0029 rev 2).
  */
 export default defineConfig({

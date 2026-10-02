@@ -41,7 +41,7 @@ dev server: `vite` is a devDependency in the same `docs/site` npm silo `swagger-
 in (the obvious reuse — the silo has an npm silo already, and Vite trivially does both static serving
 and proxying, the two things this needs). It serves the *whole* built docs site at its root — every
 page, `_static` asset and the search index, not the explorer alone — and proxies `/api`,`/healthz` to
-the backend's fixed `:8080` ([ADR 0020 rev 4](0020-release-artifact-set-and-operator-tooling.md)): a
+the backend's fixed `:8080` ([ADR 0020 rev 5](0020-release-artifact-set-and-operator-tooling.md)): a
 plain reverse proxy, no CORS header needed because the browser only ever talks to the docs server's
 own origin. `just docs-serve` is the one command that builds the docs site and launches this server
 (fixed port `5174`, so it never collides with the frontend's own dev server), so there is no separate
@@ -57,7 +57,7 @@ ever do.
 One accepted duplication: the proxy target `http://localhost:8080` is now hardcoded in *two*
 independent places — this file and `frontend/vite.config.ts`'s own, unrelated dev proxy (which exists
 for the frontend's own reasons, reaching the same backend the same way). Both already just restate the
-port ADR 0020 rev 4 fixes in the Go binary; left as two literals rather than inventing shared machinery
+port ADR 0020 rev 5 fixes in the Go binary; left as two literals rather than inventing shared machinery
 across two otherwise-unrelated dev-tooling silos for one number that is not expected to change.
 
 ## Alternatives considered
@@ -80,7 +80,7 @@ across two otherwise-unrelated dev-tooling silos for one number that is not expe
   against the real handler and via a real-browser cross-origin `fetch()`, both failing for `GET
   /healthz` and `POST /api/weather`. Fixing it would need a backend CORS capability this docs ticket
   has no business adding: there is no existing dev/prod switch in the backend at all, and
-  [ADR 0020 rev 4](0020-release-artifact-set-and-operator-tooling.md) already closes "the operator
+  [ADR 0020 rev 5](0020-release-artifact-set-and-operator-tooling.md) already closes "the operator
   interface to the binary is its flags, and there are two" — a new gate would need a rev to that
   decision, not just code; `headers.Wrap` is itself requirement-cited
   (SRS010<!-- The display page reaches no origin but the backend's -->,

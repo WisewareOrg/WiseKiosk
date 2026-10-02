@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	// addr is the service port, fixed by ADR 0020 rev 4 along with the two
+	// addr is the service port, fixed by ADR 0020 rev 5 along with the two
 	// flags main reads.
 	addr = ":8080"
 	// defaultStaticRoot is the bundle location for a run from the repository
