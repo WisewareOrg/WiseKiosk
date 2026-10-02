@@ -14,7 +14,7 @@ published-release row, which runs read-only against the published `v0.2.0` rathe
 throwaway tag, and the `gh`-failure row, which is stateless and may run in any order. `TAG` and
 `PRERELEASE` are read by the script from the environment; each row passes `GH_REPO` explicitly so
 the command runs against `WisewareOrg/WiseKiosk` regardless of this checkout's own remote, and `gh`
-reads `GITHUB_TOKEN` from the environment for authentication.
+authenticates with the running host's own `gh` login.
 
 Script md5 `4c213bca38e8b43667be7da8058fe38f` at `788d380 docs(publish): fix rev-docs-fresh's
 mechanical findings`. Every row below ran against the code first committed at `b6a5701 fix(publish):

@@ -12,13 +12,13 @@ on #9 backend skeleton and the 2026-08-09 design discussion on #71 release artif
   pushed tag, carrying one boolean input, `prerelease`, so the draft-first shape below can attach
   everything before the immutable-release lock the Decision names takes hold. The workflow creates
   or reuses a draft release for the dispatched tag, fills it over its own later steps, and publishes
-  it last; `latest` moves to the
-  published digest in its own job, once `verify` passes, not at build and not in the publish job
-  itself — an image failing verification would otherwise already be `latest` by the time `verify`
-  caught it. `bring-up` and `image-swap` gain that job alongside `verify` in their own gate.
-  image-swap's previous-release lookup excludes drafts, so an in-flight one is never picked as the
-  swap target. A run failing before the publish step is re-dispatched on the same tag rather than
-  re-cut; a `latest` job failing on its own needs neither. What the release itself is made of is
+  it last; `latest` moves to the published digest in its own job, once `verify` passes, not at build
+  and not in the publish job itself — an image failing verification would otherwise already be
+  `latest` by the time `verify` caught it. `bring-up` and `image-swap` gain that job alongside
+  `verify` in their own gate. image-swap's previous-release lookup excludes drafts, so an in-flight
+  one is never picked as the swap target. A run failing before the publish step is re-dispatched on
+  the same tag rather than re-cut; a `latest` job failing transiently needs neither, but a failed
+  digest assertion is repointed by hand rather than re-run. What the release itself is made of is
   unchanged; the trigger and its ordering move, so the Decided date moves with them
   (#418 publish under immutable releases).
 - **rev 4** — 2026-09-06 — corrects "referring artifacts" to "attached under the signing tools'
@@ -127,13 +127,13 @@ project does not produce.
 pre-release; `publish.yml`'s first step asserts the dispatched ref against that shape and fails the
 run rather than publishing from anything else. The workflow creates or reuses a draft release for
 that tag, fills it over its own later steps, and publishes it once the image, its signatures and
-attestations, the two assets and the digest line are in place — with immutable releases enabled on
-the repository, GitHub locks a release's assets and its tag the moment it publishes, though its
-notes and title stay editable, so a workflow triggered by that publish could never attach anything
-to the release that triggered it. The image is tagged by that same version, and `latest` moves to
-the published digest in its own job, once `verify` passes, only when the release is not a
-pre-release — a pre-release publishes its own version tag and never moves the tag the committed
-recipe references
+attestations, the two assets and the digest line are in place — with immutable releases enabled,
+which the organisation enforces on this repository, GitHub locks a release's assets and its tag the
+moment it publishes, though its notes and title stay editable, so a workflow triggered by that
+publish could never attach anything to the release that triggered it. The image is tagged by that
+same version, and `latest` moves to the published digest in its own job, once `verify` passes, only
+when the release is not a pre-release — a pre-release publishes its own version tag and never moves
+the tag the committed recipe references
 ([`../DEPLOYMENT.md`](../DEPLOYMENT.md) § *Bring-up*). The push that published `latest` from every
 commit on the default branch is retired with it: nothing publishes from `main`. A run failing before
 the publish step is re-dispatched on the same tag — the draft is reused, its `prerelease` flag
@@ -144,10 +144,6 @@ run's failed jobs are re-run. A `latest` job failing at its own digest assertion
 already landed, `:latest` already names whatever digest the copy produced, and a rerun would only
 repeat whatever made it wrong — that case is investigated, then `latest` is repointed by hand at
 the published digest.
-
-**Premise that would reopen the draft-first shape: immutable releases lifted for this repository.**
-A release would then accept edits after it publishes, and the trigger could return to
-`release: published`.
 
 **No operator tooling program ships as part of a release**, and the release carries an example
 configuration file instead.
@@ -238,9 +234,10 @@ attach anything to the release that triggered it.
 branch of logic either way, so making the workflow decide it unconditionally costs nothing the
 manual step would have saved, and it gives the owner one more step to remember on every release.
 
-**The tag push itself triggers the workflow**, `on: push: tags:`. Rejected: the
-`vMAJOR.MINOR.PATCH` shape excludes carrying the flag in the tag, and `workflow_dispatch` is the
-manual trigger that takes an input.
+**The tag push itself triggers the workflow**, `on: push: tags:`. Rejected: a tag push carries no
+input, and the one place the flag could ride, a semver pre-release suffix on the tag, is excluded
+by the `vMAJOR.MINOR.PATCH` shape the first step asserts; `workflow_dispatch` is the one
+manually-triggered event that takes an input.
 
 **`latest` moves at build time, before the release publishes.** Rejected: it would point `latest` at
 a draft's image before that draft is known to ever reach publish. A run that failed between build
@@ -306,4 +303,6 @@ rather than an edit to a Dockerfile.
 **Premise that would reopen this:** a helper appears with work to do that a compose file cannot
 express — which today means the display host becoming reachable by a shipped script, or a
 configuration surface large enough that a starting file stops being a starting point. A wish for a
-more convenient install is not that premise.
+more convenient install is not that premise. A separate premise reopens the draft-first publish
+order: immutable releases being lifted from this repository, which exists only because a published
+release's assets cannot change.

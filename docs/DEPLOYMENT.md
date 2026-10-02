@@ -70,25 +70,14 @@ tracks the newest non-pre-release to pass verification ([`CI.md`](CI.md) § *Pub
 provenance*), so `up` against a re-pulled tag brings up the newest such image; an operator wanting a
 fixed one pins a digest in their own copy, as the verification note below describes.
 
-**Releases are cut by pushing a tag and dispatching the workflow.** An operator does nothing to
-produce one: the repository owner runs
+**Releases are cut by pushing a tag and dispatching the publish workflow.** An operator does
+nothing to produce one: the repository owner runs
 `git tag vMAJOR.MINOR.PATCH <sha> && git push origin vMAJOR.MINOR.PATCH`, then
 `gh workflow run publish.yml --ref vMAJOR.MINOR.PATCH`, adding `-f prerelease=true` for a release
-that publishes its own version tag without moving `latest`. The publish workflow's own first step
-rejects a dispatched ref that is not a `vMAJOR.MINOR.PATCH` tag before building or publishing
-anything ([ADR 0020 rev 5](decisions/0020-release-artifact-set-and-operator-tooling.md)). The
-workflow creates a draft release for that tag with generated notes, uploads the two assets and
-appends the digest line, then publishes the draft last; its notes and title stay editable
-afterward, its assets and tag do not
-([ADR 0020 rev 5](decisions/0020-release-artifact-set-and-operator-tooling.md)). The release notes
-carry exactly one line naming the published digest
-([ADR 0020 rev 5](decisions/0020-release-artifact-set-and-operator-tooling.md)). A failed
-verification fails the release run; the release is re-cut. A `latest` job that fails before or
-during its retag push is recovered by re-running the run's failed jobs
-(`gh run rerun <run-id> --failed`); one that fails at its own digest assertion is investigated and
-`latest` is repointed by hand at the published digest instead — never a rerun there, and never a
-re-cut either way
-([ADR 0020 rev 5](decisions/0020-release-artifact-set-and-operator-tooling.md)).
+that publishes its own version tag without moving `latest`. How a release is cut, what the workflow
+does to it, and how a failed run is recovered are
+[ADR 0020 rev 5](decisions/0020-release-artifact-set-and-operator-tooling.md)'s. A failed
+verification fails the release run, and the release is re-cut under a new version.
 
 **Optional, and recommended: verify the image before trusting it.** An operator who pulls an image is
 trusting a stranger's build, so the check against its signature and provenance ships with the
