@@ -445,8 +445,7 @@ moves `latest` to the published digest once verification passes, for a non-pre-r
 ([ADR 0020 rev 5](decisions/0020-release-artifact-set-and-operator-tooling.md)); the committed recipe
 references `latest` so it runs unedited ([`DEPLOYMENT.md`](DEPLOYMENT.md) § *Bring-up*); the release
 notes carry exactly one line naming that digest,
-`Image: ghcr.io/wisewareorg/wisekiosk@sha256:<digest>`, which the workflow replaces rather than
-duplicates on a re-dispatch before the release publishes
+`Image: ghcr.io/wisewareorg/wisekiosk@sha256:<digest>`
 ([ADR 0020 rev 5](decisions/0020-release-artifact-set-and-operator-tooling.md)), and it is what an
 operator who chooses to verify checks against. Before any registry write, the publish job's draft
 step fails the run when the tag's release is already published, or when more than one release

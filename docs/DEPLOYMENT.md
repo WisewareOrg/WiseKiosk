@@ -81,13 +81,13 @@ workflow creates a draft release for that tag with generated notes, uploads the 
 appends the digest line, then publishes the draft last; its notes and title stay editable
 afterward, its assets and tag do not
 ([ADR 0020 rev 5](decisions/0020-release-artifact-set-and-operator-tooling.md)). The release notes
-carry exactly one line naming the published digest, which the workflow replaces rather than
-duplicates on a re-dispatch before that tag's release publishes
+carry exactly one line naming the published digest
 ([ADR 0020 rev 5](decisions/0020-release-artifact-set-and-operator-tooling.md)). A failed
-verification fails the release run; the release is re-cut. A `latest` job that fails on its own,
-after verification has already passed, is recovered by re-running the run's failed jobs
-(`gh run rerun <run-id> --failed`) rather than a re-cut — publish and verify already succeeded, so
-there is nothing left to redo but the retag
+verification fails the release run; the release is re-cut. A `latest` job that fails before or
+during its retag push is recovered by re-running the run's failed jobs
+(`gh run rerun <run-id> --failed`); one that fails at its own digest assertion is investigated and
+`latest` is repointed by hand at the published digest instead — never a rerun there, and never a
+re-cut either way
 ([ADR 0020 rev 5](decisions/0020-release-artifact-set-and-operator-tooling.md)).
 
 **Optional, and recommended: verify the image before trusting it.** An operator who pulls an image is
