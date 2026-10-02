@@ -1171,9 +1171,10 @@ already decided, which is what makes it a check and not a want.
   one pull request at a time, re-running the required checks on that pull request applied to the
   current `main`, so nothing merges on a stale green and no pull request's green depends on another
   not yet merged; there is no role that merges past a red gate. Batching is rejected — every pull
-  request stands alone — and the throughput that costs, one `checks` run per merge, is accepted. Strict up-to-date protection is off, the queue being what it protected. These
-  are repository settings rather than files, so no check here decides them — the same standing as
-  the secret-scanning settings above, and this line rather than a gate is what records it.
+  request stands alone — and the throughput that costs, one `checks` run per merge, is accepted.
+  Strict up-to-date protection is off, the queue being what it protected. These are repository
+  settings rather than files, so no check here decides them — the same standing as the
+  secret-scanning settings above, and this line rather than a gate is what records it.
   **§ *First-party source scanning*'s required set names five checks**, observed on its own first
   run rather than assumed: the four matrix legs `codeql (go, autobuild)`,
   `codeql (javascript-typescript, none)`, `codeql (python, none)` and `codeql (actions, none)`, which
