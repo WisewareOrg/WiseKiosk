@@ -166,10 +166,11 @@ jobs:
           TAG: ${{ github.ref_name }}
         run: gh release edit "$TAG" --draft=false
 
-      # `--prefer-index=false`, given one index source and no `--annotation`, copies that index's
-      # bytes and descriptor unchanged rather than rebuilding it — this build's attestations are
-      # cosign/GitHub sigstore bundles, not the attestation-manifest artifact type that would pull a
-      # referrer in and change that. The assertion below is the guard either way.
+      # With one index source and no `--annotation`, `imagetools create` copies that index's bytes
+      # and descriptor unchanged — `--prefer-index=false` only matters for a single-manifest source,
+      # not an index one. This build's attestations are cosign/GitHub sigstore bundles, not the
+      # attestation-manifest artifact type that would pull a referrer in and change that. The
+      # assertion below is the guard either way.
       - name: Move `latest` to the published digest
         if: ${{ !inputs.prerelease }}
         env:
