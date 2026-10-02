@@ -91,7 +91,7 @@ as well as `publish`, so a release whose signature or attestation fails to verif
 either exercise.
 
 The release notes name the digest, which is what ties the tag to the registry: the publish
-workflow keeps exactly one line naming it, `Image: ghcr.io/tjwise99/wisekiosk@sha256:<digest>`,
+workflow keeps exactly one line naming it, `Image: ghcr.io/wisewareorg/wisekiosk@sha256:<digest>`,
 replacing that line on a re-run — a rebuild changes the digest, so matching the whole line would not
 catch it — and touching nothing else in whatever notes the release was cut with.
 

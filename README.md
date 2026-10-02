@@ -32,7 +32,7 @@ the operator's, and no requirement in the tree reaches it. That bounds what Wise
 against rather than what it is willing to ship — the release carries a deployment recipe and an example
 configuration precisely to shorten the path ([`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md)); building a
 full appliance image is likewise outside that boundary, and
-[`tjwise99/meta-wisekiosk`](https://github.com/tjwise99/meta-wisekiosk) is the Yocto/kas layer that does
+[`WisewareOrg/meta-wisekiosk`](https://github.com/WisewareOrg/meta-wisekiosk) is the Yocto/kas layer that does
 it, producing an image that runs this product.
 
 **The operator is frequently not the author.** Deployments run at the author's house and at friends'

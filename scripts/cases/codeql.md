@@ -22,21 +22,21 @@ boundary contract*). Draft PR #282 against `main`, closed unmerged, branch delet
 
 | Language | Rule id | Pattern | Alert title | Run |
 |---|---|---|---|---|
-| Actions | `actions/code-injection/critical` | untrusted `github.event.issue.title` interpolated into a `run:` step | "Code injection" (critical) | [33968978796](https://github.com/tjwise99/WiseKiosk/actions/runs/33968978796) |
-| Go | `go/path-injection` | an `net/http` request query parameter passed to `os.ReadFile` | "Uncontrolled data used in path expression" (high) | [33968978796](https://github.com/tjwise99/WiseKiosk/actions/runs/33968978796) |
-| Svelte/TypeScript | `js/xss` | `location.hash` assigned to `Element.innerHTML` | "Client-side cross-site scripting" (high) | [33968978796](https://github.com/tjwise99/WiseKiosk/actions/runs/33968978796) |
-| Python | `py/command-line-injection` | an `http.server` request path passed to `subprocess.run(..., shell=True)` | "Uncontrolled command line" | [33969123713](https://github.com/tjwise99/WiseKiosk/actions/runs/33969123713) |
+| Actions | `actions/code-injection/critical` | untrusted `github.event.issue.title` interpolated into a `run:` step | "Code injection" (critical) | [33968978796](https://github.com/WisewareOrg/WiseKiosk/actions/runs/33968978796) |
+| Go | `go/path-injection` | an `net/http` request query parameter passed to `os.ReadFile` | "Uncontrolled data used in path expression" (high) | [33968978796](https://github.com/WisewareOrg/WiseKiosk/actions/runs/33968978796) |
+| Svelte/TypeScript | `js/xss` | `location.hash` assigned to `Element.innerHTML` | "Client-side cross-site scripting" (high) | [33968978796](https://github.com/WisewareOrg/WiseKiosk/actions/runs/33968978796) |
+| Python | `py/command-line-injection` | an `http.server` request path passed to `subprocess.run(..., shell=True)` | "Uncontrolled command line" | [33969123713](https://github.com/WisewareOrg/WiseKiosk/actions/runs/33969123713) |
 
 **Two runs, not one, because the first Python pattern proved nothing.** The branch's first push used
 `sys.argv` as the tainted value; CodeQL's default Python threat model does not treat a command-line
 argument as untrusted (only a genuinely remote source is, absent an extended threat-model
-configuration), so run [33968978796](https://github.com/tjwise99/WiseKiosk/actions/runs/33968978796)
+configuration), so run [33968978796](https://github.com/WisewareOrg/WiseKiosk/actions/runs/33968978796)
 raised the Actions, Go and Svelte/TypeScript alerts above plus one unintended medium finding
 (`seed-vuln.yml` had declared no `permissions:` block) and nothing for Python — a case that would
 have read as a passing seed had the row not been checked against the alert list rather than against
 the job's exit status alone. The fixup push rewrote the Python fixture around an `http.server`
 request handler (a recognised remote source) and added the missing `permissions:` block; run
-[33969123713](https://github.com/tjwise99/WiseKiosk/actions/runs/33969123713) raised the Go,
+[33969123713](https://github.com/WisewareOrg/WiseKiosk/actions/runs/33969123713) raised the Go,
 Svelte/TypeScript and Python alerts above, and no unintended finding. The Actions alert did not
 reappear in this run's own "new alerts" list — see *Known gaps* below for why that is read as the
 diff view's own behaviour rather than the pattern no longer firing.

@@ -130,6 +130,10 @@ mismatched digest.
   the image under a mismatched digest (or strip the bundle), never the real release, and run `gh
   attestation verify oci://<that ref>@<that digest> --repo tjwise99/WiseKiosk --signer-workflow
   tjwise99/WiseKiosk/.github/workflows/publish.yml --bundle-from-oci` — must fail.
+
+The identity above is what these negatives were recorded against; the identity as the tree stands is
+`--repo WisewareOrg/WiseKiosk --signer-workflow WisewareOrg/WiseKiosk/.github/workflows/publish.yml`.
+
 - **SBOM, a second attestation on re-run.** `cosign attest` a second SPDX predicate onto the same
   child (simulating a re-run of `publish`) — `step_sbom`'s envelope-count guard must fail before
   extraction, rather than validating whichever envelope `cosign verify-attestation` prints first.
