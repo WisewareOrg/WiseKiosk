@@ -19,9 +19,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tjwise99/WiseKiosk/backend/internal/boundary"
-	"github.com/tjwise99/WiseKiosk/backend/internal/router"
-	"github.com/tjwise99/WiseKiosk/backend/internal/upstream"
+	"github.com/WisewareOrg/WiseKiosk/backend/internal/boundary"
+	"github.com/WisewareOrg/WiseKiosk/backend/internal/router"
+	"github.com/WisewareOrg/WiseKiosk/backend/internal/upstream"
 )
 
 // Captured Magic Kingdom live and schedule responses; no case reaches a network.

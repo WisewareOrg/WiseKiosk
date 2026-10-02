@@ -15,7 +15,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/tjwise99/WiseKiosk/backend/internal/upstream"
+	"github.com/WisewareOrg/WiseKiosk/backend/internal/upstream"
 )
 
 // canaryQuery is the second outbound placement the canary entry puts the

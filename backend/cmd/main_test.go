@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/tjwise99/WiseKiosk/backend/internal/staticserve"
+	"github.com/WisewareOrg/WiseKiosk/backend/internal/staticserve"
 )
 
 const indexBody = "<!doctype html><div id=\"app\"></div>"

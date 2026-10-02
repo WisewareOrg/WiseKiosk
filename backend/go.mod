@@ -1,4 +1,4 @@
-module github.com/tjwise99/WiseKiosk/backend
+module github.com/WisewareOrg/WiseKiosk/backend
 
 go 1.26.0
 

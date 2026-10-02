@@ -9,8 +9,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/tjwise99/WiseKiosk/backend/internal/cache"
-	"github.com/tjwise99/WiseKiosk/backend/internal/ratelimit"
+	"github.com/WisewareOrg/WiseKiosk/backend/internal/cache"
+	"github.com/WisewareOrg/WiseKiosk/backend/internal/ratelimit"
 )
 
 // Kind is what became of a request. The zero Kind is not an outcome: Do yields

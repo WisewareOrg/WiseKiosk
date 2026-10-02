@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/tjwise99/WiseKiosk/backend/internal/boundary"
+	"github.com/WisewareOrg/WiseKiosk/backend/internal/boundary"
 )
 
 // schemaRoutes carries this package's module data routes into the generated

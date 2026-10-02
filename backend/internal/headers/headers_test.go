@@ -10,10 +10,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/tjwise99/WiseKiosk/backend/internal/boundary"
-	"github.com/tjwise99/WiseKiosk/backend/internal/health"
-	"github.com/tjwise99/WiseKiosk/backend/internal/registry"
-	"github.com/tjwise99/WiseKiosk/backend/internal/staticserve"
+	"github.com/WisewareOrg/WiseKiosk/backend/internal/boundary"
+	"github.com/WisewareOrg/WiseKiosk/backend/internal/health"
+	"github.com/WisewareOrg/WiseKiosk/backend/internal/registry"
+	"github.com/WisewareOrg/WiseKiosk/backend/internal/staticserve"
 )
 
 // wantCSPFile and wantPermissionsPolicyFile hold csp.txt and

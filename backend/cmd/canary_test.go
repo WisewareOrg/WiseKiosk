@@ -14,10 +14,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tjwise99/WiseKiosk/backend/internal/canarytest"
-	"github.com/tjwise99/WiseKiosk/backend/internal/router"
-	"github.com/tjwise99/WiseKiosk/backend/internal/staticserve"
-	"github.com/tjwise99/WiseKiosk/backend/internal/upstream"
+	"github.com/WisewareOrg/WiseKiosk/backend/internal/canarytest"
+	"github.com/WisewareOrg/WiseKiosk/backend/internal/router"
+	"github.com/WisewareOrg/WiseKiosk/backend/internal/staticserve"
+	"github.com/WisewareOrg/WiseKiosk/backend/internal/upstream"
 )
 
 const (

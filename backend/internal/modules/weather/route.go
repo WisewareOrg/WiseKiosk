@@ -8,8 +8,8 @@ import (
 	"math"
 	"net/http"
 
-	"github.com/tjwise99/WiseKiosk/backend/internal/boundary"
-	"github.com/tjwise99/WiseKiosk/backend/internal/router"
+	"github.com/WisewareOrg/WiseKiosk/backend/internal/boundary"
+	"github.com/WisewareOrg/WiseKiosk/backend/internal/router"
 )
 
 // entry is this module's route registration: the module contract's part 5,
