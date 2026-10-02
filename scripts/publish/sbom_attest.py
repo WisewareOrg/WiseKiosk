@@ -12,7 +12,7 @@ This is authored Python rather than a `run:` block with a loop, per ADR 0017 rev
 
 Inputs, read from the environment (matching this workflow's existing style for passing run-time
 values into an invoked script):
-  REF    the image reference, without a digest (e.g. ghcr.io/tjwise99/wisekiosk)
+  REF    the image reference, without a digest (e.g. ghcr.io/wisewareorg/wisekiosk)
   DIGEST the pushed index digest, sha256:<hex>
   SYFT   the path to the pinned syft binary, `download-syft`'s `cmd` output
 

@@ -160,7 +160,7 @@ a fixed ten seconds, one invocation per target, in `check-fuzz`. Every target as
 hang within the budget; `FuzzShape` additionally asserts its result is deterministic across two calls
 on the same bytes. What they must guarantee is [`TESTING.md`](TESTING.md)'s Fuzz row; the targets
 named, the rejected alternatives and the reopen premise are recorded on
-[#267 backend fuzz tier](https://github.com/tjwise99/WiseKiosk/issues/267).
+[#267 backend fuzz tier](https://github.com/WisewareOrg/WiseKiosk/issues/267).
 
 **No panic is the engine's to catch; no hang is the target's own.** Go's fuzzing engine reports a
 panic the moment it happens, which a ten-second search catches reliably. Its own documentation
@@ -443,7 +443,7 @@ What builds and pushes the image is `.github/workflows/publish.yml`, which #54 c
 runs only when the owner publishes a `vMAJOR.MINOR.PATCH` release, tags the image by that semver, and
 moves `latest` to it for a non-pre-release; the committed recipe references `latest` so it runs
 unedited ([`DEPLOYMENT.md`](DEPLOYMENT.md) § *Bring-up*); the release notes carry exactly one line
-naming that digest, `Image: ghcr.io/tjwise99/wisekiosk@sha256:<digest>`, which the workflow replaces
+naming that digest, `Image: ghcr.io/wisewareorg/wisekiosk@sha256:<digest>`, which the workflow replaces
 rather than duplicates on a re-run
 ([ADR 0020 rev 4](decisions/0020-release-artifact-set-and-operator-tooling.md)), and it is what an
 operator who chooses to verify checks against.
@@ -562,7 +562,7 @@ whose signature or attestation failed to verify.
   status `healthy` within a deadline derived from the image's own declared healthcheck, and
   `GET /config.json` returns the downloaded `config.example.json` byte for byte — health status
   alone cannot see a missing configuration mount, `/healthz` being configuration-blind by design.
-  Before the block runs, `ghcr.io/tjwise99/wisekiosk:latest` is asserted to resolve to the digest
+  Before the block runs, `ghcr.io/wisewareorg/wisekiosk:latest` is asserted to resolve to the digest
   the publish job just produced, which is the one assertion in the tree that `latest` moved to the
   release that fired the check. The job runs only on a non-pre-release: `latest` does not move for
   one ([`DEPLOYMENT.md`](DEPLOYMENT.md) § *Bring-up*), so the recipe's unedited `:latest` would

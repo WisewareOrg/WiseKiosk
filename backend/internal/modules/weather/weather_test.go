@@ -17,8 +17,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tjwise99/WiseKiosk/backend/internal/boundary"
-	"github.com/tjwise99/WiseKiosk/backend/internal/router"
+	"github.com/WisewareOrg/WiseKiosk/backend/internal/boundary"
+	"github.com/WisewareOrg/WiseKiosk/backend/internal/router"
 )
 
 // captured is the recorded response every shaping case runs against: one real

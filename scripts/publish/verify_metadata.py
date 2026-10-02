@@ -21,7 +21,7 @@ fail rather than being skipped.
 
 Inputs are read from the environment rather than argv, matching this workflow's existing style for
 passing run-time values into an invoked script:
-  REF     the image reference, without a digest (e.g. ghcr.io/tjwise99/wisekiosk)
+  REF     the image reference, without a digest (e.g. ghcr.io/wisewareorg/wisekiosk)
   DIGEST  the index digest, sha256:<hex>
   COMMIT  the release commit, github.sha
 

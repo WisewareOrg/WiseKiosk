@@ -13,9 +13,9 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/tjwise99/WiseKiosk/backend/internal/boundary"
-	"github.com/tjwise99/WiseKiosk/backend/internal/secret"
-	"github.com/tjwise99/WiseKiosk/backend/internal/upstream"
+	"github.com/WisewareOrg/WiseKiosk/backend/internal/boundary"
+	"github.com/WisewareOrg/WiseKiosk/backend/internal/secret"
+	"github.com/WisewareOrg/WiseKiosk/backend/internal/upstream"
 )
 
 // Entry is one upstream-backed module's route registration: the secret the

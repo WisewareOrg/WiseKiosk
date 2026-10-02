@@ -13,8 +13,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/tjwise99/WiseKiosk/backend/internal/boundary"
-	"github.com/tjwise99/WiseKiosk/backend/internal/upstream"
+	"github.com/WisewareOrg/WiseKiosk/backend/internal/boundary"
+	"github.com/WisewareOrg/WiseKiosk/backend/internal/upstream"
 )
 
 // Source names this module's cache namespace and its rate bucket. It is the same

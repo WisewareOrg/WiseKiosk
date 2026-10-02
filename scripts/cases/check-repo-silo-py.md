@@ -39,5 +39,5 @@ missing.
 | Must fail | extends a same-prefix repo, not the preset | `extends: ["github>WisewareOrg/wise-renovate-fork#v1"]` — shares the prefix but names a different repository |
 | Must fail | file is not JSON | `renovate.json` edited to invalid JSON |
 | Must pass | The real `renovate.json` | the tree as it stands, `extends: ["github>WisewareOrg/wise-renovate#v1.5.0"]` |
-| Must pass | `renovate.json` carries a `packageRules` key beside the pinned `extends` | the tree as it stands, `packageRules` disabling the `docker` datasource for `ghcr.io/tjwise99/wisekiosk` beside `extends: ["github>WisewareOrg/wise-renovate#v1.5.0"]` |
+| Must pass | `renovate.json` carries a `packageRules` key beside the pinned `extends` | the tree as it stands, `packageRules` disabling the `docker` datasource for `ghcr.io/wisewareorg/wisekiosk` beside `extends: ["github>WisewareOrg/wise-renovate#v1.5.0"]` |
 | Must pass | Manifest below the root | `web/package.json` |

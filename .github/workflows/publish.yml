@@ -64,16 +64,16 @@ jobs:
         env:
           DOCKER_METADATA_ANNOTATIONS_LEVELS: index,manifest
         with:
-          images: ghcr.io/tjwise99/wisekiosk
+          images: ghcr.io/wisewareorg/wisekiosk
           flavor: |
             latest=false
           tags: |
             type=semver,pattern={{version}}
             type=raw,value=latest,enable=${{ github.event.release.prerelease == false }}
           labels: |
-            org.opencontainers.image.documentation=https://tjwise99.github.io/WiseKiosk/
+            org.opencontainers.image.documentation=https://wisewareorg.github.io/WiseKiosk/
           annotations: |
-            org.opencontainers.image.documentation=https://tjwise99.github.io/WiseKiosk/
+            org.opencontainers.image.documentation=https://wisewareorg.github.io/WiseKiosk/
 
       # provenance and sbom stay off here: the attestation, signature and per-platform SBOM steps
       # below produce them against the pushed digest instead.
@@ -92,7 +92,7 @@ jobs:
       - name: Attest build provenance and push it to the registry
         uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
         with:
-          subject-name: ghcr.io/tjwise99/wisekiosk
+          subject-name: ghcr.io/wisewareorg/wisekiosk
           subject-digest: ${{ steps.build.outputs.digest }}
           push-to-registry: true
           create-storage-record: false
@@ -111,7 +111,7 @@ jobs:
       # (ADR 0017 rev 9; docs/CI.md § Publishing and provenance).
       - name: Generate and attest one SPDX SBOM per platform child
         env:
-          REF: ghcr.io/tjwise99/wisekiosk
+          REF: ghcr.io/wisewareorg/wisekiosk
           DIGEST: ${{ steps.build.outputs.digest }}
           SYFT: ${{ steps.syft.outputs.cmd }}
         run: python3 scripts/publish/sbom_attest.py
@@ -120,7 +120,7 @@ jobs:
       # workflow command rather than a per-child loop.
       - name: Sign the index and each platform child
         env:
-          REF: ghcr.io/tjwise99/wisekiosk
+          REF: ghcr.io/wisewareorg/wisekiosk
           DIGEST: ${{ steps.build.outputs.digest }}
         run: cosign sign --yes --recursive "$REF@$DIGEST"
 
@@ -138,10 +138,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ github.event.release.tag_name }}
-          DIGEST_LINE: "Image: ghcr.io/tjwise99/wisekiosk@${{ steps.build.outputs.digest }}"
+          DIGEST_LINE: "Image: ghcr.io/wisewareorg/wisekiosk@${{ steps.build.outputs.digest }}"
         run: |
           gh release view "$TAG" --json body -q .body > "$RUNNER_TEMP/notes.md"
-          sed -i '\#^Image: ghcr\.io/tjwise99/wisekiosk@#d' "$RUNNER_TEMP/notes.md"
+          sed -i '\#^Image: ghcr\.io/wisewareorg/wisekiosk@#d' "$RUNNER_TEMP/notes.md"
           printf '%s\n' "$DIGEST_LINE" >> "$RUNNER_TEMP/notes.md"
           gh release edit "$TAG" --notes-file "$RUNNER_TEMP/notes.md"
 
@@ -177,34 +177,34 @@ jobs:
 
       - name: Signature verifies for the index and each platform child
         env:
-          REF: ghcr.io/tjwise99/wisekiosk
+          REF: ghcr.io/wisewareorg/wisekiosk
           DIGEST: ${{ needs.publish.outputs.digest }}
         run: python3 scripts/publish/verify_release.py --step signature
 
       - name: Provenance attestation verifies and binds to this workflow and commit
         env:
-          REF: ghcr.io/tjwise99/wisekiosk
+          REF: ghcr.io/wisewareorg/wisekiosk
           DIGEST: ${{ needs.publish.outputs.digest }}
           COMMIT: ${{ github.sha }}
         run: python3 scripts/publish/verify_release.py --step provenance
 
       - name: SBOM verifies, validates against schema, and matches a regeneration
         env:
-          REF: ghcr.io/tjwise99/wisekiosk
+          REF: ghcr.io/wisewareorg/wisekiosk
           DIGEST: ${{ needs.publish.outputs.digest }}
           SYFT: ${{ steps.syft.outputs.cmd }}
         run: python3 scripts/publish/verify_release.py --step sbom
 
       - name: Annotations and labels carry the nine keys, bound to the release commit
         env:
-          REF: ghcr.io/tjwise99/wisekiosk
+          REF: ghcr.io/wisewareorg/wisekiosk
           DIGEST: ${{ needs.publish.outputs.digest }}
           COMMIT: ${{ github.sha }}
         run: python3 scripts/publish/verify_metadata.py
 
       - name: The attached set is complete — signatures, attestations, release assets and notes
         env:
-          REF: ghcr.io/tjwise99/wisekiosk
+          REF: ghcr.io/wisewareorg/wisekiosk
           DIGEST: ${{ needs.publish.outputs.digest }}
           TAG: ${{ github.event.release.tag_name }}
         run: python3 scripts/publish/verify_release.py --step attached
@@ -292,6 +292,6 @@ jobs:
           DIGEST: ${{ needs.publish.outputs.digest }}
           PREVIOUS_TAG: ${{ steps.previous.outputs.tag }}
         run: |
-          PREVIOUS_DIGEST=$(docker buildx imagetools inspect "ghcr.io/tjwise99/wisekiosk:${PREVIOUS_TAG#v}" \
+          PREVIOUS_DIGEST=$(docker buildx imagetools inspect "ghcr.io/wisewareorg/wisekiosk:${PREVIOUS_TAG#v}" \
             --format '{{json .Manifest.Digest}}' | tr -d '"')
           just check-image-swap "$PREVIOUS_TAG" "$PREVIOUS_DIGEST" "$TAG" "$DIGEST"

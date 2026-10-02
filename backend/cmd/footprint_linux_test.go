@@ -15,7 +15,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tjwise99/WiseKiosk/backend/internal/staticserve"
+	"github.com/WisewareOrg/WiseKiosk/backend/internal/staticserve"
 )
 
 // The run's shape, tunable from the command line so a longer observation is a

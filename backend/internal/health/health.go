@@ -10,7 +10,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/tjwise99/WiseKiosk/backend/internal/boundary"
+	"github.com/WisewareOrg/WiseKiosk/backend/internal/boundary"
 )
 
 // checkTimeout bounds one probe end to end. The probe is a loopback request to

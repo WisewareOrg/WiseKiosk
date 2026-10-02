@@ -20,7 +20,7 @@ not shell.
 
 Inputs, read from the environment (matching this workflow's existing style for passing run-time
 values into an invoked script) — only what each `--step` needs:
-  REF     the image reference, without a digest (e.g. ghcr.io/tjwise99/wisekiosk); every step
+  REF     the image reference, without a digest (e.g. ghcr.io/wisewareorg/wisekiosk); every step
   DIGEST  the index digest, sha256:<hex>; every step
   COMMIT  the release commit, github.sha; --step provenance only
   TAG     the release tag, github.event.release.tag_name; --step attached only
@@ -52,10 +52,10 @@ SCHEMA_PATH = Path(__file__).resolve().parent / "spdx-schema-2.3.json"
 # matches this literal spec string.
 CHECK_JSONSCHEMA_PIN = "check-jsonschema==0.38.2"
 
-IDENTITY_REGEXP = r"^https://github\.com/tjwise99/WiseKiosk/\.github/workflows/publish\.yml@refs/tags/v"
+IDENTITY_REGEXP = r"^https://github\.com/WisewareOrg/WiseKiosk/\.github/workflows/publish\.yml@refs/tags/v"
 OIDC_ISSUER = "https://token.actions.githubusercontent.com"
-SIGNER_WORKFLOW = "tjwise99/WiseKiosk/.github/workflows/publish.yml"
-GH_REPO = "tjwise99/WiseKiosk"
+SIGNER_WORKFLOW = "WisewareOrg/WiseKiosk/.github/workflows/publish.yml"
+GH_REPO = "WisewareOrg/WiseKiosk"
 
 
 def fail(problems, message):
@@ -132,9 +132,9 @@ def check_provenance_fields(entries, digest, commit, problems):
         fail(problems, f"provenance: buildSignerURI {build_signer_uri!r} does not match {IDENTITY_REGEXP}")
 
     source_repository_uri = certificate.get("sourceRepositoryURI")
-    if source_repository_uri != "https://github.com/tjwise99/WiseKiosk":
+    if source_repository_uri != "https://github.com/WisewareOrg/WiseKiosk":
         fail(problems, f"provenance: sourceRepositoryURI {source_repository_uri!r} is not "
-                       f"'https://github.com/tjwise99/WiseKiosk'")
+                       f"'https://github.com/WisewareOrg/WiseKiosk'")
 
     source_repository_digest = certificate.get("sourceRepositoryDigest")
     if source_repository_digest != commit:
@@ -180,7 +180,7 @@ def step_provenance(ref, digest, commit, problems):
 
     verify_negative_no_json_success(
         problems, "wrong signer workflow", target,
-        "tjwise99/WiseKiosk/.github/workflows/checks.yml",
+        "WisewareOrg/WiseKiosk/.github/workflows/checks.yml",
     )
     flipped_hex = digest.split(":", 1)[1][::-1]
     verify_negative_manifest_unknown(

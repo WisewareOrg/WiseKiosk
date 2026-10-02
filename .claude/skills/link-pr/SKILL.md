@@ -38,9 +38,9 @@ From a session without a browser the record is written with a GraphQL mutation, 
 ids**, not numbers:
 
 ```sh
-issue=$(gh api graphql -f query='{repository(owner:"tjwise99",name:"WiseKiosk"){issue(number:<n>){id}}}' \
+issue=$(gh api graphql -f query='{repository(owner:"WisewareOrg",name:"WiseKiosk"){issue(number:<n>){id}}}' \
   --jq '.data.repository.issue.id')
-pr=$(gh api graphql -f query='{repository(owner:"tjwise99",name:"WiseKiosk"){pullRequest(number:<p>){id}}}' \
+pr=$(gh api graphql -f query='{repository(owner:"WisewareOrg",name:"WiseKiosk"){pullRequest(number:<p>){id}}}' \
   --jq '.data.repository.pullRequest.id')
 gh api graphql -f query="mutation{addCloseIssueReferences(input:{issueId:\"$issue\",pullRequestIds:[\"$pr\"]}){clientMutationId}}"
 ```
@@ -50,7 +50,7 @@ gh api graphql -f query="mutation{addCloseIssueReferences(input:{issueId:\"$issu
 thing:
 
 ```sh
-gh api graphql -f query='{repository(owner:"tjwise99",name:"WiseKiosk"){pullRequest(number:<p>){closingIssuesReferences(first:5){nodes{number}}}}}' \
+gh api graphql -f query='{repository(owner:"WisewareOrg",name:"WiseKiosk"){pullRequest(number:<p>){closingIssuesReferences(first:5){nodes{number}}}}}' \
   --jq '.data.repository.pullRequest.closingIssuesReferences.nodes'
 ```
 

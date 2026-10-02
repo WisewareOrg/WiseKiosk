@@ -37,7 +37,7 @@ own `if: steps.previous.outputs.tag != ''` condition is then false, so the step 
 repository rather than seeded.
 
 **Known gap.** The secret directory is not exercised: this check is config-only, the secret mount
-being [#261 secret mount](https://github.com/tjwise99/WiseKiosk/issues/261)'s (owner ruling,
+being [#261 secret mount](https://github.com/WisewareOrg/WiseKiosk/issues/261)'s (owner ruling,
 2026-09-04). "No builder invoked" holds by construction rather than by a row here: the harness
 calls only `docker run`, `port`, `inspect`, `stop` and `rm`, and this is made observable by the
 per-run `RepoDigests` assertion rather than by a seed that would need a builder to invoke.

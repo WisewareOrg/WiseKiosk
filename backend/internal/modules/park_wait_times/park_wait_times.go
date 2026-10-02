@@ -11,8 +11,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/tjwise99/WiseKiosk/backend/internal/boundary"
-	"github.com/tjwise99/WiseKiosk/backend/internal/upstream"
+	"github.com/WisewareOrg/WiseKiosk/backend/internal/boundary"
+	"github.com/WisewareOrg/WiseKiosk/backend/internal/upstream"
 )
 
 // Source names the cache namespace and rate bucket (the boundary path's final segment).

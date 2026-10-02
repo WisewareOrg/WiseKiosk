@@ -66,7 +66,7 @@ gh issue create --title "…" --body-file /tmp/body.md --label task --milestone 
 **`--milestone` takes the title, not the number.** `--milestone 1` fails with `'1' not found`; the
 titles carry a `·` (`1 · Requirements complete`), so quote them exactly. `gh milestone list` does not
 exist — read the titles with
-`gh api repos/tjwise99/WiseKiosk/milestones --jq '.[]|"\(.number) \(.title)"'`. `gh issue create`
+`gh api repos/WisewareOrg/WiseKiosk/milestones --jq '.[]|"\(.number) \(.title)"'`. `gh issue create`
 resolves the milestone before creating the issue, so that mistake costs nothing.
 
 **A template's declared label is dropped when the repository has no such label**, without complaint —
@@ -93,13 +93,13 @@ edge is not created, so use `-F`. Both mistakes leave the parent's sub-issue lis
 command looks like it did something, which is why the edge is read back below rather than assumed.
 
 ```sh
-child=$(gh api repos/tjwise99/WiseKiosk/issues/<child-number> --jq .id)
-gh api repos/tjwise99/WiseKiosk/issues/<parent-number>/sub_issues -F sub_issue_id=$child
-gh api repos/tjwise99/WiseKiosk/issues/<parent-number>/sub_issues --jq '[.[].number]'   # confirm
+child=$(gh api repos/WisewareOrg/WiseKiosk/issues/<child-number> --jq .id)
+gh api repos/WisewareOrg/WiseKiosk/issues/<parent-number>/sub_issues -F sub_issue_id=$child
+gh api repos/WisewareOrg/WiseKiosk/issues/<parent-number>/sub_issues --jq '[.[].number]'   # confirm
 ```
 
 Detaching is the same shape against the singular path: `gh api -X DELETE
-repos/tjwise99/WiseKiosk/issues/<parent-number>/sub_issue -F sub_issue_id=$child`.
+repos/WisewareOrg/WiseKiosk/issues/<parent-number>/sub_issue -F sub_issue_id=$child`.
 
 Linking a sub-issue's pull request to its ticket, which the same gate demands and which a `Closes #N`
 body keyword does not write against an integration base, is the [`link-pr`](../link-pr/SKILL.md)

@@ -42,6 +42,6 @@ The controls that are structural, not vigilance-based:
 
 ## Reporting a vulnerability
 
-Report privately via GitHub's **[Private vulnerability reporting](https://github.com/tjwise99/WiseKiosk/security/advisories/new)**
+Report privately via GitHub's **[Private vulnerability reporting](https://github.com/WisewareOrg/WiseKiosk/security/advisories/new)**
 (Security → Advisories → Report a vulnerability). Please do not open a public issue for a security
 report. A fix or triage response is aimed for within a week.

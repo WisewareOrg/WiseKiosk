@@ -1,6 +1,6 @@
 # API explorer
 
-A browsable rendering of [`boundary/openapi.yaml`](https://github.com/tjwise99/WiseKiosk/blob/main/boundary/openapi.yaml)
+A browsable rendering of [`boundary/openapi.yaml`](https://github.com/WisewareOrg/WiseKiosk/blob/main/boundary/openapi.yaml)
 ([ADR 0008 rev 6](decisions/0008-boundary-contract-openapi-codegen.md)), the whole wire contract —
 routes, request and response shapes — built from [Swagger UI](https://github.com/swagger-api/swagger-ui)
 ([ADR 0029 rev 2](decisions/0029-api-explorer-swagger-ui.md)). Swagger UI is fetched at build time as

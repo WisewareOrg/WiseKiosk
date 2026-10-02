@@ -11,9 +11,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/tjwise99/WiseKiosk/backend/internal/boundary"
-	"github.com/tjwise99/WiseKiosk/backend/internal/router"
-	"github.com/tjwise99/WiseKiosk/backend/internal/upstream"
+	"github.com/WisewareOrg/WiseKiosk/backend/internal/boundary"
+	"github.com/WisewareOrg/WiseKiosk/backend/internal/router"
+	"github.com/WisewareOrg/WiseKiosk/backend/internal/upstream"
 )
 
 // entry is the module's route registration (module contract part 5).

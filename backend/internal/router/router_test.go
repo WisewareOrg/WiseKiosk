@@ -18,9 +18,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tjwise99/WiseKiosk/backend/internal/canarytest"
-	"github.com/tjwise99/WiseKiosk/backend/internal/secret"
-	"github.com/tjwise99/WiseKiosk/backend/internal/upstream"
+	"github.com/WisewareOrg/WiseKiosk/backend/internal/canarytest"
+	"github.com/WisewareOrg/WiseKiosk/backend/internal/secret"
+	"github.com/WisewareOrg/WiseKiosk/backend/internal/upstream"
 )
 
 // fakeClock is the clock the routes read, advanced by a test rather than waited

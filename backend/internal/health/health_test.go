@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tjwise99/WiseKiosk/backend/internal/boundary"
+	"github.com/WisewareOrg/WiseKiosk/backend/internal/boundary"
 )
 
 // schemaRoutes carries this package's route into the generated router, which

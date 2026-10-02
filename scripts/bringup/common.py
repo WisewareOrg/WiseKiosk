@@ -16,7 +16,7 @@ import time
 import urllib.error
 import urllib.request
 
-IMAGE = "ghcr.io/tjwise99/wisekiosk"
+IMAGE = "ghcr.io/wisewareorg/wisekiosk"
 CONFIG_URL = "/config.json"
 
 # Docker's own substitution for a HEALTHCHECK declaration naming no interval, retries or start

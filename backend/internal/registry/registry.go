@@ -3,8 +3,8 @@
 package registry
 
 import (
-	"github.com/tjwise99/WiseKiosk/backend/internal/modules/park_wait_times"
-	"github.com/tjwise99/WiseKiosk/backend/internal/modules/weather"
+	"github.com/WisewareOrg/WiseKiosk/backend/internal/modules/park_wait_times"
+	"github.com/WisewareOrg/WiseKiosk/backend/internal/modules/weather"
 )
 
 // Modules serves every module data route the boundary schema declares. Each
