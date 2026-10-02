@@ -80,10 +80,10 @@ Size a change by what can be **read in one sitting** — a slice that cannot be 
 whatever its size. Keep the diff to intended files. Verify via CI, not a local run. Walk the checklist
 below against the diff.
 
-**Squash-merge, with the branch's commit messages concatenated into the body** —
-`git log --reverse --format='--- %h %s%n%b' <base>..<head>`. The squash makes the PR title the commit
-on `main`; without the bodies beneath it, the reasoning recorded per commit is unreachable by
-`git log -S` on the line it explains.
+**Squash-merge through the merge queue.** The queue writes the commit on `main` from the repository's
+squash settings: the PR title as its subject, and every branch commit's message concatenated beneath
+it. A message typed at merge time is discarded, so reasoning goes in the commits — without it, the
+line it explains is unreachable by `git log -S`.
 
 ## Review checklist
 
