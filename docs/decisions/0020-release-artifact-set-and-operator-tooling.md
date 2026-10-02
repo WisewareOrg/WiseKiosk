@@ -304,5 +304,5 @@ rather than an edit to a Dockerfile.
 express — which today means the display host becoming reachable by a shipped script, or a
 configuration surface large enough that a starting file stops being a starting point. A wish for a
 more convenient install is not that premise. A separate premise reopens the draft-first publish
-order: immutable releases being lifted from this repository, which exists only because a published
-release's assets cannot change.
+order, which exists only because a published release's assets cannot change: immutable releases
+being lifted from this repository.

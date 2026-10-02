@@ -13,9 +13,9 @@ the order listed, each row's precondition built on the state the row before it l
 published-release row, which runs read-only against the published `v0.2.0` rather than the
 throwaway tag, and the `gh`-failure row, which is stateless and may run in any order. `TAG` and
 `PRERELEASE` are read by the script from the environment; each row passes `GH_REPO` explicitly so
-the command runs against `WisewareOrg/WiseKiosk` regardless of this checkout's own remote. `gh`
-authenticates as it does for any local command (`GH_TOKEN`, else `GITHUB_TOKEN`, else its stored
-login); the workflow step passes `GITHUB_TOKEN`.
+the command runs against `WisewareOrg/WiseKiosk` regardless of this checkout's own remote, and `gh`
+authenticates from `GH_TOKEN`, which takes precedence over `GITHUB_TOKEN` and any stored `gh`
+login; the workflow step passes `GITHUB_TOKEN` instead.
 
 Script md5 `4c213bca38e8b43667be7da8058fe38f` at `788d380 docs(publish): fix rev-docs-fresh's
 mechanical findings`. Every row below ran against the code first committed at `b6a5701 fix(publish):
