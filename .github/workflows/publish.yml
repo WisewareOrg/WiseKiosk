@@ -30,7 +30,7 @@ jobs:
     name: publish
     runs-on: ubuntu-latest
     permissions:
-      contents: write # upload release assets and edit release notes
+      contents: write # create, fill and publish the draft release
       packages: write # push to ghcr.io under the GitHub-provided token
       id-token: write # keyless cosign signing and the attest-build-provenance OIDC exchange
       attestations: write # publish the build-provenance attestation to GitHub's attestation store
@@ -44,8 +44,9 @@ jobs:
         with:
           persist-credentials: false
 
-      # The draft is created or reused before any registry write, so a run that fails before
-      # publishing leaves nothing in the registry pointing at a release that was never cut.
+      # Checked before any registry write: a dispatch against an already-published or ambiguous tag
+      # fails here rather than after a rebuild, so a re-dispatch never moves a published release's
+      # semver tag onto a rebuilt digest that its `Image:` line does not name.
       - name: Create or reuse this tag's draft release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -166,9 +167,10 @@ jobs:
           TAG: ${{ github.ref_name }}
         run: gh release edit "$TAG" --draft=false
 
-      # Unconfirmed that `--prefer-index=false` reproduces the index under `latest` byte-identically
-      # to the one just published; the assertion below fails closed rather than being loosened if it
-      # does not.
+      # `--prefer-index=false`, given one index source and no `--annotation`, copies that index's
+      # bytes and descriptor unchanged rather than rebuilding it — this build's attestations are
+      # cosign/GitHub sigstore bundles, not the attestation-manifest artifact type that would pull a
+      # referrer in and change that. The assertion below is the guard either way.
       - name: Move `latest` to the published digest
         if: ${{ !inputs.prerelease }}
         env:

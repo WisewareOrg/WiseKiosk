@@ -79,9 +79,9 @@ rejects a dispatched ref that is not a `vMAJOR.MINOR.PATCH` tag before building 
 anything ([ADR 0020 rev 5](decisions/0020-release-artifact-set-and-operator-tooling.md)). The
 workflow creates a draft release for that tag with generated notes, uploads the two assets and
 appends the digest line, then publishes the draft last — GitHub locks a release's assets and tag the
-moment it publishes, so the notes stay generated and editable only up to that point. The release
-notes carry exactly one line naming the published digest, which the workflow replaces rather than
-duplicates on a re-dispatch before that tag's release publishes
+moment it publishes, but its notes and title stay editable afterward. The release notes carry
+exactly one line naming the published digest, which the workflow replaces rather than duplicates on
+a re-dispatch before that tag's release publishes
 ([ADR 0020 rev 5](decisions/0020-release-artifact-set-and-operator-tooling.md)). A failed
 verification fails the release run; the release is re-cut.
 

@@ -482,7 +482,7 @@ release run, the first run included; the release is re-cut, and there is no roll
   describes and the digest an operator is running. That drift is chosen rather than overlooked, and
   ADR 0020 rev 5 records the choice.
 - **Signature.** Keyless `cosign verify` against the published index digest and each platform child,
-  with the certificate identity bound to this workflow's own tag-triggered runs
+  with the certificate identity bound to this workflow's own runs dispatched on a tag ref
   (`--certificate-identity-regexp`) and the GitHub Actions OIDC issuer, exits zero; against a
   deliberately wrong identity it exits non-zero and prints `none of the expected identities matched`,
   measured at cosign v3.1.3.
