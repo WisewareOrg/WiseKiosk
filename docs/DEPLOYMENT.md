@@ -12,7 +12,7 @@ product's obligations live in [`requirements/`](requirements/README.md)
 decides it is described there, which is where every check on this repository is described.
 
 **What a release consists of is
-[ADR 0020 rev 4](decisions/0020-release-artifact-set-and-operator-tooling.md).** #54 container build
+[ADR 0020 rev 5](decisions/0020-release-artifact-set-and-operator-tooling.md).** #54 container build
 and publish ships the image, the deployment recipe, the example configuration and the health signal
 the image declares. #269 publish verification ships the signature and the attestation the optional
 verification below reads, and produces what that step verifies against.
@@ -66,20 +66,18 @@ against a clean host and fails on a step that does not.
 checkout ignores `deploy/config.json`, and `config.example.json` is the tracked shape.
 
 **The image reference is a movable tag.** The recipe names `ghcr.io/wisewareorg/wisekiosk:latest`, which
-tracks the newest release ([`CI.md`](CI.md) § *Publishing and provenance*), so `up` against a
-re-pulled tag brings up the newest published image; an operator wanting a fixed one pins a digest in
-their own copy, as the verification note below describes.
+tracks the newest non-pre-release to pass verification ([`CI.md`](CI.md) § *Publishing and
+provenance*), so `up` against a re-pulled tag brings up the newest such image; an operator wanting a
+fixed one pins a digest in their own copy, as the verification note below describes.
 
-**Releases are cut by hand, on a semver tag.** An operator does nothing to produce one: the
-repository owner runs `gh release create vMAJOR.MINOR.PATCH`, or the same with `--prerelease` for a
-release that publishes its own version tag without moving `latest`. The publish workflow's own first
-step rejects a tag that is not `vMAJOR.MINOR.PATCH` before building or publishing anything
-([ADR 0020 rev 4](decisions/0020-release-artifact-set-and-operator-tooling.md)). The release notes
-carry exactly one line naming the published digest, which the workflow replaces rather than
-duplicates if the same release is re-published
-([ADR 0020 rev 4](decisions/0020-release-artifact-set-and-operator-tooling.md)), leaving the rest of
-whatever notes the owner wrote untouched. A failed verification fails the release run; the release is
-re-cut.
+**Releases are cut by pushing a tag and dispatching the publish workflow.** An operator does
+nothing to produce one: the repository owner runs
+`git tag vMAJOR.MINOR.PATCH <sha> && git push origin vMAJOR.MINOR.PATCH`, then
+`gh workflow run publish.yml --ref vMAJOR.MINOR.PATCH`, adding `-f prerelease=true` for a release
+that publishes its own version tag without moving `latest`. How a release is cut, what the workflow
+does to it, and how a failed run is recovered are
+[ADR 0020 rev 5](decisions/0020-release-artifact-set-and-operator-tooling.md)'s. A failed
+verification fails the release run, and the release is re-cut under a new version.
 
 **Optional, and recommended: verify the image before trusting it.** An operator who pulls an image is
 trusting a stranger's build, so the check against its signature and provenance ships with the
@@ -99,12 +97,12 @@ published output is a separate assertion and is in [`CI.md`](CI.md).
 same working deployment; the recipe names a tag rather than a digest, so an operator who wants the
 digest they verified to be the one that runs pins it in their own copy — which is what the recipe
 being a sample rather than an obligation
-([ADR 0020 rev 4](decisions/0020-release-artifact-set-and-operator-tooling.md)) leaves them free to do.
+([ADR 0020 rev 5](decisions/0020-release-artifact-set-and-operator-tooling.md)) leaves them free to do.
 
 ## The deployment recipe
 
 The recipe is a **sample carrying opinionated defaults**, a starting point an operator edits
-([ADR 0020 rev 4](decisions/0020-release-artifact-set-and-operator-tooling.md)). The obligation is on
+([ADR 0020 rev 5](decisions/0020-release-artifact-set-and-operator-tooling.md)). The obligation is on
 what ships, never on what runs — an operator who edits the recipe, or deploys without it, has made
 their own choice, and WiseKiosk has no way to override it.
 
@@ -124,7 +122,7 @@ secrets out of client output, and the recipe is incomplete in that respect until
 ## The health signal
 
 The image declares a `HEALTHCHECK` against the service port and runs it through the `-health-check`
-self-check flag. [ADR 0020 rev 4](decisions/0020-release-artifact-set-and-operator-tooling.md) fixes
+self-check flag. [ADR 0020 rev 5](decisions/0020-release-artifact-set-and-operator-tooling.md) fixes
 both, and is where the port's number is written — a recipe reads it there rather than carrying a
 copy that a later rev would leave behind. The check is healthy while the backend is serving,
 unhealthy when it is not, including when the process is alive but wedged.

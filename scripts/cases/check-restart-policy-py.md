@@ -47,7 +47,7 @@ holds it there.
 
 - **The recipe, never a deployment.** Every row is a committed file; no case observes a running
   container. Which of the two the obligation is on is
-  [ADR 0020 rev 4](../../docs/decisions/0020-release-artifact-set-and-operator-tooling.md)'s.
+  [ADR 0020 rev 5](../../docs/decisions/0020-release-artifact-set-and-operator-tooling.md)'s.
 - **One key, and no case covers another.** Nothing else in the recipe is read, which is
   [`docs/CI.md`](../../docs/CI.md)'s § Deployment and bring-up boundary rather than an omission here.
 - **`unless-stopped` is asserted as a literal.** A recipe expressing the same policy some other way

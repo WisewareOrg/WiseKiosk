@@ -158,7 +158,7 @@ notch too narrow, so rev 3 widens it to the whole wire contract rather than addi
   pinned generator a parameter carrying a `schema:` is *styled*, and styled binds through
   `github.com/oapi-codegen/runtime` on the server **and independently again in the client**, which
   is not droppable — the liveness probe uses it
-  ([ADR 0020 rev 4](0020-release-artifact-set-and-operator-tooling.md)). No `output-options` flag
+  ([ADR 0020 rev 5](0020-release-artifact-set-and-operator-tooling.md)). No `output-options` flag
   changes that. A request body does not go through that path at all: the non-strict handler is
   handed the request untouched, the body type is generated from the schema on both sides, and the
   decoding is `encoding/json`. Measured on the whole contract: zero imports of that module, zero
@@ -340,7 +340,7 @@ notch too narrow, so rev 3 widens it to the whole wire contract rather than addi
 - **The Go client's view of a module data route carries its request body.** The `client` target emits
   the operation taking the generated request type, marshalled with `encoding/json`. Nothing calls it
   — the Go client exists for the liveness probe
-  ([ADR 0020 rev 4](0020-release-artifact-set-and-operator-tooling.md)) — and it is generated rather
+  ([ADR 0020 rev 5](0020-release-artifact-set-and-operator-tooling.md)) — and it is generated rather
   than trimmed because trimming it is what would cost the probe its generated path.
 - **The generated Go surface is larger than the types were.** `std-http-server` emits a parameter-error
   set and a middleware hook whether or not any route has parameters. Accepted: it is one file, it

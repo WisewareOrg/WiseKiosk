@@ -23,7 +23,7 @@ info:
   version: 0.1.0
 paths:
   # An infrastructure route: it answers that the process is serving and nothing else, so it declares
-  # no body at all. Every consumer reads the status code (ADR 0007 rev 2, ADR 0020 rev 4).
+  # no body at all. Every consumer reads the status code (ADR 0007 rev 2, ADR 0020 rev 5).
   /healthz:
     get:
       operationId: getHealthz

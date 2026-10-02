@@ -141,7 +141,7 @@ mounts the two beside liveness on one multiplexer — `/healthz`, `/api/`, and e
 a file from that tree. Nothing is read at start-up but its own flags, so there is no configuration to
 parse, no state held between requests and nothing to reload
 ([ADR 0007 rev 2](decisions/0007-config-validation-allocation.md)); the port and those flags are
-[ADR 0020 rev 4](decisions/0020-release-artifact-set-and-operator-tooling.md)'s, and the wiring around
+[ADR 0020 rev 5](decisions/0020-release-artifact-set-and-operator-tooling.md)'s, and the wiring around
 them is [`DEPLOYMENT.md`](DEPLOYMENT.md)'s. A
 path the served tree does not hold answers 404 rather than the single-page bundle: the page is fetched
 once and navigates nowhere ([ADR 0018 rev 1](decisions/0018-frontend-svelte-vite-static-spa.md)), so an
@@ -153,7 +153,7 @@ serving, which is the one thing a single-host runtime can act on; it reaches no 
 that is down is that module's failure on the display rather than an unhealthy container. The same
 binary asks the question of a running instance from inside the image, which is what lets the image
 declare a `HEALTHCHECK` without carrying an HTTP client beside it
-([ADR 0020 rev 4](decisions/0020-release-artifact-set-and-operator-tooling.md)). It answers `GET` and
+([ADR 0020 rev 5](decisions/0020-release-artifact-set-and-operator-tooling.md)). It answers `GET` and
 `HEAD` alone, because the schema declares a `get:` and the generated registration is method-scoped
 ([ADR 0008 rev 6](decisions/0008-boundary-contract-openapi-codegen.md)); another verb on that path
 falls through to the served tree and gets its 404 rather than a 405, since the `/` seam matches the

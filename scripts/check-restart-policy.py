@@ -3,7 +3,7 @@
 
 The value is the assertion rather than the key's presence: `unless-stopped` and not `always`,
 because the latter also overrides a deliberate manual stop (docs/DEPLOYMENT.md § The deployment
-recipe, ADR 0020 rev 4).
+recipe, ADR 0020 rev 5).
 
 That one key and no other. Every other value in the recipe is a sample default an operator is
 expected to weigh and change, so gating one would assert a recommendation as an obligation —

@@ -7,7 +7,7 @@ RUN cd frontend && node_modules/.bin/orval
 RUN frontend/node_modules/.bin/json2ts --input frontend/src/config/schema.json --output frontend/src/config/types.ts --additionalProperties false
 RUN frontend/node_modules/.bin/vite build frontend
 # vite copies frontend/public/ into dist/, the gitignored local config.json with it; where a
-# deployment's configuration comes from instead is ADR 0021 rev 4's and ADR 0020 rev 4's.
+# deployment's configuration comes from instead is ADR 0021 rev 4's and ADR 0020 rev 5's.
 RUN rm -f frontend/dist/config.json
 
 FROM golang:1.27-alpine@sha256:4c9fe60190a2a3350ddc51de80d0224b8a6698d12bdfc999fee45ea9d6c46dbc AS build
@@ -26,6 +26,6 @@ COPY --from=build /out/wisekiosk /usr/local/bin/wisekiosk
 COPY --from=web /src/frontend/dist /srv/kiosk
 USER kiosk
 EXPOSE 8080
-# No --timeout: the bound the self-check applies is ADR 0020 rev 4's.
+# No --timeout: the bound the self-check applies is ADR 0020 rev 5's.
 HEALTHCHECK CMD ["/usr/local/bin/wisekiosk", "-health-check"]
 ENTRYPOINT ["/usr/local/bin/wisekiosk", "-static-root", "/srv/kiosk"]

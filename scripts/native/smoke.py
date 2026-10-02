@@ -29,7 +29,7 @@ import time
 import urllib.error
 import urllib.request
 
-# The address the binary compiles in; not a flag (ADR 0020 rev 4).
+# The address the binary compiles in; not a flag (ADR 0020 rev 5).
 HOST = "127.0.0.1"
 PORT = 8080
 ADDRESS = f"{HOST}:{PORT}"

@@ -87,7 +87,7 @@ product rather than running in it.
   ([ADR 0008 rev 6](0008-boundary-contract-openapi-codegen.md)), so it is inside neither, and the
   directory is named for what the repository already calls the thing.
 - **`deploy/` holds what a release carries beside the image** — the deployment recipe and the example
-  configuration file ([ADR 0020 rev 4](0020-release-artifact-set-and-operator-tooling.md)). Outside
+  configuration file ([ADR 0020 rev 5](0020-release-artifact-set-and-operator-tooling.md)). Outside
   both packages, because it is outside the boundary: it runs nowhere the system runs.
 - **The `Dockerfile` is at the repository root.** A build that produces one image from a Go binary and
   a built bundle has a context spanning both package roots, so the file belongs to neither of them; of

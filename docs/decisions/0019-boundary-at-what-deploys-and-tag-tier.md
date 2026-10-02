@@ -50,7 +50,7 @@ answered differently each time an element is added.
 
 **Which side of the boundary something falls on.** The project builds things that never enter the
 published image: the provisioning material shipped with the release artifact set
-([ADR 0020 rev 4](0020-release-artifact-set-and-operator-tooling.md)) is authored here and runs
+([ADR 0020 rev 5](0020-release-artifact-set-and-operator-tooling.md)) is authored here and runs
 nowhere the system runs. Without a criterion each such case is a fresh argument, and each reaches a
 different answer depending on whether "the system" is taken to mean what runs or what the project
 owns.
@@ -233,7 +233,7 @@ here.
 
 **The provisioning tooling gains no element.** The test is the one the boundary states: a tool that
 acted on the running deployment would gain an element. The test returns no, and the release artifact
-set ([ADR 0020 rev 4](0020-release-artifact-set-and-operator-tooling.md)) is why it does not even need
+set ([ADR 0020 rev 5](0020-release-artifact-set-and-operator-tooling.md)) is why it does not even need
 arguing — that decision ships **no operator tooling program at all**, only a deployment recipe and an
 example configuration file. A recipe an operator runs to bring a deployment into existence is not a
 tool acting on one that is running, and there is no second candidate to weigh.
@@ -480,7 +480,7 @@ specification change with its own verification, not by where a tag sits.
 ships. Rejected: what a release carries is material a registry and a release tag hold rather than
 anything that runs on a host, the level draws what runs where, and the one real coupling — whether
 provisioning tooling appears — is decided by the boundary test rather than by the artifact set. The set
-[ADR 0020 rev 4](0020-release-artifact-set-and-operator-tooling.md) defined ships no operator tooling
+[ADR 0020 rev 5](0020-release-artifact-set-and-operator-tooling.md) defined ships no operator tooling
 program, so waiting would have changed nothing drawn.
 
 ### The tag rules

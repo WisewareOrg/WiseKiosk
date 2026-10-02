@@ -34,7 +34,8 @@ repository carries exactly one non-pre-release (`v0.1.0`); `gh release list --ex
 `image-swap` job's `previous` step writes to `$GITHUB_OUTPUT` as an empty `tag`. The swap step's
 own `if: steps.previous.outputs.tag != ''` condition is then false, so the step — and
 `image_swap.py` with it — is skipped rather than run and passing — confirmed against the live
-repository rather than seeded.
+repository rather than seeded. The `previous` step's `--exclude-drafts` was added after these rows
+ran; its effect is recorded in [`publish-draft.md`](publish-draft.md)'s `--exclude-drafts` row.
 
 **Known gap.** The secret directory is not exercised: this check is config-only, the secret mount
 being [#261 secret mount](https://github.com/WisewareOrg/WiseKiosk/issues/261)'s (owner ruling,
