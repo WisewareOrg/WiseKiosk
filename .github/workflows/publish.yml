@@ -149,7 +149,7 @@ jobs:
       # Drops any existing line naming this image's digest before appending the current one, so a
       # re-dispatch on this tag, before its release publishes, leaves exactly one such line rather
       # than two.
-      - name: Append the published digest to the release notes
+      - name: Append the pushed digest to the release notes
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ github.ref_name }}

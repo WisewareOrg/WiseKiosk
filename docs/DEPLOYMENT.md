@@ -47,8 +47,8 @@ the permissions the file needs are stated where an operator sets them.
 
 **The procedure is three commands**, run in a directory holding the release's two assets —
 `compose.yaml` and `config.example.json` — which a checkout carries at `deploy/`. CI runs it verbatim
-against this exact image, before the release can lock (#138 bring-up check, #418 publish under
-immutable releases).
+against each release's own image, before the release can lock (#138 bring-up check, #418 publish
+under immutable releases).
 
 ```sh
 cp config.example.json config.json
@@ -71,8 +71,7 @@ checkout ignores `deploy/config.json`, and `config.example.json` is the tracked 
 tracks the newest non-pre-release to pass verification ([`CI.md`](CI.md) § *Publishing and
 provenance*), so `up` against a re-pulled tag brings up the newest such image. An operator wanting a
 fixed one sets `WISEKIOSK_IMAGE=ghcr.io/wisewareorg/wisekiosk@sha256:<digest>` — compose reads it from
-the environment or from a `.env` file beside `compose.yaml` — rather than editing the recipe; the same
-variable the verification note below names.
+the environment or from a `.env` file beside `compose.yaml` — rather than editing the recipe.
 
 **Releases are cut by pushing a tag and dispatching the publish workflow.** An operator does
 nothing to produce one: the repository owner runs
@@ -93,14 +92,13 @@ gh attestation verify oci://ghcr.io/wisewareorg/wisekiosk@sha256:<digest> --repo
 ```
 
 `<digest>` is the value the release page's `Image:` line names, and what the command reads is the
-build-provenance attestation the publish workflow produces for that digest. That CI verifies its own
-published output is a separate assertion and is in [`CI.md`](CI.md).
+build-provenance attestation the publish workflow produces for that digest. That CI verifies the
+draft before it publishes is a separate assertion and is in [`CI.md`](CI.md).
 
 **It is nobody's obligation.** An operator who skips it runs the three commands above and reaches the
 same working deployment; the recipe names a tag rather than a digest by default, so an operator who
-wants the digest they verified to be the one that runs exports `WISEKIOSK_IMAGE` set to it — which is
-what the recipe
-being a sample rather than an obligation
+wants the digest they verified to be the one that runs sets `WISEKIOSK_IMAGE` as above — which is
+what the recipe being a sample rather than an obligation
 ([ADR 0020 rev 5](decisions/0020-release-artifact-set-and-operator-tooling.md)) leaves them free to do.
 
 ## The deployment recipe

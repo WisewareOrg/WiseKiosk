@@ -4,12 +4,16 @@ The inputs `bring_up.py` has been run against, in both directions. What it *asse
 [`docs/CI.md`](../../docs/CI.md)'s § *Deployment and bring-up*; how to run a case is
 [`../README.md`](../README.md)'s.
 
+## `bring_up.py`'s earlier `<tag> <digest>` interface
+
 Run against release `v0.1.0` (latest, non-pre-release), digest
-`sha256:27ff2637c52fe1e389a23693bb0c5fd8dcce175e9219c49006884ad46d3e589a`. Script md5
-`d637a9fe8679bd38dbde24fc9821f97e`. A seed edits a scratch copy of `docs/DEPLOYMENT.md`'s fenced
-block and is run with `bring_up.py --doc <copy> v0.1.0 <digest>`, which reaches the real release's
-assets and the real image; the tracked `docs/DEPLOYMENT.md` and `deploy/compose.yaml` are never
-edited.
+`sha256:27ff2637c52fe1e389a23693bb0c5fd8dcce175e9219c49006884ad46d3e589a`, against `bring_up.py`'s
+interface before [#418 publish under immutable releases](https://github.com/WisewareOrg/WiseKiosk/issues/418) —
+`bring_up.py --doc <copy> <tag> <digest>`, superseded by `[--doc PATH] <release-dir> <digest>` in the
+section below. Script md5 `d637a9fe8679bd38dbde24fc9821f97e`. A seed edits a scratch copy of
+`docs/DEPLOYMENT.md`'s fenced block and is run with `bring_up.py --doc <copy> v0.1.0 <digest>`, which
+reaches the real release's assets and the real image; the tracked `docs/DEPLOYMENT.md` and
+`deploy/compose.yaml` are never edited.
 
 **#140 image-swap check factored the health poll, the configuration fetch and the manifest-field
 resolution this script calls into `scripts/bringup/common.py`, shared with `image_swap.py`; no
@@ -49,7 +53,8 @@ defect downstream of the removed line) but wrong about which line fails first.
 Rows for `bring_up.py`'s interface, `bring_up.py [--doc PATH] <release-dir> <digest>` — no tag
 argument and no `latest`-propagation poll, replaced by `WISEKIOSK_IMAGE` and a post-run check of the
 running container's own image digest against `<digest>`
-([#418 publish under immutable releases](https://github.com/WisewareOrg/WiseKiosk/issues/418#issuecomment-5961738214)).
+([#418 publish under immutable releases](https://github.com/WisewareOrg/WiseKiosk/issues/418#issuecomment-5963330674)).
+Both rows below exercise `common.py`'s `assert_running_image`, md5 `c38a8312657759a8d58584fb6cdf1e22`.
 Each row states the case, how it is seeded or run, and the expected outcome. `<release-dir>` is
 hand-built for both rows: a `deploy/compose.yaml` carrying `${WISEKIOSK_IMAGE:-…}` plus `v0.2.1`'s
 published `config.example.json`, against digest
@@ -60,17 +65,15 @@ from this interface, and its mismatch case is the second row below.
 | Case | Seed / run | Expected outcome | Evidence |
 |---|---|---|---|
 | The documented procedure, run unedited in `<release-dir>`, brings up this release's image | `bring_up.py <release-dir> sha256:55239c9cdf549cfeac87265849bd6277d7bed3619f4bd5766ac55fd00e9e95a2`, with `WISEKIOSK_IMAGE=ghcr.io/wisewareorg/wisekiosk@sha256:55239c9cdf549cfeac87265849bd6277d7bed3619f4bd5766ac55fd00e9e95a2` exported to the documented fence — `deploy/compose.yaml`'s `${WISEKIOSK_IMAGE:-...}` resolves to the exported value | the compose service reaches a serving deployment; the running container's own image digest equals `sha256:55239c9cdf549cfeac87265849bd6277d7bed3619f4bd5766ac55fd00e9e95a2` | Confirmed: `the documented bring-up procedure at sha256:55239c9c...e95a2 reaches a serving deployment` in 31.4s; torn down with `docker compose down --volumes`, confirmed clean against `docker ps`. Script md5 `d1af0473fdc4d67b0dd229780f752577` |
-| A mismatched digest is reported | the same run, but `<release-dir>`'s `compose.yaml` is `v0.2.1`'s own published one instead of the branch's — it hardcodes `ghcr.io/wisewareorg/wisekiosk:latest` rather than referencing `WISEKIOSK_IMAGE`, so the exported variable has no effect and `docker compose up -d` pulls whatever `:latest` currently resolves to | the running container's own image digest does not equal the requested `sha256:55239c9cdf549cfeac87265849bd6277d7bed3619f4bd5766ac55fd00e9e95a2`; `bring_up.py` fails, naming the mismatch | Confirmed, byte for byte: `:latest` resolved to `sha256:27ff2637…589a`, the container started, and `bring_up.py` printed `bring-up: <container>'s image resolves to ['ghcr.io/tjwise99/wisekiosk@sha256:27ff2637…589a', 'ghcr.io/wisewareorg/wisekiosk@sha256:27ff2637…589a'], not ghcr.io/wisewareorg/wisekiosk@sha256:55239c9c...e95a2 — the running image is not the one requested`, exit 1; torn down with `docker compose down --volumes`. Script md5 `d1af0473fdc4d67b0dd229780f752577` |
+| A mismatched digest is reported | the same run, but `<release-dir>`'s `compose.yaml` is `v0.2.1`'s own published one instead of the branch's — it hardcodes `ghcr.io/wisewareorg/wisekiosk:latest` rather than referencing `WISEKIOSK_IMAGE`, so the exported variable has no effect and `docker compose up -d` pulls whatever `:latest` currently resolves to | the running container's own image digest does not equal the requested `sha256:55239c9cdf549cfeac87265849bd6277d7bed3619f4bd5766ac55fd00e9e95a2`; `bring_up.py` fails, naming the mismatch | Confirmed: `:latest` resolved to `sha256:27ff2637…589a`, the container started, and `bring_up.py` printed `bring-up: <container>'s image resolves to ['ghcr.io/tjwise99/wisekiosk@sha256:27ff2637…589a', 'ghcr.io/wisewareorg/wisekiosk@sha256:27ff2637…589a'], not ghcr.io/wisewareorg/wisekiosk@sha256:55239c9c...e95a2 — the running image is not the one requested`, exit 1; torn down with `docker compose down --volumes`. Script md5 `d1af0473fdc4d67b0dd229780f752577` |
 
 **Known gap.** Removing the `chmod 644` line is not seeded: `cp` preserves the tracked 644 mode of
 `config.example.json` on the runner, so the line is redundant there and its absence is not a defect
 this check can see.
 
-**The `bring-up` job's teardown step itself is unverified.** `docker compose down --volumes` under
-`if: always()` in `.github/workflows/publish.yml`, `working-directory: release-draft/assets`, is
-outside `bring_up.py` and outside every row above. The identical command was run by hand, from the
-release directory, after each of the four local rows above and tore the deployment down cleanly
-every time (`docker ps`/`docker network ls` confirmed nothing left) — but that is this record
-running it, not the workflow's own step running as a job step. That step has not fired in any CI job
-(the `bring-up-ci-confirm` scaffold that produced the committed-block row's CI evidence carried no
-teardown step of its own), and stays unobserved in that specific form.
+**The `bring-up` job's teardown step is outside every row above.** `docker compose down --volumes`
+under `if: always()` in `.github/workflows/publish.yml`, `working-directory: release-draft/assets`,
+is workflow YAML outside `bring_up.py`. The identical command was run by hand after each of the four
+port-dependent `v0.1.0` rows and each release-dir row above, from the directory that row ran in, and
+tore the deployment down cleanly each time (confirmed against `docker ps`). The rows above record
+local runs; the workflow's own teardown step is exercised by the release run itself.

@@ -11,7 +11,8 @@ command whose failure text comes from here and stays unique to its cause
   sbom        cosign verify-attestation per child, asserting exactly one SPDX attestation exists,
               schema-validated, content-asserted against backend/go.mod and the Dockerfile,
               regenerated and compared, and bound to the child under verification
-  attached    cosign tree on the index and each child, and the release's asset list and notes
+  attached    cosign tree on the index and each child, and the draft's read-back asset list and
+              notes
 
 This is authored Python rather than `run:` blocks with loops and multi-field jq assertions, per
 ADR 0017 rev 9: a workflow `run:` block carrying control flow is authored sh, and sh authors

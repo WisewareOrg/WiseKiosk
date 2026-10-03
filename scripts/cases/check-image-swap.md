@@ -4,14 +4,18 @@ The inputs `image_swap.py` has been run against, in both directions. What it *as
 [`docs/CI.md`](../../docs/CI.md)'s § *Deployment and bring-up*; how to run a case is
 [`../README.md`](../README.md)'s.
 
-Run against the two releases published on this repository, `v0.0.1` (prerelease), digest
+## `image_swap.py`'s earlier `<tag_a> <digest_a> <tag_b> <digest_b>` interface
+
+Run against `v0.0.1` (prerelease), digest
 `sha256:a233121b003e8125d978d97a89c2e02dffc1e1568a1a724b8319ee07da0e1fa7`, and `v0.1.0` (latest,
-non-pre-release), digest `sha256:27ff2637c52fe1e389a23693bb0c5fd8dcce175e9219c49006884ad46d3e589a`.
-Script md5 `a4ba80b7d77150f1a4485acab97f600d`. The script does not read pre-release status itself — that filter is the
-`image-swap` job's, applied before the script ever runs — so `v0.0.1` stands in as an ordinary
-digest for these rows. Each row invokes `image_swap.py` directly with the tags and digests shown,
-reaching the real releases and the real images; nothing tracked is edited except where a row states
-a seed.
+non-pre-release), digest `sha256:27ff2637c52fe1e389a23693bb0c5fd8dcce175e9219c49006884ad46d3e589a`,
+against `image_swap.py`'s interface before [#418 publish under immutable releases](https://github.com/WisewareOrg/WiseKiosk/issues/418) —
+`image_swap.py <tag_a> <digest_a> <tag_b> <digest_b>`, superseded by `<previous-tag> <previous-digest>
+<tag> <release-dir> <digest>` in the section below. Script md5 `a4ba80b7d77150f1a4485acab97f600d`.
+The script does not read pre-release status itself — that filter is the `image-swap` job's, applied
+before the script ever runs — so `v0.0.1` stands in as an ordinary digest for these rows. Each row
+invokes this earlier interface directly with the tags and digests shown, reaching the real releases
+and the real images; nothing tracked is edited except where a row states a seed.
 
 **Re-observed after the health poll, configuration fetch and manifest-field resolution moved into
 `scripts/bringup/common.py`, shared with `bring_up.py`.** Script md5 `39ddd99155742a32b350a55e206b6a77`.
@@ -42,7 +46,8 @@ Row for `image_swap.py`'s interface, `image_swap.py <previous-tag> <previous-dig
 than from `gh release download`, which lets this check run against a release still only a draft,
 with no published tag to download from; it still runs containers by digest directly (`docker run`),
 so `deploy/compose.yaml`'s `WISEKIOSK_IMAGE` variable plays no part here
-([#418 publish under immutable releases](https://github.com/WisewareOrg/WiseKiosk/issues/418#issuecomment-5961738214)).
+([#418 publish under immutable releases](https://github.com/WisewareOrg/WiseKiosk/issues/418#issuecomment-5963330674)).
+The row below exercises `common.py`'s `assert_running_image`, md5 `c38a8312657759a8d58584fb6cdf1e22`.
 States the case, how it is seeded or run, and the expected outcome. `<release-dir>` is hand-built: a
 `deploy/compose.yaml` plus `v0.2.1`'s published `config.example.json`.
 
@@ -56,7 +61,7 @@ invoked" holds by construction rather than by a row here: the harness calls only
 `port`, `inspect`, `stop` and `rm`, and this is made observable by the per-run `RepoDigests`
 assertion rather than by a seed that would need a builder to invoke.
 
-**The `image-swap` job's own steps are unverified in CI.** Resolving the previous release's tag and
-digest, and the job's `permissions` and trigger condition, are workflow YAML outside
-`image_swap.py` and outside every row above; they are exercised for the first time by a real
-release's job run.
+**The `image-swap` job's own steps are outside every row above.** Resolving the previous release's
+tag and digest, and the job's `permissions` and trigger condition, are workflow YAML outside
+`image_swap.py`. The rows above record direct runs of the script against the published `v0.0.1`,
+`v0.1.0` and `v0.2.1` digests; the job's own steps are exercised by the release run itself.

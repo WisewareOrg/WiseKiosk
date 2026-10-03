@@ -17,8 +17,9 @@ the command runs against `WisewareOrg/WiseKiosk` regardless of this checkout's o
 authenticates from `GH_TOKEN`, which takes precedence over `GITHUB_TOKEN` and any stored `gh`
 login; the workflow step passes `GITHUB_TOKEN` instead.
 
-Script md5 `4c213bca38e8b43667be7da8058fe38f`. The module docstring has since been edited; the
-script's logic, which every row below ran against, has not.
+Script md5 `4c213bca38e8b43667be7da8058fe38f`. The rows below ran against md5
+`bebd49dbc35e4d2aa8b513909d7feef4`, which differs from the current file only in its module
+docstring; the script's logic, which every row ran against, has not changed.
 
 | Case | Seed / run | Expected outcome | Evidence |
 |---|---|---|---|

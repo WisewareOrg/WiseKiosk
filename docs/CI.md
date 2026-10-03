@@ -434,7 +434,7 @@ enabled, and this paragraph rather than a check is what records it.
 
 What a release publishes and what CI asserts about it. Verification runs against the draft's digest,
 before the release can lock, in a separate job, `verify`, that reads three surfaces only — the
-registry and the public transparency log, both via cosign, and GitHub's attestation API — plus the
+registry, the public transparency log, and GitHub's attestation API — plus the
 draft's own read-back artifact for its assets and notes, and holds no write scope. Installing the
 job's own tools — the cosign and syft installers, and the `pipx` fetch of `check-jsonschema` from
 PyPI — is the job's only other network activity, distinct from the evidence surfaces above.
@@ -451,9 +451,9 @@ references `latest` so it runs unedited ([`DEPLOYMENT.md`](DEPLOYMENT.md) § *Br
 notes carry exactly one line naming that digest,
 `Image: ghcr.io/wisewareorg/wisekiosk@sha256:<digest>`
 ([ADR 0020 rev 5](decisions/0020-release-artifact-set-and-operator-tooling.md)), and it is what an
-operator who chooses to verify checks against. Before any registry write, the `draft` job's own first
-step fails the run when the tag's release is already published, or when more than one release
-carries the tag — a re-dispatch must never move a published release's semver image tag onto a
+operator who chooses to verify checks against. Before any registry write, the `draft` job's
+draft-release step fails the run when the tag's release is already published, or when more than one
+release carries the tag — a re-dispatch must never move a published release's semver image tag onto a
 rebuilt digest its `Image:` line does not name. Recorded in
 [`../scripts/cases/publish-draft.md`](../scripts/cases/publish-draft.md).
 
@@ -510,7 +510,7 @@ run before the release ever locks: the draft stays a draft, and its recovery is
   `push-to-registry: true` also lands in the registry, since neither the API-backed invocation above
   nor `cosign tree` reads that copy.
 - **SBOM.** Exactly one SPDX 2.3 attestation per platform child is asserted by count — `cosign
-  attest` appends rather than replaces, so a re-run of `publish` attaching a second attestation to
+  attest` appends rather than replaces, so a re-run of `draft` attaching a second attestation to
   the same child fails here rather than silently validating whichever one `cosign
   verify-attestation` prints first — and is extractable from its attestation, validates against a
   vendored copy of the SPDX 2.3 schema, and enumerates the Go main module
@@ -523,7 +523,7 @@ run before the release ever locks: the draft stays a draft, and its recovery is
   `versionInfo` to the child digest under verification and its purl `arch=` to that child's platform
   architecture, so a cross-wired attestation (the other child's SBOM, which otherwise passes every
   assertion above) fails there rather than by accident. A child without its SBOM attestation fails.
-  **The `publish` and `verify` jobs each pin syft and cosign as their own `with:` literal.**
+  **The `draft` and `verify` jobs each pin syft and cosign as their own `with:` literal.**
   Renovate's regex manager bumps every match of `cosign-release:` and `syft-version:` in
   `publish.yml` in one pull request, which is what keeps the two per-tool pins equal; a hand edit
   drifting them apart surfaces as a package-set mismatch in the regeneration comparison above.
@@ -634,9 +634,9 @@ release whose signature or attestation failed to verify.
 **All five are built.** The recipe and health-signal checks landed with #54 container build and
 publish, against the image and the recipe that ticket ships; the example-configuration check
 landed with #139 example-configuration check, against the page it renders; the
-documented-procedure check landed with #138 bring-up check, against a published release rather
+documented-procedure check landed with #138 bring-up check, against a release rather
 than the tracked tree; the image-swap check landed with #140 image-swap check, against two
-published releases — which is how this project records scoped work
+releases — which is how this project records scoped work
 ([ADR 0005 rev 4](decisions/0005-traceability-gating.md)); what each asserts
 was decided by #71 release artifact set, which shipped no code.
 
