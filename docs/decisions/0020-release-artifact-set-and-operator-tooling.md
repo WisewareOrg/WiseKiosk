@@ -9,18 +9,22 @@ on #9 backend skeleton and the 2026-08-09 design discussion on #71 release artif
 ## Revisions
 
 - **rev 5** — 2026-10-02 — moves the trigger from `release: published` to `workflow_dispatch` on a
-  pushed tag, carrying one boolean input, `prerelease`, so the draft-first shape below can attach
-  everything before the immutable-release lock the Decision names takes hold. The workflow creates
-  or reuses a draft release for the dispatched tag, fills it over its own later steps, and publishes
-  it as the publish job's last step; `latest` moves to the published digest in its own job, once
-  `verify` passes, not at build and not in the publish job itself — an image failing verification
-  would otherwise already be `latest` by the time `verify` caught it. `bring-up` and `image-swap`
-  gain that job alongside `verify` in their own gate. image-swap's previous-release lookup excludes
-  drafts, so an in-flight one is never picked as the swap target. A run failing before the publish
-  step is re-dispatched on the same tag rather than re-cut; a `latest` job failing transiently needs
-  neither, but a failed digest assertion is repointed by hand rather than re-run. What the release
-  itself is made of is unchanged; the trigger and its ordering move, so the Decided date moves with
-  them (#418 publish under immutable releases).
+  pushed tag, carrying one boolean input, `prerelease`. The job order is `draft` (builds, signs and
+  attests the image, creates or reuses a draft release for the dispatched tag, attaches the recipe
+  and example configuration and the digest line) → `verify` → `bring-up` and `image-swap` → `publish`
+  (flips the verified draft to published) → `latest` (moves to the published digest, non-pre-release
+  only). `draft`'s last step reads back everything it attached and uploads it as a workflow artifact;
+  `verify`, `bring-up` and `image-swap` read only from that artifact — a read-only token cannot see a
+  draft release directly — and run on a pre-release too, since what they check is the draft's own
+  digest and files rather than a published release. `publish` re-reads the draft and fails unless it
+  is still byte-identical to what the artifact carried, so what locks is exactly what was checked.
+  image-swap's previous-release lookup excludes drafts, so an in-flight one is never picked as the
+  swap target. A run failing before `publish` is re-dispatched on the same tag rather than re-cut,
+  burning no version — at the fixed commit first, when the failure was in the code rather than
+  transient; a `latest` job failing transiently needs neither, but a failed digest assertion
+  is repointed by hand rather than re-run. What the release itself is made of is unchanged; the
+  trigger and its ordering move, so the Decided date moves with them (#418 publish under immutable
+  releases).
 - **rev 4** — 2026-09-06 — corrects "referring artifacts" to "attached under the signing tools'
   conventions" everywhere it appears: GHCR implements no OCI referrers API, so cosign's own tag
   convention and GitHub's attestation store are what the registry-side material actually attaches
@@ -100,17 +104,17 @@ signed too, so an operator who pins a child digest can verify it on its own.
 workflow `run:` block carrying that same loop would be authored sh, which nothing here authors
 ([ADR 0017 rev 9](0017-authored-language-set.md)).
 
-**Bring-up and the image swap run only once verification passes and `latest` has moved.** Both
-depend on `publish`, `verify` and `latest`, so a release whose signature or attestation fails to
-verify, or whose `latest` retag fails, never reaches either exercise. image-swap's own
-previous-release lookup excludes drafts (`--exclude-drafts`), so an in-flight draft on another tag
-is never picked as the swap target.
+**Bring-up and the image swap run once verification passes.** Both depend on `draft` and `verify`, so
+a release whose signature, attestation or attached set fails to verify never reaches either exercise.
+Both run on a pre-release too: what they check is the draft's own digest and files, not a published
+release, so there is no publication state left to gate them on. image-swap's own previous-release
+lookup excludes drafts (`--exclude-drafts`), so an in-flight draft on another tag is never picked as
+the swap target.
 
-The release notes name the digest, which is what ties the tag to the registry: the publish
-workflow keeps exactly one line naming it, `Image: ghcr.io/wisewareorg/wisekiosk@sha256:<digest>`,
-replacing that line on a re-dispatch before the release publishes — a rebuild changes the digest, so
-matching the whole line would not catch it — and touching nothing else in whatever notes the draft
-carries.
+The release notes name the digest, which is what ties the tag to the registry: the `draft` job keeps
+exactly one line naming it, `Image: ghcr.io/wisewareorg/wisekiosk@sha256:<digest>`, replacing that
+line on a re-dispatch before the release publishes — a rebuild changes the digest, so matching the
+whole line would not catch it — and touching nothing else in whatever notes the draft carries.
 
 **The image reference is not an asset.** It is a pointer — the thing the registry-side material
 describes and the thing the recipe resolves. Listing it beside four files is what made one sentence
@@ -125,25 +129,32 @@ project does not produce.
 `git tag vMAJOR.MINOR.PATCH <sha> && git push origin vMAJOR.MINOR.PATCH`, then
 `gh workflow run publish.yml --ref vMAJOR.MINOR.PATCH`, with `-f prerelease=true` for a
 pre-release; `publish.yml`'s first step asserts the dispatched ref against that shape and fails the
-run rather than publishing from anything else. The workflow creates or reuses a draft release for
-that tag, fills it over its own later steps, and publishes it once the image, its signatures and
-attestations, the two assets and the digest line are in place — with immutable releases enabled,
-which the organisation enforces on this repository, GitHub locks a release's assets and its tag the
-moment it publishes, though its notes and title stay editable, so a workflow triggered by that
-publish could never attach anything to the release that triggered it. The image is tagged by that
-same version, and `latest` moves to the published digest in its own job, once `verify` passes, only
-when the release is not a pre-release — a pre-release publishes its own version tag and never moves
-the tag the committed recipe references
-([`../DEPLOYMENT.md`](../DEPLOYMENT.md) § *Bring-up*). The push that published `latest` from every
-commit on the default branch is retired with it: nothing publishes from `main`. A run failing before
-the publish step is re-dispatched on the same tag — the draft is reused, its `prerelease` flag
-re-synced, its assets `--clobber`ed and the digest line replaced; once a release has published, a
-bad one is re-cut under a new version rather than re-run. A `latest` job failing before or during
-its retag push is transient and needs neither: publish and verify already succeeded, so only the
-run's failed jobs are re-run. A `latest` job failing at its own digest assertion is not: the push
-already landed, `:latest` already names whatever digest the copy produced, and a rerun would only
-repeat whatever made it wrong — that case is investigated, then `latest` is repointed by hand at
-the published digest.
+run rather than publishing from anything else. The `draft` job creates or reuses a draft release for
+that tag, builds, signs and attests the image, attaches the two assets and the digest line to the
+draft, then reads everything it just attached back and uploads it as a workflow artifact — with
+immutable releases enabled, which the organisation enforces on this repository, GitHub locks a
+release's assets and its tag the moment it publishes, though its notes and title stay editable, so a
+workflow triggered by that publish could never attach anything to the release that triggered it.
+`verify` checks the draft's digest and that artifact, read only; `bring-up` and `image-swap` run
+against the same digest and artifact — `bring-up` runs the documented procedure with
+`WISEKIOSK_IMAGE` carrying the digest to `deploy/compose.yaml` in place of its default `:latest`
+([`../DEPLOYMENT.md`](../DEPLOYMENT.md) § *Bring-up*); `image-swap` runs both digests by `docker run`
+directly, so the recipe and its variable play no part. Once all three pass, `publish` re-reads the
+draft, fails the run unless it is still byte-identical to the artifact they checked, and only then
+flips it to published — what locks is exactly what was checked. The image is tagged by that same
+version, and `latest` moves to the published digest in its own job, only when the release is not a
+pre-release — a pre-release publishes its own version tag and never moves the tag the committed
+recipe references. The push that published `latest` from every commit on the default branch is
+retired with it: nothing publishes from `main`. A run failing before `publish` is re-dispatched on
+the same tag — at the fixed commit first, when the failure was in the code rather than transient —
+and the draft is reused, its `prerelease` flag re-synced, its assets `--clobber`ed and the digest
+line replaced, so nothing ever publishes carrying the failure and no version is burned; once a
+release has published, a bad one is re-cut under a new version rather than re-run. A `latest` job
+failing before or during its retag push is transient and needs neither: every job before it already
+succeeded, so only the run's failed jobs are re-run. A `latest` job failing at its own digest
+assertion is not: the push already landed, `:latest` already names whatever digest the copy produced,
+and a rerun would only repeat whatever made it wrong — that case is investigated, then `latest` is
+repointed by hand at the published digest.
 
 **No operator tooling program ships as part of a release**, and the release carries an example
 configuration file instead.
@@ -244,11 +255,24 @@ a draft's image before that draft is known to ever reach publish. A run that fai
 and publish would leave `latest` resolving to a digest whose release had never published, with
 nothing in the recipe's own procedure to notice or correct it.
 
-**`latest` moves in the publish job, right after it publishes the release, before `verify` runs.**
+**`latest` moves in the job that publishes the release, right after it publishes, before `verify`
+runs.**
 Rejected: an image failing verification would already be `latest` by the time `verify` caught it,
 defeating what gating the move on verification is for. The chosen shape moves `latest` in its own
 job, after `verify` passes, so a bad signature or attestation is caught before the floating tag ever
 points at it.
+
+**`verify`, `bring-up` and `image-swap` given `contents: write` to read the draft directly**, rather
+than reading a workflow artifact. Rejected: none of the three writes to the release, so granting
+write scope to read it would be unnecessary write scope for a read — the artifact pass-through keeps
+them read-only while still letting them see what seeing a draft otherwise needs push access for.
+
+**A runner-local retag of `:latest` to the digest under test**, so `bring-up` could run the
+documented procedure exactly as written, unedited even in the image reference. Rejected: a
+runner-local retag is a path no operator ever takes. `WISEKIOSK_IMAGE` is a variable the committed
+recipe itself defines, so setting it is the same substitution an operator makes to pin a digest, and
+the documented procedure is exercised exactly as given to that operator rather than by a mechanism
+that exists only on the runner.
 
 ## Consequences
 
@@ -303,6 +327,6 @@ rather than an edit to a Dockerfile.
 **Premise that would reopen this:** a helper appears with work to do that a compose file cannot
 express — which today means the display host becoming reachable by a shipped script, or a
 configuration surface large enough that a starting file stops being a starting point. A wish for a
-more convenient install is not that premise. A separate premise reopens the draft-first publish
-order, which exists only because a published release's assets cannot change: immutable releases
-being lifted from this repository.
+more convenient install is not that premise. A separate premise reopens the draft-first,
+verify-before-lock publish order, which exists only because a published release's assets cannot
+change: immutable releases being lifted from this repository.

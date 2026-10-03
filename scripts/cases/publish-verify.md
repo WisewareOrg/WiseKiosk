@@ -5,12 +5,11 @@ The inputs these checks have been run against, in both directions. What they *as
 [`../README.md`](../README.md)'s. `scripts/publish/verify_permissions.py` (the no-write-scope gate)
 has its own file, [`check-publish-permissions.md`](check-publish-permissions.md).
 
-**Tools, pinned as run:** cosign v3.1.3 and syft v1.51.1, each named as a `with:` literal in both
-the `publish` and `verify` jobs — Renovate's regex manager bumps every match of `cosign-release:`
+**Tools, pinned as run:** cosign v3.1.3 and syft v1.52.0, each named as a `with:` literal in both
+the `draft` and `verify` jobs — Renovate's regex manager bumps every match of `cosign-release:`
 and `syft-version:` in `publish.yml` in one PR, which is what keeps the two per-tool pins equal; a
 hand edit drifting them apart surfaces as a package-set mismatch in `verify`'s SBOM regeneration
-comparison rather than failing silently. That the dependency dashboard actually lists both matches
-per tool is a WI4 read-back, not yet confirmed. `check-jsonschema==0.38.0`
+comparison rather than failing silently. `check-jsonschema==0.38.2`
 (`pipx run`, pinned in `scripts/publish/verify_release.py` rather than in the workflow, since that is
 where the invocation lives); `gh` and `docker buildx imagetools inspect` at whatever version the
 runner or this host provides — neither is pinned, matching this repository's existing convention for
@@ -18,25 +17,23 @@ those two tools elsewhere.
 
 ## What is verified here, against measured and synthetic data
 
-**Two releases already exist** — `v0.1.0` and `v0.0.1` (pre-release), both cut before this PR's
-`verify` job reached `main`, and both anonymously readable at
-`ghcr.io/tjwise99/wisekiosk@sha256:27ff2637…` — but **neither carries this job's signature or
-attestation**, since `release`-triggered workflows resolve from the default branch rather than the
-tag's ref, so `verify` could not have run against them. What is genuinely unobserved is not "any
-release", but a release this job actually signed and attested; that is `v0.0.1 --prerelease`'s next
-cut, scheduled for after this PR merges (§ *Sequencing*, WI4). The real, unattested releases already
-let far more of this file be measured directly than an unattested-anywhere premise would — see the
-attached-set and metadata rows below, both run against `v0.1.0` for real — which is also how the B1
-defect this file once carried (a wrong provenance-negative message, stated as observed when it was
-not) was found and fixed.
+**`v0.2.1` is the first release this job actually signed and attested.** Its own `verify` job run
+failed at the signature and attached-set steps, on two string matches that had never met real cosign
+v3.1.3 output ([#418 publish under immutable releases](https://github.com/WisewareOrg/WiseKiosk/issues/418#issuecomment-5961738214)).
+Every `verify_release.py` step and `verify_metadata.py` was re-run by hand against that same signed
+digest with the fixed script — the rows below record the two fixed matches and the artifact-backed
+`--step attached` input; the earlier releases, `v0.1.0` and `v0.0.1`
+(pre-release), were cut before `verify` could run against a tag's ref at all and carry no signature
+or attestation — see the attached-set and metadata rows below, both run against `v0.1.0` for real —
+which is also how the B1 defect this file once carried (a wrong provenance-negative message, stated
+as observed when it was not) was found and fixed.
 
 Everything below that could not be run against a real published digest was exercised against real
 tool output measured for this ticket (a throwaway image built from this repository's own
 `Dockerfile`, pushed to a local `registry:2` container, scanned with the pinned syft and inspected
 with `docker buildx imagetools inspect`, measured during implementation and not separately retained)
 and against realistic synthetic fixtures built from that measured shape. The **reviewer-runnable
-seeds** section below is what a reviewer (or WI4's exercise) runs against a real signed digest once
-one exists.
+seeds** section below is what a reviewer runs against a real signed digest, such as `v0.2.1`'s.
 
 **`sbom_attest.py` (publish job, per-child SBOM generation and attestation).** `read_children`
 (`scripts/publish/common.py`) parsed a real two-entry `docker buildx imagetools inspect --format
@@ -67,8 +64,8 @@ never produces the spurious third entry.
 must-pass row above. `check_labels`'s platform-keyed branch is exercised against real data, not only
 against the documented `buildx` behaviour it was originally written to.
 
-**`verify_release.py`'s pure logic — unit-tested directly**, since the surrounding `cosign`/`gh`
-calls other than provenance's (below) need a real signed digest this PR cannot yet produce:
+**`verify_release.py`'s pure logic — unit-tested directly**, exercised here with synthetic data
+rather than against a real signed digest:
 
 | Function | Case | Result |
 |---|---|---|
@@ -95,7 +92,7 @@ runnable seeds* below for the fix this drove in `verify_release.py`) — `gh` 2.
 |---|---|---|---|
 | A flipped (reversed-hex) digest against the real index | 1 | 0 bytes | `Error: failed to fetch remote image: GET https://ghcr.io/v2/tjwise99/wisekiosk/manifests/sha256:<flipped>: MANIFEST_UNKNOWN: manifest unknown` |
 | The real digest, no attestation attached (true of both existing releases) | 1 | 0 bytes | `Error: HTTP 404: Not Found (https://api.github.com/repos/tjwise99/WiseKiosk/attestations/sha256:<digest>?...)` |
-| A wrong `--signer-workflow` against a digest that *does* carry an attestation | — | — | unobserved: no such digest exists anywhere reachable to produce it; recorded as observed in WI4 rather than guessed at |
+| A wrong `--signer-workflow` against a digest that *does* carry an attestation | 1 | 0 bytes | `Error: verifying with issuer "sigstore.dev"` — measured against the real, attested `v0.2.1` index, not `v0.1.0`'s (neither earlier release carries an attestation) |
 
 **The vendored SPDX 2.3 schema** (`scripts/publish/spdx-schema-2.3.json`, from
 https://github.com/spdx/spdx-spec/blob/v2.3/schemas/spdx-schema.json at tag `v2.3`) validated a real
@@ -104,28 +101,30 @@ deleted (`'spdxVersion' is a required property`), via `check-jsonschema==0.38.0`
 
 ## Reviewer-runnable seeds, against any real published digest
 
-Once a real release exists (WI4's pre-release exercise, or any later release), each of these can be
-run directly and is expected to fail for the reason given. None of these mutate the release; each
-either targets a deliberately wrong identity/digest/workflow, or a throwaway copy pushed under a
-mismatched digest.
+Each of these can be run directly against any signed, attested digest (`v0.2.1`'s,
+`sha256:55239c9cdf549cfeac87265849bd6277d7bed3619f4bd5766ac55fd00e9e95a2`, or any later release's)
+and is expected to fail for the reason given. None of these mutate the release; each either targets
+a deliberately wrong identity/digest/workflow, or a throwaway copy pushed under a mismatched digest.
 
 - **Signature, wrong identity.** `cosign verify --certificate-identity-regexp
   '^https://example\.invalid/' --certificate-oidc-issuer https://token.actions.githubusercontent.com
-  <ref>@<digest>` — exits non-zero, printing `none of the expected identities matched`.
+  <ref>@<digest>` — exits non-zero, printing `no matching CertificateIdentity found`. Measured
+  against the real `v0.2.1` index (rows above).
 - **Provenance, flipped digest.** `gh attestation verify oci://<ref>@sha256:<the real hex, reversed>
-  --repo tjwise99/WiseKiosk --signer-workflow tjwise99/WiseKiosk/.github/workflows/publish.yml` —
+  --repo WisewareOrg/WiseKiosk --signer-workflow WisewareOrg/WiseKiosk/.github/workflows/publish.yml` —
   exits non-zero, printing the substring `MANIFEST_UNKNOWN: manifest unknown` on stderr, with an
   empty stdout — the registry refuses to resolve the reference before any attestation lookup runs.
-  Measured against the real `v0.1.0` index; the digest is interpolated into the message, so only
-  this substring is stable across releases, never the full line.
-- **Provenance, wrong signer workflow.** `gh attestation verify oci://<ref>@<digest> --repo
-  tjwise99/WiseKiosk --signer-workflow tjwise99/WiseKiosk/.github/workflows/checks.yml` — exits
-  non-zero with an empty stdout. Deliberately weak: with no attested digest to test against, what
-  this prints when a *real* attestation exists but the signer workflow is wrong is unobserved before
-  a signed release exists, and could print the same `HTTP 404` text a plain no-attestation digest
-  does — the six positive `--format json` field assertions carry the verdict for this check, not
-  this negative's text. Marked observed in WI4, once a signed digest exists to test the genuine
-  mismatch case against.
+  Measured against the real `v0.1.0` index and re-confirmed against `v0.2.1`'s; the digest is
+  interpolated into the message, so only this substring is stable across releases, never the full
+  line.
+- **Provenance, wrong signer workflow, against a digest that genuinely carries an attestation.**
+  `gh attestation verify oci://<ref>@<digest> --repo WisewareOrg/WiseKiosk --signer-workflow
+  WisewareOrg/WiseKiosk/.github/workflows/checks.yml` — exits non-zero with an empty stdout, printing
+  `Error: verifying with issuer "sigstore.dev"` on stderr. Measured against the real, attested
+  `v0.2.1` index — the case the two existing, unattested releases could not exercise. Deliberately
+  weak on text: `verify_negative_no_json_success` asserts only the non-zero exit and the empty
+  stdout, not this stderr line, since the six positive `--format json` field assertions carry the
+  verdict for this check.
 - **Provenance, registry-copy `--bundle-from-oci`, absent or wrong digest.** Push a throwaway copy of
   the image under a mismatched digest (or strip the bundle), never the real release, and run `gh
   attestation verify oci://<that ref>@<that digest> --repo tjwise99/WiseKiosk --signer-workflow
@@ -156,9 +155,12 @@ verifying with issuer "sigstore.dev"`, taken from the plan rather than measured.
 the real `v0.1.0` index, neither refusal prints that text — a flipped digest fails registry
 resolution with `MANIFEST_UNKNOWN` before any attestation lookup, and the plain no-attestation case
 gives an HTTP 404 from GitHub's API — so `--step provenance` would have failed on every correct
-release, including the first `--prerelease` cut after this PR merges, for a defect in the checker
-rather than in the release. Fixed in `verify_release.py` by asserting the two texts actually measured
-above and leaving the wrong-signer-workflow case unasserted on text until one can be observed.
+release, including `v0.2.1`, the first `--prerelease` cut this defect reached, for a defect in the
+checker rather than in the release
+([#418 publish under immutable releases](https://github.com/WisewareOrg/WiseKiosk/issues/418#issuecomment-5961738214)).
+Fixed in `verify_release.py` by asserting the two texts actually measured above, leaving the
+wrong-signer-workflow case unasserted on text — the discarded shared literal turned out to be the
+genuine text for that case once a real attested digest made it observable (row above).
 
 **Fallibility is recorded once here, against throwaway copies; no standing meta-gate re-tests it**
 ([`check-arch.md`](check-arch.md) states that convention).
@@ -170,9 +172,30 @@ broken release was skipped for #269 publish verification: a missing release asse
 attestation (no SBOM, no signature, or no provenance attached to a child); a dropped annotation key;
 an empty annotation or label value; a wrong `.revision` on one surface only (the others correct).
 
-## Fail-direction in CI
+## The cosign v3.1.3 output, and the artifact-backed `--step attached` input
 
-Not yet exercised against a release this job actually signed and attested — the first such release
-is the first run. Back-filled with run IDs, `cosign tree`'s observed child headings, `gh`'s observed
-positive JSON, and the wrong-signer-workflow refusal text, by the docs-only follow-up PR after the
-pre-release exercise (§ *Sequencing*, WI4), not by a commit inside this PR.
+Rows for the two string-match fixes and the artifact-backed `--step attached` input, recorded
+against cosign v3.1.3's actual output on the signed `v0.2.1` digest,
+`sha256:55239c9cdf549cfeac87265849bd6277d7bed3619f4bd5766ac55fd00e9e95a2`
+([#418 publish under immutable releases](https://github.com/WisewareOrg/WiseKiosk/issues/418#issuecomment-5961738214)).
+Each row states the case, how it is seeded or run, and the expected outcome.
+
+| Case | Seed / run | Expected outcome | Evidence |
+|---|---|---|---|
+| Signature step, wrong identity: the real cosign v3.1.3 refusal is recognised | `cosign verify --certificate-identity-regexp '^https://example\.invalid/' --certificate-oidc-issuer https://token.actions.githubusercontent.com ghcr.io/wisewareorg/wisekiosk@sha256:55239c9cdf549cfeac87265849bd6277d7bed3619f4bd5766ac55fd00e9e95a2` against the signed index | cosign refuses (non-zero exit), printing `no matching attestations: failed to verify certificate identity: no matching CertificateIdentity found, ...`; `step_signature`'s negative check matches on `no matching CertificateIdentity found` and raises no problem for it — combined with the positive per-surface `cosign verify` calls (already observed passing against this digest), `--step signature` prints `verify_release --step signature: ok` | Confirmed, byte for byte: `cosign verify` exited 1 and printed `Error: no matching attestations: failed to verify certificate identity: no matching CertificateIdentity found, last error: expected SAN value to match regex "^https://example\.invalid/", got "https://github.com/WisewareOrg/WiseKiosk/.github/workflows/publish.yml@refs/tags/v0.2.1"` (repeated on stderr); `python3 verify_release.py --step signature` (`REF`/`DIGEST` as above) printed `verify_release --step signature: ok`. Script md5 `ff1b41e34d946d6becf5983ba6f47495` |
+| Signature step, wrong identity: a refusal for a different reason is still reported as unexpected | the same wrong-identity regexp, against the index's own digest with its hex reversed (`sha256:<flipped>`) — the flipped-digest seed this file's provenance rows already use, since cosign resolves the reference before any identity check runs | `cosign verify` fails at manifest resolution rather than at identity matching, so its output does not contain `no matching CertificateIdentity found`; `step_signature` reports `signature: refused for an unexpected reason: <cosign's own output>` | Confirmed: `cosign verify` against `ghcr.io/wisewareorg/wisekiosk@sha256:2a59e9e00df55ca6675db4f9163deb7d7726db94856278caefc945fdc9c93255` (the real digest's hex reversed) exited 10, printing `Error: no signatures found` / `error during command execution: no signatures found` — no `no matching CertificateIdentity found` substring; calling `cosign_verify` directly through `verify_release.py` and evaluating `step_signature`'s negative branch against that output produced `['signature: refused for an unexpected reason: Error: no signatures found\nerror during command execution: no signatures found']`. Script md5 `ff1b41e34d946d6becf5983ba6f47495` |
+| `--step attached`, per-surface headings present | `cosign tree` against the signed index and each platform child | the index's output carries `sigstore.dev/cosign/sign/v1` and `slsa.dev/provenance/v1`; each child's output carries `sigstore.dev/cosign/sign/v1` and `spdx.dev/Document`; the heading checks append no problems | Confirmed against the signed index and both platform children (`sha256:53e3862a…`, linux/amd64; `sha256:0fbbdd31…`, linux/arm64): the index's `cosign tree` output carries exactly `sigstore.dev/cosign/sign/v1` and `slsa.dev/provenance/v1` (no `spdx.dev/Document`); each child's carries exactly `sigstore.dev/cosign/sign/v1` and `spdx.dev/Document` (no `slsa.dev/provenance/v1`); `python3 verify_release.py --step attached` (`ARTIFACT_DIR` built from `v0.2.1`'s own assets and notes) printed `verify_release --step attached: ok`. Script md5 `ff1b41e34d946d6becf5983ba6f47495` |
+| `--step attached`, an index-only heading checked for on a child is reported missing | `cosign tree` against one platform child's own digest | provenance attests only the index, so the child's output does not carry `slsa.dev/provenance/v1`; asserting it there is reported as a missing heading | Confirmed by the same `cosign tree` run above: the amd64 child's output lists only `spdx.dev/Document` and `sigstore.dev/cosign/sign/v1` — `slsa.dev/provenance/v1` is absent, so `step_attached`'s per-surface loop would report it missing on a child. Script md5 `ff1b41e34d946d6becf5983ba6f47495` |
+| `--step attached`, a child-only heading checked for on the index is reported missing | `cosign tree` against the index's own digest | SBOM attests only the children, so the index's output does not carry `spdx.dev/Document`; asserting it there is reported as a missing heading | Confirmed by the same index `cosign tree` run above: its output lists only `sigstore.dev/cosign/sign/v1` and `slsa.dev/provenance/v1` — `spdx.dev/Document` is absent, so `step_attached`'s per-surface loop would report it missing on the index. Script md5 `ff1b41e34d946d6becf5983ba6f47495` |
+| `--step attached`, assets and notes read from `$ARTIFACT_DIR` | `$ARTIFACT_DIR/assets/` holds the release's own `compose.yaml` and `config.example.json`; `$ARTIFACT_DIR/notes.md` holds the release's own notes (carrying `Image: ghcr.io/wisewareorg/wisekiosk@sha256:55239c9cdf549cfeac87265849bd6277d7bed3619f4bd5766ac55fd00e9e95a2`); no `gh release view` call is made | the asset-list and notes checks each append no problems | Confirmed: `ARTIFACT_DIR` built from `gh release download v0.2.1` (into `assets/`) and `gh release view v0.2.1 --json body -q .body` (into `notes.md`); `python3 verify_release.py --step attached` printed `verify_release --step attached: ok` with no `gh release view` call made by the script. Script md5 `ff1b41e34d946d6becf5983ba6f47495` |
+| `--step attached`, an extra asset in `$ARTIFACT_DIR/assets/` is reported | the same directory with an extra file added, e.g. `extra.txt` | `attached: release assets are ['compose.yaml', 'config.example.json', 'extra.txt'], expected exactly ['compose.yaml', 'config.example.json']` | Confirmed, byte for byte: with `extra.txt` added to a copy of the same `assets/` directory, `python3 verify_release.py --step attached` printed `verify_release --step attached: 1 problem(s):` then `  attached: release assets are ['compose.yaml', 'config.example.json', 'extra.txt'], expected exactly ['compose.yaml', 'config.example.json']`, exit 1. Script md5 `ff1b41e34d946d6becf5983ba6f47495` |
+
+## `v0.2.1`'s CI run, and what replaces it
+
+`v0.2.1`'s own `verify` job is the first to have run this job's checks against a release it actually
+signed and attested. It failed at the signature and attached-set steps, on the two stale string
+matches the rows above fix
+([#418 publish under immutable releases](https://github.com/WisewareOrg/WiseKiosk/issues/418#issuecomment-5961738214));
+every other step passed. The fixed script was re-run by hand against that same signed digest
+(recorded above), not by a CI job, since `verify` runs ahead of `publish` rather than re-running
+against an already-locked release.

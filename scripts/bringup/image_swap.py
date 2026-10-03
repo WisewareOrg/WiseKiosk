@@ -1,18 +1,21 @@
 #!/usr/bin/env python3
-"""Two published digests answer the same mount arguments, one after the other.
+"""The previous release and the release under test answer the same mount arguments, one after the
+other.
 
-docs/CI.md § Deployment and bring-up: digest A runs under a mounted configuration and an
+docs/CI.md § Deployment and bring-up: the previous digest runs under a mounted configuration and an
 ephemeral published port; is asserted healthy, serving that configuration, and reporting its own
-version; is stopped and removed; digest B runs under byte-identical mount arguments and is
-asserted the same way — with no builder invoked at either step. Version is read from the OCI
+version; is stopped and removed; the digest under test runs under byte-identical mount arguments and
+is asserted the same way — with no builder invoked at either step. Version is read from the OCI
 `org.opencontainers.image.version` annotation on the manifest each digest names, and the two
-versions must differ, each equalling its own release tag with the leading `v` stripped.
+versions must differ, each equalling its own release tag with the leading `v` stripped. The
+previous side's configuration comes from `gh release download`; the side under test's comes from
+`<release-dir>` directly, which lets this check run against a release still only a draft, with no
+published tag to download from.
 
-Usage: image_swap.py <tag_a> <digest_a> <tag_b> <digest_b>
+Usage: image_swap.py <previous-tag> <previous-digest> <tag> <release-dir> <digest>
 """
 
 import argparse
-import json
 import shutil
 import subprocess
 import sys
@@ -88,37 +91,6 @@ def container_address(container):
     return completed.stdout.strip().split("\n")[0]
 
 
-def assert_pulled_digest(container, image_ref):
-    """The running container's image resolves to the requested digest — no builder invoked."""
-    completed = subprocess.run(
-        ["docker", "inspect", "--format", "{{json .Image}}", container],
-        capture_output=True,
-        text=True,
-    )
-    if completed.returncode != 0:
-        raise common.HarnessError(
-            f"`docker inspect {container}` exited {completed.returncode} "
-            f"({completed.stderr.strip()})"
-        )
-    image_id = json.loads(completed.stdout.strip())
-    completed = subprocess.run(
-        ["docker", "image", "inspect", "--format", "{{json .RepoDigests}}", image_id],
-        capture_output=True,
-        text=True,
-    )
-    if completed.returncode != 0:
-        raise common.HarnessError(
-            f"`docker image inspect {image_id}` exited {completed.returncode} "
-            f"({completed.stderr.strip()})"
-        )
-    repo_digests = json.loads(completed.stdout.strip()) or []
-    if image_ref not in repo_digests:
-        raise common.HarnessError(
-            f"{container}'s image resolves to {repo_digests}, not {image_ref} — the running "
-            f"image did not come from the registry pull alone"
-        )
-
-
 def resolve_version(image_ref):
     """The `org.opencontainers.image.version` annotation on the manifest image_ref names."""
     annotations, detail = common.imagetools_inspect(image_ref, ".Manifest.Annotations")
@@ -134,18 +106,26 @@ def resolve_version(image_ref):
     return version
 
 
-def run_and_assert(tag, digest):
-    """Runs image@digest under the shared mount, asserts it, tears it down, returns its version."""
+def run_and_assert(tag, digest, release_dir=None):
+    """Runs image@digest under the shared mount, asserts it, tears it down, returns its version.
+
+    The mounted configuration is `release_dir`'s own `config.example.json` when given, otherwise
+    `gh release download`'s, against `tag`.
+    """
     image_ref = f"{common.IMAGE}@{digest}"
     with tempfile.TemporaryDirectory() as directory:
         directory = Path(directory)
-        download_config(tag, directory)
+        if release_dir is None:
+            download_config(tag, directory)
+            example_path = directory / "config.example.json"
+        else:
+            example_path = Path(release_dir) / "config.example.json"
         config_path = directory / "config.json"
-        shutil.copy(directory / "config.example.json", config_path)
+        shutil.copy(example_path, config_path)
         container = None
         try:
             container = start_container(image_ref, config_path)
-            assert_pulled_digest(container, image_ref)
+            common.assert_running_image(container, image_ref)
             common.wait_healthy(container, common.healthcheck_deadline(image_ref))
             address = container_address(container)
             common.assert_config_served(address, config_path.read_bytes())
@@ -165,25 +145,26 @@ def run_and_assert(tag, digest):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("tag_a")
-    parser.add_argument("digest_a")
-    parser.add_argument("tag_b")
-    parser.add_argument("digest_b")
+    parser.add_argument("previous_tag")
+    parser.add_argument("previous_digest")
+    parser.add_argument("tag")
+    parser.add_argument("release_dir")
+    parser.add_argument("digest")
     args = parser.parse_args()
 
     try:
-        version_a = run_and_assert(args.tag_a, args.digest_a)
-        version_b = run_and_assert(args.tag_b, args.digest_b)
+        version_a = run_and_assert(args.previous_tag, args.previous_digest)
+        version_b = run_and_assert(args.tag, args.digest, release_dir=args.release_dir)
         if version_a == version_b:
             raise common.HarnessError(
-                f"{args.tag_a} and {args.tag_b} both report version {version_a!r} — the swap "
+                f"{args.previous_tag} and {args.tag} both report version {version_a!r} — the swap "
                 f"changed nothing"
             )
     except common.HarnessError as error:
         return fail(str(error))
 
     print(
-        f"{args.tag_a} ({version_a}) and {args.tag_b} ({version_b}) each serve their mounted "
+        f"{args.previous_tag} ({version_a}) and {args.tag} ({version_b}) each serve their mounted "
         f"configuration under the same mount arguments, with no builder invoked"
     )
     return 0

@@ -432,22 +432,26 @@ enabled, and this paragraph rather than a check is what records it.
 
 ## Publishing and provenance
 
-What a release publishes and what CI asserts about it. Verification runs against the published digest
-in a separate job, `verify`, that reads three surfaces only — the registry, the public transparency
-log via cosign, and GitHub's release and attestation APIs — and holds no write scope. Installing the
+What a release publishes and what CI asserts about it. Verification runs against the draft's digest,
+before the release can lock, in a separate job, `verify`, that reads three surfaces only — the
+registry and the public transparency log, both via cosign, and GitHub's attestation API — plus the
+draft's own read-back artifact for its assets and notes, and holds no write scope. Installing the
 job's own tools — the cosign and syft installers, and the `pipx` fetch of `check-jsonschema` from
-PyPI — is the job's only other network activity, distinct from the three evidence surfaces above.
+PyPI — is the job's only other network activity, distinct from the evidence surfaces above.
 What builds and pushes the image is `.github/workflows/publish.yml`, against the set
 [ADR 0020 rev 5](decisions/0020-release-artifact-set-and-operator-tooling.md) decides. That workflow
 runs only when the owner pushes a `vMAJOR.MINOR.PATCH` tag and dispatches it, tags the image by that
-semver, and creates, fills and publishes a draft release for that tag; a separate `latest` job then
-moves `latest` to the published digest once verification passes, for a non-pre-release
+semver, and creates and fills a draft release for that tag, reading everything it attached back as a
+workflow artifact; `verify`, `bring-up` and `image-swap` all check that artifact, and only once they
+all pass does a separate `publish` job re-read the draft and flip it to published
+([ADR 0020 rev 5](decisions/0020-release-artifact-set-and-operator-tooling.md)) — a separate `latest`
+job then moves `latest` to the published digest, for a non-pre-release
 ([ADR 0020 rev 5](decisions/0020-release-artifact-set-and-operator-tooling.md)); the committed recipe
 references `latest` so it runs unedited ([`DEPLOYMENT.md`](DEPLOYMENT.md) § *Bring-up*); the release
 notes carry exactly one line naming that digest,
 `Image: ghcr.io/wisewareorg/wisekiosk@sha256:<digest>`
 ([ADR 0020 rev 5](decisions/0020-release-artifact-set-and-operator-tooling.md)), and it is what an
-operator who chooses to verify checks against. Before any registry write, the publish job's draft
+operator who chooses to verify checks against. Before any registry write, the `draft` job's own first
 step fails the run when the tag's release is already published, or when more than one release
 carries the tag — a re-dispatch must never move a published release's semver image tag onto a
 rebuilt digest its `Image:` line does not name. Recorded in
@@ -463,7 +467,9 @@ whole; until then, read anything this gate does not itself assert as intent.
 
 **This job runs on a tag dispatch rather than on a pull request**, so it is neither a required
 status check nor one of § *Gate wiring*'s no-local-form exceptions. A failed verification fails the
-release run, the first run included; the release is re-cut, and there is no rollback.
+run before the release ever locks: the draft stays a draft, and a re-dispatch on the same tag reuses
+it rather than cutting a new version — at a fixed commit first, when the failure was in the code
+rather than transient.
 
 - **A release occupies two locations, and each is a separate assertion.** The registry carries the
   image at a digest, with the SBOM, the signature and the build-provenance attestation attached to it
@@ -471,7 +477,7 @@ release run, the first run included; the release is re-cut, and there is no roll
   carries exactly two files, at their committed basenames: the deployment recipe, `compose.yaml`, and
   an example configuration, `config.example.json`. The release notes name the digest, which is what
   ties the tag to the registry. Resolving the artifacts attached to a digest, listing files on a tag
-  and reading the notes for a digest are three queries against two APIs, so **a run that reads one
+  and reading the notes for a digest are three separate claims, so **a run that reads one
   surface and skips another fails** rather than reporting success over the part it reached — an
   unreadable surface, and resolving no surface at all, are failures and not skips. An undeclared file
   on the tag fails, and so does a declared one that is absent.
@@ -482,13 +488,13 @@ release run, the first run included; the release is re-cut, and there is no roll
   than from a tag, so it is not a release asset and nothing asserts any correspondence between what it
   describes and the digest an operator is running. That drift is chosen rather than overlooked, and
   ADR 0020 rev 5 records the choice.
-- **Signature.** Keyless `cosign verify` against the published index digest and each platform child,
+- **Signature.** Keyless `cosign verify` against the draft's index digest and each platform child,
   with the certificate identity bound to this workflow's own runs dispatched on a tag ref
   (`--certificate-identity-regexp`) and the GitHub Actions OIDC issuer, exits zero; against a
-  deliberately wrong identity it exits non-zero and prints `none of the expected identities matched`,
+  deliberately wrong identity it exits non-zero and prints `no matching CertificateIdentity found`,
   measured at cosign v3.1.3.
 - **Provenance.** `gh attestation verify`, bound to this workflow by `--signer-workflow`, validates
-  the build-provenance attestation for the published digest against GitHub's attestation store. The
+  the build-provenance attestation for the draft's digest against GitHub's attestation store. The
   binding is asserted positively, from the command's own `--format json` fields — the subject digest,
   the SLSA predicate type, and the certificate's signer URI, source repository and source repository
   digest — never from a negative's message, because the three refusal cases print three distinct
@@ -496,10 +502,9 @@ release run, the first run included; the release is re-cut, and there is no roll
   refuses to resolve the reference before any attestation lookup runs, printing the substring
   `MANIFEST_UNKNOWN: manifest unknown` (measured against a real published digest); against a real
   digest carrying no attestation — true of every release published before this job existed — `gh`
-  prints `Error: HTTP 404: Not Found (…/attestations/…)` (also measured); what a wrong signer
-  workflow prints against a digest that *does* carry an attestation is unobserved, since no such
-  digest exists yet to produce it, and is recorded rather than guessed at, on the case file, once
-  WI4's pre-release exercise can observe it. The wrong-signer-workflow check therefore asserts only a
+  prints `Error: HTTP 404: Not Found (…/attestations/…)` (also measured); a wrong signer workflow
+  against a digest that *does* carry an attestation prints `Error: verifying with issuer
+  "sigstore.dev"` (also measured). The wrong-signer-workflow check nonetheless asserts only a
   non-zero exit and an empty stdout — the shape every refusal above shares, with or without
   `--format json` — a deliberately weak assertion, since the six positive field assertions carry the
   verdict. A second invocation, with `--bundle-from-oci`, verifies the copy of the same bundle
@@ -515,7 +520,7 @@ release run, the first run included; the release is re-cut, and there is no roll
   package; a package set carrying no `distro=` qualifier at all fails. Regenerating with the same
   pinned syft on the same child digest and platform yields a matching set of packages and versions —
   the comparison keys on `(name, versionInfo)` pairs, which a name set alone cannot tell apart on the
-  published index. A separate, named assertion binds the describing image package's own
+  draft's index. A separate, named assertion binds the describing image package's own
   `versionInfo` to the child digest under verification and its purl `arch=` to that child's platform
   architecture, so a cross-wired attestation (the other child's SBOM, which otherwise passes every
   assertion above) fails there rather than by accident. A child without its SBOM attestation fails.
@@ -552,29 +557,29 @@ release run, the first run included; the release is re-cut, and there is no roll
 
 ## Deployment and bring-up
 
-What the published material must let an operator do, checked by running it rather than by reading it.
-What each of these obligations *is*, and why, is [`DEPLOYMENT.md`](DEPLOYMENT.md)'s. Both jobs below
-run only once the `verify` job (§ *Publishing and provenance*) passes and the `latest` job
-(§ *Publishing and provenance*) has moved `latest` for this release, so neither exercises a release
-whose signature or attestation failed to verify.
+What a release must let an operator do, checked by running it rather than by reading it. What each
+of these obligations *is*, and why, is [`DEPLOYMENT.md`](DEPLOYMENT.md)'s. The `bring-up` and
+`image-swap` jobs below run once the `verify` job (§ *Publishing and provenance*) passes, against the
+draft's own digest and its read-back artifact, before the release publishes — pre-release included,
+since what they exercise is the draft rather than a published release — so neither exercises a
+release whose signature or attestation failed to verify.
 
 - **The documented procedure executes.** `just check-bringup`, run by the `bring-up` job in
-  [`../.github/workflows/publish.yml`](../.github/workflows/publish.yml) against the release this
-  dispatch published: it downloads the release's two assets into an empty directory and runs the
-  first `sh` fence after [`DEPLOYMENT.md`](DEPLOYMENT.md) § *Bring-up*'s heading, line by line,
-  unedited. It fails if a documented step does not run, or if the sequence completes without a
-  serving deployment — so documentation that omits a step fails here rather than at somebody's first
-  deployment. Serving is two assertions: the compose service's container reaches Docker health
+  [`../.github/workflows/publish.yml`](../.github/workflows/publish.yml) against the draft this
+  dispatch is filling: it runs the first `sh` fence after [`DEPLOYMENT.md`](DEPLOYMENT.md)
+  § *Bring-up*'s heading, line by line, unedited, inside the draft's read-back artifact directory,
+  which already holds the two assets — with `WISEKIOSK_IMAGE` exported to the fence, so
+  `deploy/compose.yaml`'s `${WISEKIOSK_IMAGE:-...}` resolves to this release's digest in place of its
+  default `:latest`. It fails if a documented step does not run, or if the sequence completes without
+  a serving deployment — so documentation that omits a step fails here rather than at somebody's
+  first deployment. Serving is three assertions: the running container's own image resolves to the
+  digest under test — what the documented procedure actually brought up, however the recipe's
+  `${WISEKIOSK_IMAGE:-...}` resolved it — the compose service's container reaches Docker health
   status `healthy` within a deadline derived from the image's own declared healthcheck, and
-  `GET /config.json` returns the downloaded `config.example.json` byte for byte — health status
+  `GET /config.json` returns the artifact's own `config.example.json` byte for byte — health status
   alone cannot see a missing configuration mount, `/healthz` being configuration-blind by design.
-  Before the block runs, `ghcr.io/wisewareorg/wisekiosk:latest` is asserted to resolve to the digest
-  the publish job produced — a second, independent confirmation beside the `latest` job's own
-  assertion that it moved there. The job runs only on a non-pre-release: `latest` does not move for
-  one ([`DEPLOYMENT.md`](DEPLOYMENT.md) § *Bring-up*), so the recipe's unedited `:latest` would
-  otherwise exercise the previous release's digest against the new assets. What is run is the
-  documented default path, which edits nothing and verifies nothing: attestation verification is
-  the operator's option rather than a step of the sequence
+  What is run is the documented default path, which edits nothing and verifies nothing: attestation
+  verification is the operator's option rather than a step of the sequence
   ([`DEPLOYMENT.md`](DEPLOYMENT.md) § *Bring-up*), so a run that skips it is a faithful bring-up and
   not a gap. No human is in the loop at any point. Recorded in
   [`../scripts/cases/check-bringup.md`](../scripts/cases/check-bringup.md).
@@ -615,8 +620,8 @@ whose signature or attestation failed to verify.
   emission specs and fails on a console warning of a rejected policy directive or an unrecognised
   Permissions-Policy feature.
 - **An image swap preserves the deployment.** `just check-image-swap`, run by the `image-swap` job in
-  [`../.github/workflows/publish.yml`](../.github/workflows/publish.yml): the release this dispatch
-  published swaps for the newest older non-pre-release, both under the same mounted configuration and
+  [`../.github/workflows/publish.yml`](../.github/workflows/publish.yml): the release under test
+  swaps for the newest older non-pre-release, both under the same mounted configuration and
   ephemeral published port — a secret directory is #261 secret mount's, this check is config-only.
   Each digest runs, is asserted healthy and serving that configuration, and is
   stopped and removed before the other runs, with no builder invoked at either step — made observable

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Verify a published release's signature, provenance, SBOM, or attached artifact set.
+"""Verify a draft release's signature, provenance, SBOM, or attached artifact set.
 
 One `--step` per invocation, so the `verify` job keeps one workflow step per check, each a single
 command whose failure text comes from here and stays unique to its cause
@@ -23,7 +23,8 @@ values into an invoked script) — only what each `--step` needs:
   REF     the image reference, without a digest (e.g. ghcr.io/wisewareorg/wisekiosk); every step
   DIGEST  the index digest, sha256:<hex>; every step
   COMMIT  the release commit, github.sha; --step provenance only
-  TAG     the release tag, github.ref_name; --step attached only
+  ARTIFACT_DIR  the directory holding the draft's read-back `assets/` and `notes.md`
+                (the `draft` job's `release-draft` artifact); --step attached only
   SYFT    the path to the pinned syft binary, `download-syft`'s `cmd` output; --step sbom only
 
 `cosign` and `gh` are invoked by bare name, on the PATH the workflow's setup steps provide. The
@@ -92,7 +93,7 @@ def step_signature(ref, digest, problems):
     returncode, output = cosign_verify(f"{ref}@{digest}", r"^https://example\.invalid/")
     if returncode == 0:
         fail(problems, "signature: cosign verify accepted a wrong identity regexp, expected refusal")
-    elif "none of the expected identities matched" not in output:
+    elif "no matching CertificateIdentity found" not in output:
         fail(problems, f"signature: refused for an unexpected reason: {output.strip()}")
 
 
@@ -350,7 +351,7 @@ def step_sbom(ref, digest, syft, problems):
 
 # --- attached set -------------------------------------------------------------------------------
 
-def step_attached(ref, digest, tag, problems):
+def step_attached(ref, digest, artifact_dir, problems):
     try:
         children = read_children(ref, digest)
     except CheckError as error:
@@ -361,45 +362,36 @@ def step_attached(ref, digest, tag, problems):
 
     result = run(["cosign", "tree", f"{ref}@{digest}"])
     combined = result.stdout + result.stderr
-    if "Signatures for an image tag" not in combined:
-        fail(problems, f"attached: cosign tree {ref}@{digest} did not show 'Signatures for an image tag': "
-                       f"{combined.strip()}")
+    for heading in ("sigstore.dev/cosign/sign/v1", "slsa.dev/provenance/v1"):
+        if heading not in combined:
+            fail(problems, f"attached: cosign tree {ref}@{digest} did not show {heading!r}: "
+                           f"{combined.strip()}")
 
     for child in children:
         result = run(["cosign", "tree", f"{ref}@{child['digest']}"])
         combined = result.stdout + result.stderr
-        if "Signatures for an image tag" not in combined:
-            fail(problems, f"attached: cosign tree {child['platform']} did not show "
-                           f"'Signatures for an image tag': {combined.strip()}")
-        if "Attestations for an image tag" not in combined:
-            fail(problems, f"attached: cosign tree {child['platform']} did not show "
-                           f"'Attestations for an image tag': {combined.strip()}")
+        for heading in ("sigstore.dev/cosign/sign/v1", "spdx.dev/Document"):
+            if heading not in combined:
+                fail(problems, f"attached: cosign tree {child['platform']} did not show "
+                               f"{heading!r}: {combined.strip()}")
 
-    result = run(["gh", "release", "view", tag, "--json", "assets"])
-    if result.returncode != 0:
-        fail(problems, f"attached: gh release view {tag} --json assets failed: {result.stderr.strip()}")
+    assets_dir = Path(artifact_dir) / "assets"
+    if not assets_dir.is_dir():
+        fail(problems, f"attached: {assets_dir} is not a directory")
     else:
-        try:
-            names = sorted(asset["name"] for asset in json.loads(result.stdout).get("assets", []))
-        except (json.JSONDecodeError, KeyError) as error:
-            fail(problems, f"attached: gh release view --json assets did not parse: {error}")
-        else:
-            expected = sorted(["compose.yaml", "config.example.json"])
-            if names != expected:
-                fail(problems, f"attached: release assets are {names}, expected exactly {expected}")
+        names = sorted(path.name for path in assets_dir.iterdir())
+        expected = sorted(["compose.yaml", "config.example.json"])
+        if names != expected:
+            fail(problems, f"attached: release assets are {names}, expected exactly {expected}")
 
-    result = run(["gh", "release", "view", tag, "--json", "body"])
-    if result.returncode != 0:
-        fail(problems, f"attached: gh release view {tag} --json body failed: {result.stderr.strip()}")
+    notes_path = Path(artifact_dir) / "notes.md"
+    if not notes_path.is_file():
+        fail(problems, f"attached: {notes_path} does not exist")
     else:
-        try:
-            body = json.loads(result.stdout).get("body", "")
-        except json.JSONDecodeError as error:
-            fail(problems, f"attached: gh release view --json body did not parse: {error}")
-        else:
-            expected_line = f"Image: {ref}@{digest}"
-            if expected_line not in body:
-                fail(problems, f"attached: release notes do not contain {expected_line!r}")
+        body = notes_path.read_text(encoding="utf-8")
+        expected_line = f"Image: {ref}@{digest}"
+        if expected_line not in body:
+            fail(problems, f"attached: release notes do not contain {expected_line!r}")
 
 
 def main():
@@ -418,7 +410,7 @@ def main():
     elif args.step == "sbom":
         step_sbom(ref, digest, os.environ["SYFT"], problems)
     elif args.step == "attached":
-        step_attached(ref, digest, os.environ["TAG"], problems)
+        step_attached(ref, digest, os.environ["ARTIFACT_DIR"], problems)
 
     if problems:
         print(f"verify_release --step {args.step}: {len(problems)} problem(s):", file=sys.stderr)
