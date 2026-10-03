@@ -373,7 +373,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ github.ref_name }}
           COMMIT: ${{ github.sha }}
-        run: '[[ "$(gh api repos/$GH_REPO/commits/$TAG --jq .sha)" == "$COMMIT" ]]'
+        run: '[[ "$(gh api "repos/$GH_REPO/commits/$TAG" --jq .sha)" == "$COMMIT" ]]'
 
       - name: Publish the verified draft
         env:
