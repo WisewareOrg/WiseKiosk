@@ -75,5 +75,6 @@ this check can see.
 under `if: always()` in `.github/workflows/publish.yml`, `working-directory: release-draft/assets`,
 is workflow YAML outside `bring_up.py`. The identical command was run by hand after each of the four
 port-dependent `v0.1.0` rows and each release-dir row above, from the directory that row ran in, and
-tore the deployment down cleanly each time (confirmed against `docker ps`). The rows above record
-local runs; the workflow's own teardown step is exercised by the release run itself.
+tore the deployment down cleanly each time, confirmed against `docker ps` where the row's own
+evidence records it. The rows above record local runs; the workflow's own teardown step is exercised
+by the release run itself.
