@@ -195,8 +195,8 @@ docstring; the script's logic, which every row ran against, has not changed.
 
 ## `v0.2.1`'s CI run, and what replaces it
 
-`v0.2.1`'s own `verify` job is the first to have run this job's checks against a release it actually
-signed and attested. It failed at the signature step, on one of the two stale string matches the
+`v0.2.1`'s own `verify` job is the first to have run this job's checks against a signed and attested
+release. It failed at the signature step, on one of the two stale string matches the
 rows above fix; provenance, SBOM, metadata and the attached-set check were skipped as a result,
 never running in that job — the attached-set match was found and fixed by hand, not from this run
 ([#418 publish under immutable releases](https://github.com/WisewareOrg/WiseKiosk/issues/418#issuecomment-5961738214)).
