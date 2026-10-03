@@ -27,13 +27,13 @@ recipe-as-committed row was run in CI instead
 ([run 34000590390, job `bring-up-ci-confirm`](https://github.com/WisewareOrg/WiseKiosk/actions/runs/34000590390/job/101398633749),
 Docker 29.6.2, Compose v2 (5.1.4)), container start to reported success in 31s, well inside the
 120s deadline the image's declared healthcheck derives — kept below as corroboration of the local
-run that replaced it. The owner authorized stopping that container to record the remaining three
-rows (2026-09-06); it was stopped, the four port-dependent rows below were run against the real
-recipe locally, this harness's own compose project was torn down completely
+run that replaced it. Stopping that container to record the remaining three rows was authorized; it
+was stopped, the four port-dependent rows below were run against the real recipe locally, this
+harness's own compose project was torn down completely
 (`docker compose down --volumes`, confirmed against `docker ps`/`docker network ls`), and the other
-container was restarted afterward. One row's observation differs from what was predicted before
-that ruling, noted where it does — the reasoning from source was directionally right (a defect
-downstream of the removed line) but wrong about which line fails first.
+container was restarted afterward. One row's observation differs from what was predicted before the
+container was freed, noted where it does — the reasoning from source was directionally right (a
+defect downstream of the removed line) but wrong about which line fails first.
 
 | Direction | Case | Input |
 |---|---|---|
@@ -64,7 +64,7 @@ from this interface, and its mismatch case is the second row below.
 
 **Known gap.** Removing the `chmod 644` line is not seeded: `cp` preserves the tracked 644 mode of
 `config.example.json` on the runner, so the line is redundant there and its absence is not a defect
-this check can see (owner, 2026-09-04).
+this check can see.
 
 **The `bring-up` job's teardown step itself is unverified.** `docker compose down --volumes` under
 `if: always()` in `.github/workflows/publish.yml`, `working-directory: release-draft/assets`, is

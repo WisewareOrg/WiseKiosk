@@ -165,10 +165,10 @@ genuine text for that case once a real attested digest made it observable (row a
 **Fallibility is recorded once here, against throwaway copies; no standing meta-gate re-tests it**
 ([`check-arch.md`](check-arch.md) states that convention).
 
-## Known gaps, per the owner
+## Known gaps
 
-Each needs a deliberately broken release and is unseeded, by the owner's own ruling that seeding a
-broken release was skipped for #269 publish verification: a missing release asset; a missing
+Each needs a deliberately broken release and is unseeded, since seeding a broken release was
+skipped for #269 publish verification: a missing release asset; a missing
 attestation (no SBOM, no signature, or no provenance attached to a child); a dropped annotation key;
 an empty annotation or label value; a wrong `.revision` on one surface only (the others correct).
 

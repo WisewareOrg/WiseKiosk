@@ -51,10 +51,10 @@ States the case, how it is seeded or run, and the expected outcome. `<release-di
 | The published previous release swapped against the release-dir side under test | `image_swap.py v0.1.0 sha256:27ff2637c52fe1e389a23693bb0c5fd8dcce175e9219c49006884ad46d3e589a v0.2.1 <release-dir> sha256:55239c9cdf549cfeac87265849bd6277d7bed3619f4bd5766ac55fd00e9e95a2` — the previous side's configuration comes from `gh release download v0.1.0`, as before; the side under test's comes from `<release-dir>` directly, with no `gh release download` call for it | both sides run their own digest directly, with no builder invoked; each serves its own mounted configuration; v0.1.0 (0.1.0) and v0.2.1 (0.2.1) report different versions, each equal to its own tag | Confirmed, byte for byte: `v0.1.0 (0.1.0) and v0.2.1 (0.2.1) each serve their mounted configuration under the same mount arguments, with no builder invoked` in 68.3s. v0.1.0's image resolves at `ghcr.io/wisewareorg/wisekiosk@sha256:27ff2637…589a`. Script md5 `e9da905f15f70dc9b4c0e35b483965a8` |
 
 **Known gap.** The secret directory is not exercised: this check is config-only, the secret mount
-being [#261 secret mount](https://github.com/WisewareOrg/WiseKiosk/issues/261)'s (owner ruling,
-2026-09-04). "No builder invoked" holds by construction rather than by a row here: the harness
-calls only `docker run`, `port`, `inspect`, `stop` and `rm`, and this is made observable by the
-per-run `RepoDigests` assertion rather than by a seed that would need a builder to invoke.
+being [#261 secret mount](https://github.com/WisewareOrg/WiseKiosk/issues/261)'s. "No builder
+invoked" holds by construction rather than by a row here: the harness calls only `docker run`,
+`port`, `inspect`, `stop` and `rm`, and this is made observable by the per-run `RepoDigests`
+assertion rather than by a seed that would need a builder to invoke.
 
 **The `image-swap` job's own steps are unverified in CI.** Resolving the previous release's tag and
 digest, and the job's `permissions` and trigger condition, are workflow YAML outside
