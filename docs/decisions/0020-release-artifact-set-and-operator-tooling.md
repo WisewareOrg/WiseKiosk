@@ -19,10 +19,10 @@ on #9 backend skeleton and the 2026-08-09 design discussion on #71 release artif
   digest and files rather than a published release. `publish` re-reads the draft and fails unless it
   is still byte-identical to what the artifact carried, so what locks is exactly what was checked.
   image-swap's previous-release lookup excludes drafts, so an in-flight one is never picked as the
-  swap target. A run failing before `publish` is re-dispatched on the same tag rather than re-cut,
-  burning no version — at the fixed commit first, when the failure was in the code rather than
-  transient; a `latest` job failing transiently needs neither, but a failed digest assertion
-  is repointed by hand rather than re-run. What the release itself is made of is unchanged; the
+  swap target. A run failing before `publish` is re-dispatched on the same tag, after moving the tag
+  to the fixing commit when the fix changes code, burning no version; a `latest` job failing
+  transiently needs neither, but a failed digest assertion is repointed by hand rather than re-run.
+  What the release itself is made of is unchanged; the
   trigger and its ordering move, so the Decided date moves with them (#418 publish under immutable
   releases).
 - **rev 4** — 2026-09-06 — corrects "referring artifacts" to "attached under the signing tools'
@@ -140,15 +140,17 @@ against the same digest and artifact — `bring-up` runs the documented procedur
 `WISEKIOSK_IMAGE` carrying the digest to `deploy/compose.yaml` in place of its default `:latest`
 ([`../DEPLOYMENT.md`](../DEPLOYMENT.md) § *Bring-up*); `image-swap` runs both digests by `docker run`
 directly, so the recipe and its variable play no part. Once all three pass, `publish` re-reads the
-draft, fails the run unless it is still byte-identical to the artifact they checked, and only then
-flips it to published — what locks is exactly what was checked. The image is tagged by that same
+draft, fails the run unless it is still byte-identical to the artifact they checked and the tag
+still resolves to the commit this run built from — the tag moving to a different commit while this
+run was in flight is caught rather than published — and only then flips it to published, so what
+locks is exactly what was checked. The image is tagged by that same
 version, and `latest` moves to the published digest in its own job, only when the release is not a
 pre-release — a pre-release publishes its own version tag and never moves the tag the committed
 recipe references. The push that published `latest` from every commit on the default branch is
 retired with it: nothing publishes from `main`. A run failing before `publish` is re-dispatched on
-the same tag — at the fixed commit first, when the failure was in the code rather than transient —
-and the draft is reused, its `prerelease` flag re-synced, its assets `--clobber`ed and the digest
-line replaced, so nothing ever publishes carrying the failure and no version is burned; once a
+the same tag, after moving the tag to the fixing commit when the fix changes code, and the draft is
+reused, its `prerelease` flag re-synced, its assets `--clobber`ed and the digest line replaced, so
+nothing ever publishes carrying the failure and no version is burned; once a
 release has published, a bad one is re-cut under a new version rather than re-run. A `latest` job
 failing before or during its retag push is transient and needs neither: every job before it already
 succeeded, so only the run's failed jobs are re-run. A `latest` job failing at its own digest
@@ -274,12 +276,26 @@ recipe itself defines, so setting it is the same substitution an operator makes 
 the documented procedure is exercised exactly as given to that operator rather than by a mechanism
 that exists only on the runner.
 
+**Verify after the release publishes**, the order rev 5 corrects. Rejected: under immutable releases a
+failed verify then finds the release already locked, burning its version instead of catching the
+defect before anything is observable.
+
+**A pre-merge job verifying the publish scripts against the last signed release.** Rejected: the
+release run itself is the verification, and a failure before `publish` leaves only a draft — a
+separate gate would duplicate what running the real release already does.
+
+**Leaving the tag race undocumented rather than asserting against it in `publish`.** Rejected: a tag
+moved to a different commit while an in-flight run's `draft`, `verify`, `bring-up` and `image-swap`
+jobs were still running would otherwise let that run publish a release whose tag names one commit
+and whose `Image:` line names another, with nothing short of a reader noticing the mismatch.
+
 ## Consequences
 
 **One asset-set sentence becomes three assertions.** Verifying the artifacts attached to a digest
-under the signing tools' conventions, enumerating files on a tag, and asserting the release notes
-name the digest are separate queries against separate APIs, and #67 security and supply-chain gates
-inherits them as such.
+under the signing tools' conventions is a separate query against the registry API; enumerating the
+release's assets and reading its notes both come from the single read-back artifact `draft` hands
+off, but stay separate assertions within it, and #67 security and supply-chain gates inherits all
+three as such.
 
 **The container build inherits a constraint from the healthcheck.** A declared `HEALTHCHECK` needs
 something inside the image able to reach the service over HTTP. A distribution base carries one; a

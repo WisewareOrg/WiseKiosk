@@ -70,8 +70,9 @@ checkout ignores `deploy/config.json`, and `config.example.json` is the tracked 
 `image: ${WISEKIOSK_IMAGE:-ghcr.io/wisewareorg/wisekiosk:latest}`, which without `WISEKIOSK_IMAGE` set
 tracks the newest non-pre-release to pass verification ([`CI.md`](CI.md) § *Publishing and
 provenance*), so `up` against a re-pulled tag brings up the newest such image. An operator wanting a
-fixed one exports `WISEKIOSK_IMAGE=ghcr.io/wisewareorg/wisekiosk@sha256:<digest>` before running `up`
-— the same variable the verification note below names — rather than editing the recipe.
+fixed one sets `WISEKIOSK_IMAGE=ghcr.io/wisewareorg/wisekiosk@sha256:<digest>` — compose reads it from
+the environment or from a `.env` file beside `compose.yaml` — rather than editing the recipe; the same
+variable the verification note below names.
 
 **Releases are cut by pushing a tag and dispatching the publish workflow.** An operator does
 nothing to produce one: the repository owner runs
@@ -79,10 +80,7 @@ nothing to produce one: the repository owner runs
 `gh workflow run publish.yml --ref vMAJOR.MINOR.PATCH`, adding `-f prerelease=true` for a release
 that publishes its own version tag without moving `latest`. How a release is cut, what the workflow
 does to it, and how a failed run is recovered are
-[ADR 0020 rev 5](decisions/0020-release-artifact-set-and-operator-tooling.md)'s. A failed
-verification fails the run before the release ever locks, leaving it a draft; the owner re-dispatches
-on the same tag rather than cutting a new version — first moving the tag to a fixed commit when the
-failure was in the code rather than transient.
+[ADR 0020 rev 5](decisions/0020-release-artifact-set-and-operator-tooling.md)'s.
 
 **Optional, and recommended: verify the image before trusting it.** An operator who pulls an image is
 trusting a stranger's build, so the check against its signature and provenance ships with the

@@ -467,9 +467,8 @@ whole; until then, read anything this gate does not itself assert as intent.
 
 **This job runs on a tag dispatch rather than on a pull request**, so it is neither a required
 status check nor one of § *Gate wiring*'s no-local-form exceptions. A failed verification fails the
-run before the release ever locks: the draft stays a draft, and a re-dispatch on the same tag reuses
-it rather than cutting a new version — at a fixed commit first, when the failure was in the code
-rather than transient.
+run before the release ever locks: the draft stays a draft, and its recovery is
+[ADR 0020 rev 5](decisions/0020-release-artifact-set-and-operator-tooling.md)'s.
 
 - **A release occupies two locations, and each is a separate assertion.** The registry carries the
   image at a digest, with the SBOM, the signature and the build-provenance attestation attached to it

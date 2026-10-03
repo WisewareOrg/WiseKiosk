@@ -20,8 +20,9 @@ script — both reported byte-identical text, in 32.4s and 63s respectively — 
 through the moved `imagetools_inspect`/health-poll/config-fetch code; the other four rows fail on
 `compose_container` or `run_block`, neither of which moved, and were not re-run.
 
-**Host port 8080 was held for the whole of this branch's work** by an unrelated, longer-running
-task's container, which was not this branch's to stop; the recipe hardcodes that port. The
+**Host port 8080 was held throughout this evidence-gathering** by an unrelated, longer-running
+task's container, which belonged to other work and was not this case's to stop; the recipe
+hardcodes that port. The
 recipe-as-committed row was run in CI instead
 ([run 34000590390, job `bring-up-ci-confirm`](https://github.com/WisewareOrg/WiseKiosk/actions/runs/34000590390/job/101398633749),
 Docker 29.6.2, Compose v2 (5.1.4)), container start to reported success in 31s, well inside the

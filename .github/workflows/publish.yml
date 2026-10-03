@@ -179,11 +179,10 @@ jobs:
 
   # Verifies the draft's digest against the registry, the public transparency log and GitHub's
   # attestation API, and its read-back artifact against the asset and notes shape a release carries,
-  # read only. Runs on every
-  # release, pre-release included — there is no pre-release skip — and a failed verification fails
-  # this run rather than being reported and fixed later, leaving the release a draft. Not a required
-  # status check: this job runs on a tag dispatch rather than on a pull request (docs/CI.md §
-  # Publishing and provenance).
+  # read only. Runs on every release, pre-release included — there is no pre-release skip — and a
+  # failed verification fails this run rather than being reported and fixed later, leaving the
+  # release a draft. Not a required status check: this job runs on a tag dispatch rather than on a
+  # pull request (docs/CI.md § Publishing and provenance).
   verify:
     name: verify
     needs: draft
@@ -342,8 +341,9 @@ jobs:
           just check-image-swap "$PREVIOUS_TAG" "$PREVIOUS_DIGEST" "$TAG" release-draft/assets "$DIGEST"
 
   # Re-reads the draft once verify, bring-up and image-swap all pass, fails unless it is
-  # byte-identical to the artifact they checked, and only then flips it to published — what locks is
-  # exactly what was checked (ADR 0020 rev 5). No checkout: nothing here needs the tree.
+  # byte-identical to the artifact they checked and the tag still points at the commit this run
+  # built from, and only then flips it to published — what locks is exactly what was checked
+  # (ADR 0020 rev 5). No checkout: nothing here needs the tree.
   publish:
     name: publish
     needs: [draft, verify, bring-up, image-swap]
@@ -367,6 +367,13 @@ jobs:
           gh release download "$TAG" --dir actual/assets --clobber
           gh release view "$TAG" --json body -q .body > actual/notes.md
           diff -r release-draft actual
+
+      - name: The tag still points at the commit this run built from
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
+          COMMIT: ${{ github.sha }}
+        run: '[[ "$(gh api repos/$GH_REPO/commits/$TAG --jq .sha)" == "$COMMIT" ]]'
 
       - name: Publish the verified draft
         env:
