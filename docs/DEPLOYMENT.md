@@ -81,7 +81,8 @@ that publishes its own version tag without moving `latest`. How a release is cut
 does to it, and how a failed run is recovered are
 [ADR 0020 rev 5](decisions/0020-release-artifact-set-and-operator-tooling.md)'s. A failed
 verification fails the run before the release ever locks, leaving it a draft; the owner re-dispatches
-on the same tag rather than cutting a new version.
+on the same tag rather than cutting a new version — first moving the tag to a fixed commit when the
+failure was in the code rather than transient.
 
 **Optional, and recommended: verify the image before trusting it.** An operator who pulls an image is
 trusting a stranger's build, so the check against its signature and provenance ships with the

@@ -6,18 +6,16 @@ The inputs `bring_up.py` has been run against, in both directions. What it *asse
 
 Run against release `v0.1.0` (latest, non-pre-release), digest
 `sha256:27ff2637c52fe1e389a23693bb0c5fd8dcce175e9219c49006884ad46d3e589a`. Script md5
-`d637a9fe8679bd38dbde24fc9821f97e` at `ca7d796 feat(ci): parse and run the documented bring-up
-procedure`. A seed edits a scratch copy of `docs/DEPLOYMENT.md`'s fenced block and is run with
-`bring_up.py --doc <copy> v0.1.0 <digest>`, which reaches the real release's assets and the real
-image; the tracked `docs/DEPLOYMENT.md` and `deploy/compose.yaml` are never edited. The
-registry-propagation poll bound, 60s, is the harness's own constant; no document specifies one.
+`d637a9fe8679bd38dbde24fc9821f97e`. A seed edits a scratch copy of `docs/DEPLOYMENT.md`'s fenced
+block and is run with `bring_up.py --doc <copy> v0.1.0 <digest>`, which reaches the real release's
+assets and the real image; the tracked `docs/DEPLOYMENT.md` and `deploy/compose.yaml` are never
+edited.
 
 **#140 image-swap check factored the health poll, the configuration fetch and the manifest-field
 resolution this script calls into `scripts/bringup/common.py`, shared with `image_swap.py`; no
 step or assertion below changed.** Script md5 of `bring_up.py` after that factoring:
-`bb845037be5d9775cbdfaa3b8e892402`, `common.py`: `7c3513a0a267c04ef064608002a173a9`, both at
-`7617e79 refactor(bringup): factor the health-poll, config-fetch and manifest-read helpers into
-common.py`. The must-pass row and the `latest`-mismatch row were re-run against the factored
+`bb845037be5d9775cbdfaa3b8e892402`, `common.py`: `7c3513a0a267c04ef064608002a173a9`. The must-pass
+row and the `latest`-mismatch row were re-run against the factored
 script — both reported byte-identical text, in 32.4s and 63s respectively — because both pass
 through the moved `imagetools_inspect`/health-poll/config-fetch code; the other four rows fail on
 `compose_container` or `run_block`, neither of which moved, and were not re-run.
@@ -52,9 +50,8 @@ argument and no `latest`-propagation poll, replaced by `WISEKIOSK_IMAGE` and a p
 running container's own image digest against `<digest>`
 ([#418 publish under immutable releases](https://github.com/WisewareOrg/WiseKiosk/issues/418#issuecomment-5961738214)).
 Each row states the case, how it is seeded or run, and the expected outcome. `<release-dir>` is
-hand-built for both rows: this branch's `deploy/compose.yaml`
-(carrying `image: ${WISEKIOSK_IMAGE:-ghcr.io/wisewareorg/wisekiosk:latest}`) plus `v0.2.1`'s published
-`config.example.json`, against digest
+hand-built for both rows: a `deploy/compose.yaml` carrying `${WISEKIOSK_IMAGE:-…}` plus `v0.2.1`'s
+published `config.example.json`, against digest
 `sha256:55239c9cdf549cfeac87265849bd6277d7bed3619f4bd5766ac55fd00e9e95a2`. The must-fail `latest`
 row above, in the table against `v0.1.0`, tests `assert_latest_propagated`; that assertion is gone
 from this interface, and its mismatch case is the second row below.
@@ -69,11 +66,10 @@ from this interface, and its mismatch case is the second row below.
 this check can see (owner, 2026-09-04).
 
 **The `bring-up` job's teardown step itself is unverified.** `docker compose down --volumes` under
-`if: always()` in `.github/workflows/publish.yml` is outside `bring_up.py` and outside every row
-above. The identical command was run by hand, from `bring-up/`, after each of the four local rows
-above and tore the deployment down cleanly every time (`docker ps`/`docker network ls` confirmed
-nothing left) — but that is this record running it, not the workflow's own step running as a job
-step with its own `if: always()` and `working-directory:`. That step has not fired in any CI job
+`if: always()` in `.github/workflows/publish.yml`, `working-directory: release-draft/assets`, is
+outside `bring_up.py` and outside every row above. The identical command was run by hand, from the
+release directory, after each of the four local rows above and tore the deployment down cleanly
+every time (`docker ps`/`docker network ls` confirmed nothing left) — but that is this record
+running it, not the workflow's own step running as a job step. That step has not fired in any CI job
 (the `bring-up-ci-confirm` scaffold that produced the committed-block row's CI evidence carried no
-teardown step of its own), and stays unobserved in that specific form until the first real
-release's job runs it.
+teardown step of its own), and stays unobserved in that specific form.

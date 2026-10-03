@@ -433,7 +433,7 @@ enabled, and this paragraph rather than a check is what records it.
 ## Publishing and provenance
 
 What a release publishes and what CI asserts about it. Verification runs against the draft's digest,
-before the release can lock, in a separate job, `verify`, that reads two surfaces only — the
+before the release can lock, in a separate job, `verify`, that reads three surfaces only — the
 registry and the public transparency log, both via cosign, and GitHub's attestation API — plus the
 draft's own read-back artifact for its assets and notes, and holds no write scope. Installing the
 job's own tools — the cosign and syft installers, and the `pipx` fetch of `check-jsonschema` from
@@ -468,7 +468,8 @@ whole; until then, read anything this gate does not itself assert as intent.
 **This job runs on a tag dispatch rather than on a pull request**, so it is neither a required
 status check nor one of § *Gate wiring*'s no-local-form exceptions. A failed verification fails the
 run before the release ever locks: the draft stays a draft, and a re-dispatch on the same tag reuses
-it rather than cutting a new version.
+it rather than cutting a new version — at a fixed commit first, when the failure was in the code
+rather than transient.
 
 - **A release occupies two locations, and each is a separate assertion.** The registry carries the
   image at a digest, with the SBOM, the signature and the build-provenance attestation attached to it

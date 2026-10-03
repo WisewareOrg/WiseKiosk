@@ -20,7 +20,8 @@ on #9 backend skeleton and the 2026-08-09 design discussion on #71 release artif
   is still byte-identical to what the artifact carried, so what locks is exactly what was checked.
   image-swap's previous-release lookup excludes drafts, so an in-flight one is never picked as the
   swap target. A run failing before `publish` is re-dispatched on the same tag rather than re-cut,
-  burning no version; a `latest` job failing transiently needs neither, but a failed digest assertion
+  burning no version — at the fixed commit first, when the failure was in the code rather than
+  transient; a `latest` job failing transiently needs neither, but a failed digest assertion
   is repointed by hand rather than re-run. What the release itself is made of is unchanged; the
   trigger and its ordering move, so the Decided date moves with them (#418 publish under immutable
   releases).
@@ -134,18 +135,20 @@ draft, then reads everything it just attached back and uploads it as a workflow 
 immutable releases enabled, which the organisation enforces on this repository, GitHub locks a
 release's assets and its tag the moment it publishes, though its notes and title stay editable, so a
 workflow triggered by that publish could never attach anything to the release that triggered it.
-`verify` checks the draft's digest and that artifact, read only; `bring-up` and `image-swap` run the
-documented procedures against the same digest and artifact, with `WISEKIOSK_IMAGE` carrying the
-digest to `deploy/compose.yaml` in place of its default `:latest`
-([`../DEPLOYMENT.md`](../DEPLOYMENT.md) § *Bring-up*). Once all three pass, `publish` re-reads the
+`verify` checks the draft's digest and that artifact, read only; `bring-up` and `image-swap` run
+against the same digest and artifact — `bring-up` runs the documented procedure with
+`WISEKIOSK_IMAGE` carrying the digest to `deploy/compose.yaml` in place of its default `:latest`
+([`../DEPLOYMENT.md`](../DEPLOYMENT.md) § *Bring-up*); `image-swap` runs both digests by `docker run`
+directly, so the recipe and its variable play no part. Once all three pass, `publish` re-reads the
 draft, fails the run unless it is still byte-identical to the artifact they checked, and only then
 flips it to published — what locks is exactly what was checked. The image is tagged by that same
 version, and `latest` moves to the published digest in its own job, only when the release is not a
 pre-release — a pre-release publishes its own version tag and never moves the tag the committed
 recipe references. The push that published `latest` from every commit on the default branch is
 retired with it: nothing publishes from `main`. A run failing before `publish` is re-dispatched on
-the same tag — the draft is reused, its `prerelease` flag re-synced, its assets `--clobber`ed and the
-digest line replaced, so nothing ever publishes carrying the failure and no version is burned; once a
+the same tag — at the fixed commit first, when the failure was in the code rather than transient —
+and the draft is reused, its `prerelease` flag re-synced, its assets `--clobber`ed and the digest
+line replaced, so nothing ever publishes carrying the failure and no version is burned; once a
 release has published, a bad one is re-cut under a new version rather than re-run. A `latest` job
 failing before or during its retag push is transient and needs neither: every job before it already
 succeeded, so only the run's failed jobs are re-run. A `latest` job failing at its own digest
@@ -264,8 +267,8 @@ than reading a workflow artifact. Rejected: none of the three writes to the rele
 write scope to read it would be unnecessary write scope for a read — the artifact pass-through keeps
 them read-only while still letting them see what seeing a draft otherwise needs push access for.
 
-**A runner-local retag of `:latest` to the digest under test**, so `bring-up` and `image-swap` could
-run the documented procedure exactly as written, unedited even in the image reference. Rejected: a
+**A runner-local retag of `:latest` to the digest under test**, so `bring-up` could run the
+documented procedure exactly as written, unedited even in the image reference. Rejected: a
 runner-local retag is a path no operator ever takes. `WISEKIOSK_IMAGE` is a variable the committed
 recipe itself defines, so setting it is the same substitution an operator makes to pin a digest, and
 the documented procedure is exercised exactly as given to that operator rather than by a mechanism

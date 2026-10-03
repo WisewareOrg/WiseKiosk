@@ -4,9 +4,6 @@
 *.out
 /backend/**/*.test
 
-# Bring-up check working directory (docs/CI.md § Deployment and bring-up).
-/bring-up/
-
 # Node / frontend build
 node_modules/
 dist/

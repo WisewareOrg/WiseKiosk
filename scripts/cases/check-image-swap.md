@@ -7,17 +7,15 @@ The inputs `image_swap.py` has been run against, in both directions. What it *as
 Run against the two releases published on this repository, `v0.0.1` (prerelease), digest
 `sha256:a233121b003e8125d978d97a89c2e02dffc1e1568a1a724b8319ee07da0e1fa7`, and `v0.1.0` (latest,
 non-pre-release), digest `sha256:27ff2637c52fe1e389a23693bb0c5fd8dcce175e9219c49006884ad46d3e589a`.
-Script md5 `a4ba80b7d77150f1a4485acab97f600d` at `9fb833a ci(publish): swap two published digests
-under the same mounts`. The script does not read pre-release status itself — that filter is the
+Script md5 `a4ba80b7d77150f1a4485acab97f600d`. The script does not read pre-release status itself — that filter is the
 `image-swap` job's, applied before the script ever runs — so `v0.0.1` stands in as an ordinary
 digest for these rows. Each row invokes `image_swap.py` directly with the tags and digests shown,
 reaching the real releases and the real images; nothing tracked is edited except where a row states
 a seed.
 
 **Re-observed after the health poll, configuration fetch and manifest-field resolution moved into
-`scripts/bringup/common.py`, shared with `bring_up.py`.** Script md5 `39ddd99155742a32b350a55e206b6a77`
-at `7617e79 refactor(bringup): factor the health-poll, config-fetch and manifest-read helpers into
-common.py`. Every row but the nonexistent-digest one calls the moved code and was re-run; each
+`scripts/bringup/common.py`, shared with `bring_up.py`.** Script md5 `39ddd99155742a32b350a55e206b6a77`.
+Every row but the nonexistent-digest one calls the moved code and was re-run; each
 reported byte-identical text and near-identical timing, noted per row.
 
 | Direction | Case | Input |
@@ -45,8 +43,8 @@ than from `gh release download`, which lets this check run against a release sti
 with no published tag to download from; it still runs containers by digest directly (`docker run`),
 so `deploy/compose.yaml`'s `WISEKIOSK_IMAGE` variable plays no part here
 ([#418 publish under immutable releases](https://github.com/WisewareOrg/WiseKiosk/issues/418#issuecomment-5961738214)).
-States the case, how it is seeded or run, and the expected outcome. `<release-dir>` is hand-built:
-this branch's `deploy/compose.yaml` plus `v0.2.1`'s published `config.example.json`.
+States the case, how it is seeded or run, and the expected outcome. `<release-dir>` is hand-built: a
+`deploy/compose.yaml` plus `v0.2.1`'s published `config.example.json`.
 
 | Case | Seed / run | Expected outcome | Evidence |
 |---|---|---|---|

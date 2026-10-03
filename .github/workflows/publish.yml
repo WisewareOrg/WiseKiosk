@@ -17,7 +17,7 @@ on:
   workflow_dispatch:
     inputs:
       prerelease:
-        description: "Publish as a pre-release: latest does not move, and bring-up and image-swap are skipped"
+        description: "Publish as a pre-release: latest does not move"
         type: boolean
         default: false
 
@@ -177,8 +177,9 @@ jobs:
           name: release-draft
           path: release/
 
-  # Verifies the draft's digest against the registry and the public transparency log, and its
-  # read-back artifact against the asset and notes shape a release carries, read only. Runs on every
+  # Verifies the draft's digest against the registry, the public transparency log and GitHub's
+  # attestation API, and its read-back artifact against the asset and notes shape a release carries,
+  # read only. Runs on every
   # release, pre-release included — there is no pre-release skip — and a failed verification fails
   # this run rather than being reported and fixed later, leaving the release a draft. Not a required
   # status check: this job runs on a tag dispatch rather than on a pull request (docs/CI.md §

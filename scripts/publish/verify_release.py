@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Verify a published release's signature, provenance, SBOM, or attached artifact set.
+"""Verify a draft release's signature, provenance, SBOM, or attached artifact set.
 
 One `--step` per invocation, so the `verify` job keeps one workflow step per check, each a single
 command whose failure text comes from here and stays unique to its cause
