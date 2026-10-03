@@ -21,7 +21,7 @@ those two tools elsewhere.
 failed at the signature and attached-set steps, on two string matches that had never met real cosign
 v3.1.3 output ([#418 publish under immutable releases](https://github.com/WisewareOrg/WiseKiosk/issues/418#issuecomment-5961738214)).
 Every `verify_release.py` step and `verify_metadata.py` was re-run by hand against that same signed
-digest with the fixed script before this PR merges — the WI-1 rows below record the two fixed
+digest with the fixed script before this PR merges — the rows below record the two fixed
 matches and the artifact-backed `--step attached` input; the earlier releases, `v0.1.0` and `v0.0.1`
 (pre-release), were cut before `verify` could run against a tag's ref at all and carry no signature
 or attestation — see the attached-set and metadata rows below, both run against `v0.1.0` for real —
@@ -110,7 +110,7 @@ a deliberately wrong identity/digest/workflow, or a throwaway copy pushed under 
 - **Signature, wrong identity.** `cosign verify --certificate-identity-regexp
   '^https://example\.invalid/' --certificate-oidc-issuer https://token.actions.githubusercontent.com
   <ref>@<digest>` — exits non-zero, printing `no matching CertificateIdentity found`. Measured
-  against the real `v0.2.1` index (WI-1 rows above).
+  against the real `v0.2.1` index (rows above).
 - **Provenance, flipped digest.** `gh attestation verify oci://<ref>@sha256:<the real hex, reversed>
   --repo WisewareOrg/WiseKiosk --signer-workflow WisewareOrg/WiseKiosk/.github/workflows/publish.yml` —
   exits non-zero, printing the substring `MANIFEST_UNKNOWN: manifest unknown` on stderr, with an
@@ -192,7 +192,7 @@ Each row states the case, how it is seeded or run, and the expected outcome.
 
 `v0.2.1`'s own `verify` job is the first to have run this job's checks against a release it actually
 signed and attested. It failed at the signature and attached-set steps, on the two stale string
-matches the WI-1 rows above fix
+matches the rows above fix
 ([#418 publish under immutable releases](https://github.com/WisewareOrg/WiseKiosk/issues/418#issuecomment-5961738214));
 every other step passed. The fixed script was re-run by hand against that same signed digest before
 this PR merges (recorded above and in this PR's description, not by a CI job, since the job order

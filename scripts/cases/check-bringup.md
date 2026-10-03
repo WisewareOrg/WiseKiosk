@@ -45,14 +45,14 @@ downstream of the removed line) but wrong about which line fails first.
 | Must fail | The `cp config.example.json config.json` line removed | run locally via `--doc` — **differs from the prediction this row carried before the port freed**: rather than a directory bind-mount surfacing at `/config.json`, the *next* line fails first, since there is nothing for it to act on — `` `chmod 644 config.json` exited 1 `` (`chmod: cannot access 'config.json': No such file or directory`); no container ever starts |
 | Must fail | `chmod 644` spelled `chmod 600` | run locally via `--doc` — matches the prediction: the image's user (uid 10001) does not own the file `cp` creates, a 600 file denies it read access, and `staticserve.go`'s `open()` (`backend/internal/staticserve/staticserve.go:55-66`) folds that permission error into the same `found=false` path a missing file takes — `` `/config.json answered 404, expected 200` `` |
 
-## WI-2 rows: the release-dir interface and the running digest (pending re-run)
+## The release-dir interface and the running digest
 
-Rows for `bring_up.py`'s new interface, `bring_up.py [--doc PATH] <release-dir> <digest>` — the tag
-argument and `assert_latest_propagated`'s poll are gone, replaced by `WISEKIOSK_IMAGE` and a
-post-run check of the running container's own image digest against `<digest>`
-([#418 verify before the release locks](https://github.com/WisewareOrg/WiseKiosk/issues/418#issuecomment-5961738214)).
-Each row states the case, how it is seeded or run, and the expected outcome; Evidence is filled once
-each is re-run. `<release-dir>` is hand-built for both rows: this branch's `deploy/compose.yaml`
+Rows for `bring_up.py`'s interface, `bring_up.py [--doc PATH] <release-dir> <digest>` — no tag
+argument and no `latest`-propagation poll, replaced by `WISEKIOSK_IMAGE` and a post-run check of the
+running container's own image digest against `<digest>`
+([#418 publish under immutable releases](https://github.com/WisewareOrg/WiseKiosk/issues/418#issuecomment-5961738214)).
+Each row states the case, how it is seeded or run, and the expected outcome. `<release-dir>` is
+hand-built for both rows: this branch's `deploy/compose.yaml`
 (carrying `image: ${WISEKIOSK_IMAGE:-ghcr.io/wisewareorg/wisekiosk:latest}`) plus `v0.2.1`'s published
 `config.example.json`, against digest
 `sha256:55239c9cdf549cfeac87265849bd6277d7bed3619f4bd5766ac55fd00e9e95a2`. The must-fail `latest`
@@ -61,8 +61,8 @@ from this interface, and its mismatch case is the second row below.
 
 | Case | Seed / run | Expected outcome | Evidence |
 |---|---|---|---|
-| The documented procedure, run unedited in `<release-dir>`, brings up this release's image | `bring_up.py <release-dir> sha256:55239c9cdf549cfeac87265849bd6277d7bed3619f4bd5766ac55fd00e9e95a2`, with `WISEKIOSK_IMAGE=ghcr.io/wisewareorg/wisekiosk@sha256:55239c9cdf549cfeac87265849bd6277d7bed3619f4bd5766ac55fd00e9e95a2` exported to the documented fence — `deploy/compose.yaml`'s `${WISEKIOSK_IMAGE:-...}` resolves to the exported value | the compose service reaches a serving deployment; the running container's own image digest equals `sha256:55239c9cdf549cfeac87265849bd6277d7bed3619f4bd5766ac55fd00e9e95a2` | |
-| A mismatched digest is reported | the same run, but `<release-dir>`'s `compose.yaml` is `v0.2.1`'s own published one instead of the branch's — it hardcodes `ghcr.io/wisewareorg/wisekiosk:latest` rather than referencing `WISEKIOSK_IMAGE`, so the exported variable has no effect and `docker compose up -d` pulls whatever `:latest` currently resolves to | the running container's own image digest does not equal the requested `sha256:55239c9cdf549cfeac87265849bd6277d7bed3619f4bd5766ac55fd00e9e95a2`; `bring_up.py` fails, naming the mismatch | |
+| The documented procedure, run unedited in `<release-dir>`, brings up this release's image | `bring_up.py <release-dir> sha256:55239c9cdf549cfeac87265849bd6277d7bed3619f4bd5766ac55fd00e9e95a2`, with `WISEKIOSK_IMAGE=ghcr.io/wisewareorg/wisekiosk@sha256:55239c9cdf549cfeac87265849bd6277d7bed3619f4bd5766ac55fd00e9e95a2` exported to the documented fence — `deploy/compose.yaml`'s `${WISEKIOSK_IMAGE:-...}` resolves to the exported value | the compose service reaches a serving deployment; the running container's own image digest equals `sha256:55239c9cdf549cfeac87265849bd6277d7bed3619f4bd5766ac55fd00e9e95a2` | Confirmed: `the documented bring-up procedure at sha256:55239c9c...e95a2 reaches a serving deployment` in 31.4s; torn down with `docker compose down --volumes`, confirmed clean against `docker ps`. Script md5 `d1af0473fdc4d67b0dd229780f752577` |
+| A mismatched digest is reported | the same run, but `<release-dir>`'s `compose.yaml` is `v0.2.1`'s own published one instead of the branch's — it hardcodes `ghcr.io/wisewareorg/wisekiosk:latest` rather than referencing `WISEKIOSK_IMAGE`, so the exported variable has no effect and `docker compose up -d` pulls whatever `:latest` currently resolves to | the running container's own image digest does not equal the requested `sha256:55239c9cdf549cfeac87265849bd6277d7bed3619f4bd5766ac55fd00e9e95a2`; `bring_up.py` fails, naming the mismatch | Confirmed, byte for byte: `:latest` resolved to `sha256:27ff2637…589a`, the container started, and `bring_up.py` printed `bring-up: <container>'s image resolves to ['ghcr.io/tjwise99/wisekiosk@sha256:27ff2637…589a', 'ghcr.io/wisewareorg/wisekiosk@sha256:27ff2637…589a'], not ghcr.io/wisewareorg/wisekiosk@sha256:55239c9c...e95a2 — the running image is not the one requested`, exit 1; torn down with `docker compose down --volumes`. Script md5 `d1af0473fdc4d67b0dd229780f752577` |
 
 **Known gap.** Removing the `chmod 644` line is not seeded: `cp` preserves the tracked 644 mode of
 `config.example.json` on the runner, so the line is redundant there and its absence is not a defect

@@ -315,14 +315,14 @@ smoke-native: check-build _boundary-go-gen
     python3 scripts/native/smoke.py bin/wisekiosk-armv6 frontend/dist {{native_goarch}}/{{native_goarm}}
 
 [group('checks')]
-[doc('The documented bring-up procedure reaches a serving deployment from a published release; needs Docker and the network (gh, ghcr.io)')]
-check-bringup tag digest:
-    python3 scripts/bringup/bring_up.py {{tag}} {{digest}}
+[doc('The documented bring-up procedure reaches a serving deployment from a release directory holding its own compose.yaml and config.example.json, running the given digest; needs Docker and the network (ghcr.io)')]
+check-bringup release_dir digest:
+    python3 scripts/bringup/bring_up.py {{release_dir}} {{digest}}
 
 [group('checks')]
-[doc('Published digest A and published digest B each serve their mounted configuration and report their own version, under byte-identical mount arguments, with no builder invoked; needs Docker and the network (gh, ghcr.io)')]
-check-image-swap tag_a digest_a tag_b digest_b:
-    python3 scripts/bringup/image_swap.py {{tag_a}} {{digest_a}} {{tag_b}} {{digest_b}}
+[doc('The previous published release and the release under test, the second read from a release directory, each serve their mounted configuration and report their own version, under byte-identical mount arguments, with no builder invoked; needs Docker and the network (gh, ghcr.io)')]
+check-image-swap previous_tag previous_digest tag release_dir digest:
+    python3 scripts/bringup/image_swap.py {{previous_tag}} {{previous_digest}} {{tag}} {{release_dir}} {{digest}}
 
 [group('config')]
 [doc('Regenerate the configuration-object TypeScript types from the configuration schema')]
@@ -350,5 +350,5 @@ check-publish-permissions:
     python3 scripts/publish/verify_permissions.py
 
 [group('checks')]
-[doc('Run every check the PR gate runs that has a local form and needs neither Docker nor emulation nor the network; secret scanning, the PR-title check (commitlint, via the hook layer), the link check (lychee, from a digest-pinned image) and the workflow audit (zizmor, actionlint) are CI-only, the image tier is `just check-image`, the native armv6l run is `just smoke-native`, the bring-up check against a published release is `just check-bringup`, the image-swap check against two published releases is `just check-image-swap`, and the two online dependency-vulnerability checks are `just check-vulns-go` and `just check-vulns-npm`')]
+[doc('Run every check the PR gate runs that has a local form and needs neither Docker nor emulation nor the network; secret scanning, the PR-title check (commitlint, via the hook layer), the link check (lychee, from a digest-pinned image) and the workflow audit (zizmor, actionlint) are CI-only, the image tier is `just check-image`, the native armv6l run is `just smoke-native`, the bring-up check against a release directory is `just check-bringup`, the image-swap check against the previous published release and a release directory is `just check-image-swap`, and the two online dependency-vulnerability checks are `just check-vulns-go` and `just check-vulns-npm`')]
 verify: check-untracked check-hooks check-branch check-reqs check-citations check-arch check-arch-trace check-go check-fuzz check-lint-go check-secret-unwrap check-build check-static-bundle check-lint-frontend check-typecheck-frontend check-unit check-render check-render-policy check-site check-adr-index check-adr-revs check-docs-index check-repo-silo check-languages check-dead-test check-restart-policy check-publish-permissions check-coverage
