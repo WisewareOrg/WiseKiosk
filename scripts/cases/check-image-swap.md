@@ -37,6 +37,22 @@ own `if: steps.previous.outputs.tag != ''` condition is then false, so the step 
 repository rather than seeded. The `previous` step's `--exclude-drafts` was added after these rows
 ran; its effect is recorded in [`publish-draft.md`](publish-draft.md)'s `--exclude-drafts` row.
 
+## WI-2 row: the release-dir interface's new side (pending re-run)
+
+Row for `image_swap.py`'s new interface, `image_swap.py <previous-tag> <previous-digest>
+<release-dir> <digest>` — the new side takes its files from `<release-dir>` directly rather than
+from `gh release download`, since it has no published tag to download from yet; it still runs
+containers by digest directly (`docker run`), so `deploy/compose.yaml`'s `WISEKIOSK_IMAGE` variable
+plays no part here
+([#418 verify before the release locks](https://github.com/WisewareOrg/WiseKiosk/issues/418#issuecomment-5961738214)).
+States the case, how it is seeded or run, and the expected outcome; Evidence is filled once it is
+re-run. `<release-dir>` is hand-built: this branch's `deploy/compose.yaml` plus `v0.2.1`'s published
+`config.example.json`.
+
+| Case | Seed / run | Expected outcome | Evidence |
+|---|---|---|---|
+| The published previous release swapped against the release-dir new side | `image_swap.py v0.1.0 sha256:27ff2637c52fe1e389a23693bb0c5fd8dcce175e9219c49006884ad46d3e589a <release-dir> sha256:55239c9cdf549cfeac87265849bd6277d7bed3619f4bd5766ac55fd00e9e95a2` — the previous side's configuration comes from `gh release download v0.1.0`, as before; the new side's comes from `<release-dir>` directly, with no `gh release download` call for it | both sides run their own digest directly, with no builder invoked; each serves its own mounted configuration; the two report different versions | |
+
 **Known gap.** The secret directory is not exercised: this check is config-only, the secret mount
 being [#261 secret mount](https://github.com/WisewareOrg/WiseKiosk/issues/261)'s (owner ruling,
 2026-09-04). "No builder invoked" holds by construction rather than by a row here: the harness

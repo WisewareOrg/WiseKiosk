@@ -170,6 +170,25 @@ broken release was skipped for #269 publish verification: a missing release asse
 attestation (no SBOM, no signature, or no provenance attached to a child); a dropped annotation key;
 an empty annotation or label value; a wrong `.revision` on one surface only (the others correct).
 
+## WI-1 rows: cosign v3.1.3 output and artifact input (pending re-run)
+
+Rows for the two string-match fixes and the artifact-backed `--step attached` input WI-1 makes,
+recorded against cosign v3.1.3's actual output on the signed `v0.2.1` digest,
+`sha256:55239c9cdf549cfeac87265849bd6277d7bed3619f4bd5766ac55fd00e9e95a2`
+([#418 verify before the release locks](https://github.com/WisewareOrg/WiseKiosk/issues/418#issuecomment-5961738214)).
+Each row states the case, how it is seeded or run, and the expected outcome; Evidence is filled once
+each is re-run against the signed digest with the fixed script.
+
+| Case | Seed / run | Expected outcome | Evidence |
+|---|---|---|---|
+| Signature step, wrong identity: the real cosign v3.1.3 refusal is recognised | `cosign verify --certificate-identity-regexp '^https://example\.invalid/' --certificate-oidc-issuer https://token.actions.githubusercontent.com ghcr.io/wisewareorg/wisekiosk@sha256:55239c9cdf549cfeac87265849bd6277d7bed3619f4bd5766ac55fd00e9e95a2` against the signed index | cosign refuses (non-zero exit), printing `no matching attestations: failed to verify certificate identity: no matching CertificateIdentity found, ...`; `step_signature`'s negative check matches on `no matching CertificateIdentity found` and raises no problem for it — combined with the positive per-surface `cosign verify` calls (already observed passing against this digest), `--step signature` prints `verify_release --step signature: ok` | |
+| Signature step, wrong identity: a refusal for a different reason is still reported as unexpected | the same wrong-identity regexp, against the index's own digest with its hex reversed (`sha256:<flipped>`) — the flipped-digest seed this file's provenance rows already use, since cosign resolves the reference before any identity check runs | `cosign verify` fails at manifest resolution rather than at identity matching, so its output does not contain `no matching CertificateIdentity found`; `step_signature` reports `signature: refused for an unexpected reason: <cosign's own output>` | |
+| `--step attached`, per-surface headings present | `cosign tree` against the signed index and each platform child | the index's output carries `sigstore.dev/cosign/sign/v1` and `slsa.dev/provenance/v1`; each child's output carries `sigstore.dev/cosign/sign/v1` and `spdx.dev/Document`; the heading checks append no problems | |
+| `--step attached`, an index-only heading checked for on a child is reported missing | `cosign tree` against one platform child's own digest | provenance attests only the index, so the child's output does not carry `slsa.dev/provenance/v1`; asserting it there is reported as a missing heading | |
+| `--step attached`, a child-only heading checked for on the index is reported missing | `cosign tree` against the index's own digest | SBOM attests only the children, so the index's output does not carry `spdx.dev/Document`; asserting it there is reported as a missing heading | |
+| `--step attached`, assets and notes read from `$ARTIFACT_DIR` | `$ARTIFACT_DIR/assets/` holds the release's own `compose.yaml` and `config.example.json`; `$ARTIFACT_DIR/notes.md` holds the release's own notes (carrying `Image: ghcr.io/wisewareorg/wisekiosk@sha256:55239c9cdf549cfeac87265849bd6277d7bed3619f4bd5766ac55fd00e9e95a2`); no `gh release view` call is made | the asset-list and notes checks each append no problems | |
+| `--step attached`, an extra asset in `$ARTIFACT_DIR/assets/` is reported | the same directory with an extra file added, e.g. `extra.txt` | `attached: release assets are ['compose.yaml', 'config.example.json', 'extra.txt'], expected exactly ['compose.yaml', 'config.example.json']` | |
+
 ## Fail-direction in CI
 
 Not yet exercised against a release this job actually signed and attested — the first such release
