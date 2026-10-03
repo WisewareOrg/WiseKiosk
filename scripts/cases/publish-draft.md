@@ -17,10 +17,8 @@ the command runs against `WisewareOrg/WiseKiosk` regardless of this checkout's o
 authenticates from `GH_TOKEN`, which takes precedence over `GITHUB_TOKEN` and any stored `gh`
 login; the workflow step passes `GITHUB_TOKEN` instead.
 
-Script md5 `4c213bca38e8b43667be7da8058fe38f` at `788d380 docs(publish): fix rev-docs-fresh's
-mechanical findings`. Every row below ran against the code first committed at `b6a5701 fix(publish):
-create a draft release before any registry write`; nothing but the module docstring has changed
-between that commit and this one.
+Script md5 `4c213bca38e8b43667be7da8058fe38f`. The module docstring has since been edited; the
+script's logic, which every row below ran against, has not.
 
 | Case | Seed / run | Expected outcome | Evidence |
 |---|---|---|---|

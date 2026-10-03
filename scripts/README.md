@@ -53,7 +53,7 @@ when a link breaks. Nothing enforces this — a wrong success line fails no buil
 | `smoke-native` (the harness under `native/`) | [cases](cases/smoke-native.md) |
 | `check-bringup` (`bringup/bring_up.py`) | [cases](cases/check-bringup.md) |
 | `check-image-swap` (`bringup/image_swap.py`) | [cases](cases/check-image-swap.md) |
-| the `publish` job's draft-release step (`publish/draft_release.py`) | [cases](cases/publish-draft.md) |
+| the `draft` job's draft-release step (`publish/draft_release.py`) | [cases](cases/publish-draft.md) |
 | the `verify` job's release checks (`publish/sbom_attest.py`, `publish/verify_metadata.py`, `publish/verify_release.py`) | [cases](cases/publish-verify.md) |
 | `check-publish-permissions` (`publish/verify_permissions.py`) | [cases](cases/check-publish-permissions.md) |
 | `check-restart-policy.py` | [cases](cases/check-restart-policy-py.md) |

@@ -46,8 +46,9 @@ the configured kiosk. The failure is legible and it is still a failure the proce
 the permissions the file needs are stated where an operator sets them.
 
 **The procedure is three commands**, run in a directory holding the release's two assets —
-`compose.yaml` and `config.example.json` — which a checkout carries at `deploy/`. CI runs it
-verbatim against every published release (#138 bring-up check).
+`compose.yaml` and `config.example.json` — which a checkout carries at `deploy/`. CI runs it verbatim
+against this exact image, before the release can lock (#138 bring-up check, #418 publish under
+immutable releases).
 
 ```sh
 cp config.example.json config.json
@@ -65,10 +66,12 @@ against a clean host and fails on a step that does not.
 `config.json` is the installation's own and carries its coordinates, so it is never committed: a
 checkout ignores `deploy/config.json`, and `config.example.json` is the tracked shape.
 
-**The image reference is a movable tag.** The recipe names `ghcr.io/wisewareorg/wisekiosk:latest`, which
+**The image reference is a movable tag, by default.** The recipe reads
+`image: ${WISEKIOSK_IMAGE:-ghcr.io/wisewareorg/wisekiosk:latest}`, which without `WISEKIOSK_IMAGE` set
 tracks the newest non-pre-release to pass verification ([`CI.md`](CI.md) § *Publishing and
-provenance*), so `up` against a re-pulled tag brings up the newest such image; an operator wanting a
-fixed one pins a digest in their own copy, as the verification note below describes.
+provenance*), so `up` against a re-pulled tag brings up the newest such image. An operator wanting a
+fixed one exports `WISEKIOSK_IMAGE=ghcr.io/wisewareorg/wisekiosk@sha256:<digest>` before running `up`
+— the same variable the verification note below names — rather than editing the recipe.
 
 **Releases are cut by pushing a tag and dispatching the publish workflow.** An operator does
 nothing to produce one: the repository owner runs
@@ -77,7 +80,8 @@ nothing to produce one: the repository owner runs
 that publishes its own version tag without moving `latest`. How a release is cut, what the workflow
 does to it, and how a failed run is recovered are
 [ADR 0020 rev 5](decisions/0020-release-artifact-set-and-operator-tooling.md)'s. A failed
-verification fails the release run, and the release is re-cut under a new version.
+verification fails the run before the release ever locks, leaving it a draft; the owner re-dispatches
+on the same tag rather than cutting a new version.
 
 **Optional, and recommended: verify the image before trusting it.** An operator who pulls an image is
 trusting a stranger's build, so the check against its signature and provenance ships with the
@@ -94,8 +98,9 @@ build-provenance attestation the publish workflow produces for that digest. That
 published output is a separate assertion and is in [`CI.md`](CI.md).
 
 **It is nobody's obligation.** An operator who skips it runs the three commands above and reaches the
-same working deployment; the recipe names a tag rather than a digest, so an operator who wants the
-digest they verified to be the one that runs pins it in their own copy — which is what the recipe
+same working deployment; the recipe names a tag rather than a digest by default, so an operator who
+wants the digest they verified to be the one that runs exports `WISEKIOSK_IMAGE` set to it — which is
+what the recipe
 being a sample rather than an obligation
 ([ADR 0020 rev 5](decisions/0020-release-artifact-set-and-operator-tooling.md)) leaves them free to do.
 
