@@ -5,9 +5,10 @@ docs/CI.md § Deployment and bring-up: health poll and configuration fetch are t
 in both harnesses — derive a deadline from an image's own declared healthcheck and poll Docker's
 own status for it, and fetch a URL and assert it returns given bytes. Resolving a field off a
 manifest through `docker buildx imagetools inspect` is the same call in both, parsing a different
-field. How each harness reaches a container's address differs (`docker compose port` against
-`kiosk`, `docker port` against a container run directly) and stays with the harness that reaches
-it.
+field. Asserting that a running container's own image resolves to a given reference is the same
+two-step `docker inspect` / `docker image inspect` read in both. How each harness reaches a
+container's address differs (`docker compose port` against `kiosk`, `docker port` against a
+container run directly) and stays with the harness that reaches it.
 """
 
 import json
@@ -90,6 +91,37 @@ def assert_config_served(address, expected):
         raise HarnessError(
             f"{CONFIG_URL} served {len(body)} byte(s) that are not the mounted configuration's "
             f"{len(expected)} — the mounted configuration is not what reaches the page"
+        )
+
+
+def assert_running_image(container, image_ref):
+    """container's own image resolves to image_ref — what is running is what was requested."""
+    completed = subprocess.run(
+        ["docker", "inspect", "--format", "{{json .Image}}", container],
+        capture_output=True,
+        text=True,
+    )
+    if completed.returncode != 0:
+        raise HarnessError(
+            f"`docker inspect {container}` exited {completed.returncode} "
+            f"({completed.stderr.strip()})"
+        )
+    image_id = json.loads(completed.stdout.strip())
+    completed = subprocess.run(
+        ["docker", "image", "inspect", "--format", "{{json .RepoDigests}}", image_id],
+        capture_output=True,
+        text=True,
+    )
+    if completed.returncode != 0:
+        raise HarnessError(
+            f"`docker image inspect {image_id}` exited {completed.returncode} "
+            f"({completed.stderr.strip()})"
+        )
+    repo_digests = json.loads(completed.stdout.strip()) or []
+    if image_ref not in repo_digests:
+        raise HarnessError(
+            f"{container}'s image resolves to {repo_digests}, not {image_ref} — the running "
+            f"image is not the one requested"
         )
 
 
