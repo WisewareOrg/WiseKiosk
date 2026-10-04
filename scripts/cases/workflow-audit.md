@@ -1,7 +1,7 @@
 # The workflow audit: `zizmor` + `actionlint`
 
 The inputs the adopted workflow audit has been run against, in both directions. The audit replaces
-`check-workflow-hardening.mjs` (ADR 0016 rev 11; #105 adopt zizmor and actionlint), and the rows below
+`check-workflow-hardening.mjs` (ADR 0016 rev 12; #105 adopt zizmor and actionlint), and the rows below
 are that check's recorded cases re-run against the adopted pair — including the must-pass rows, since
 an adopted tool may reject legal input the authored check accepted. What the gate asserts, and what it
 deliberately lets through, is [`docs/CI.md`](../../docs/CI.md) § *Action pins and workflow privilege*'s.
@@ -52,7 +52,7 @@ jobs:
 | Must fail | Flow mapping granting write | `permissions: {contents: read, actions: write}` | `excessive-permissions` |
 | Must fail | Multi-line flow mapping granting write | the same across three lines | `excessive-permissions` |
 | Must fail | Unreadable line inside the block | a non-grant line under `permissions:` | both, as a YAML error |
-| Must fail | No top-level block | the workflow declares none | `excessive-permissions` — the fixture answering ADR 0016 rev 11's question |
+| Must fail | No top-level block | the workflow declares none | `excessive-permissions` — the fixture answering ADR 0016 rev 12's question |
 | Must fail | Block with nothing under it | `permissions:` then the next top-level key | both, as a schema error |
 | Must fail | No workflow discovered | no file under `.github/workflows` | both: zizmor exits 3, `no inputs collected` |
 | Must pass | SHA pin | `uses: actions/checkout@<sha> # v7.0.1` | exit 0 |
@@ -77,11 +77,11 @@ jobs:
 Three notes the rows cannot carry alone:
 
 - **Retired, deliberately: the version-comment row.** The recorded must-fail *pinned, no version
-  comment* passes the adopted pair — the `# vN` obligation is retired outright by ADR 0016 rev 11.
+  comment* passes the adopted pair — the `# vN` obligation is retired outright by ADR 0016 rev 12.
   zizmor's `ref-version-mismatch` audit covers the comment truthfully, but only online; the gate runs
   the offline set.
 - **Legal input `pedantic` rejects**, the adopted counterpart of the retired check's known-rejections
-  table. `permissions: read-all` fails `excessive-permissions` (the disagreement ADR 0016 rev 11
+  table. `permissions: read-all` fails `excessive-permissions` (the disagreement ADR 0016 rev 12
   records; no suppression is written because no workflow uses it), and any grant other than a bare
   `contents: read` — read grants and job-level elevations included — fails `undocumented-permissions`
   until it carries an adjacent explanatory comment. The live workflows carry those comments.

@@ -5,7 +5,7 @@
 `.pre-commit-config.yaml`, beside `mixed-line-ending` — which judges only the files pre-commit hands
 it and counts one uniform ending kind as unmixed, so a committed-but-unstaged CRLF file and a
 uniformly-CRLF file both pass it. This is authored for that remainder: the tracked tree, any CRLF
-(ADR 0016 rev 11).
+(ADR 0016 rev 12).
 
 The population is the tracked set, so an untracked, non-ignored file is invisible to the search and
 is reported as unsearchable rather than silently unsearched — visibility fails it, not content. The
@@ -15,7 +15,7 @@ defect is one visit, not two.
 
 `git grep -lI` skips binary content; `-P` gives `\r` its perl-regex meaning. Exit 0 is a match —
 this check's failure case — and 1 is none, which over an empty tracked tree reports success
-(ADR 0016 rev 11 owner ruling). Any other status is the search itself failing, and is propagated.
+(ADR 0016 rev 12 owner ruling). Any other status is the search itself failing, and is propagated.
 
 What this has been run against, in both directions: cases/check-eol-py.md
 """

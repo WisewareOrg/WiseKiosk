@@ -166,7 +166,7 @@ check-fuzz: _boundary-go-gen
     go -C backend test ./internal/modules/park_wait_times/ -run '^$' -fuzz '^FuzzResolvePark$' -fuzztime 10s
 
 [group('checks')]
-[doc("The backend Go tree is clean under golangci-lint's default linter set and depguard's standard-library-only allow-list, non-zero exit on any finding")]
+[doc("The backend Go tree is clean under golangci-lint's default linter set and depguard's standard-library-and-module allow-list, non-zero exit on any finding")]
 check-lint-go: _boundary-go-gen
     go -C backend tool golangci-lint run ./...
 

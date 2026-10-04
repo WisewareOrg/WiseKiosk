@@ -8,7 +8,11 @@ Each case is a `git archive 47a1742` copy of the tracked tree — the commit thi
 — with this change's `backend/.golangci.yml`, `backend/internal/boundary/doc.go`,
 `backend/oapi-codegen.yaml` and `justfile` copied in fresh over it, seeded in place, and `just
 check-lint-go` run inside the copy. golangci-lint 2.13.2, built with Go 1.26.5, against the default
-linter set (errcheck, govet, ineffassign, staticcheck, unused) plus `depguard`.
+linter set (errcheck, govet, ineffassign, staticcheck, unused) plus `depguard`. **The three rows
+below naming `github.com/google/uuid`** additionally run `go get github.com/google/uuid@v1.6.0` in
+the copy before the import is seeded, so `go.sum` carries the entry the seed needs to compile —
+without it the seed fails at `typecheck` on a missing `go.sum` entry rather than being reported by
+`depguard`.
 
 | Direction | Case | Input |
 |---|---|---|
@@ -30,7 +34,14 @@ default set this decision adopted, and the finding it would have caught either s
 issues ahead of it clear, as this one did, or is caught at review.
 
 The five linters re-excluded from `*.gen.go` (errcheck, govet, ineffassign, staticcheck, unused) are
-named by filename suffix in `backend/.golangci.yml`, not derived from the default linter set at run
-time. A future `golangci-lint` bump that adds a linter to `standard` would report on generated code
-rather than being silently excluded alongside the five — a loud finding on the next bump, not a
-silent pass, but a gap this config does not close on its own.
+named individually in `backend/.golangci.yml` and matched against generated files by the `.gen.go`
+suffix, not derived from the default linter set at run time. A future `golangci-lint` bump that adds
+a linter to `standard` would report on generated code rather than being silently excluded alongside
+the five — a loud finding on the next bump, not a silent pass, but a gap this config does not close
+on its own.
+
+Of the five, only `errcheck`'s exclusion is seeded against the generated file (the unchecked error
+return seeded in the generated file, then hand-written, above). `govet`, `ineffassign`,
+`staticcheck` and `unused` report nothing on the current `boundary.gen.go` whether or not the
+exclusion rule is present — there is nothing in the file today that would trip any of them — so the
+exclusion's effect for those four linters is not demonstrated by a seed.

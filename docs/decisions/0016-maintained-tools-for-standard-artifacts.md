@@ -9,10 +9,9 @@
 
 - **rev 12** — 2026-10-04 — the `golangci-lint` adoption row gains `depguard`, confining non-test
   backend code, generated code included, to the standard library and this module's own packages —
-  ADR 0008's zero-runtime-dependency constraint, enforced on the Go side for the first time; cites
-  [ADR 0001 rev 1](0001-backend-language-go.md) and
-  [ADR 0008 rev 6](0008-boundary-contract-openapi-codegen.md). The adoptions are otherwise
-  unchanged (#425 renovate go module resolution).
+  [ADR 0008 rev 6](0008-boundary-contract-openapi-codegen.md)'s zero-runtime-dependency constraint's
+  first-enforcement case on the Go side; cites [ADR 0001 rev 1](0001-backend-language-go.md) too.
+  The adoptions are otherwise unchanged (#425 renovate go module resolution).
 - **rev 11** — 2026-09-06 — extends the decision to a further net-new adoption, `Trivy`, scanning the
   built container image and retiring [`../CI.md`](../CI.md) § *Image vulnerabilities*'s "Unbuilt;
   owned by #67" line (#265 image vulnerability scan).
