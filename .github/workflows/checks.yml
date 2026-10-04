@@ -52,7 +52,7 @@ jobs:
         run: just check-untracked
 
       # lychee runs offline from the digest-pinned official image over the tracked Markdown set
-      # (ADR 0016 rev 11); docker is not assumed on a contributor machine, so the step is a named
+      # (ADR 0016 rev 12); docker is not assumed on a contributor machine, so the step is a named
       # CI-only exception (docs/CI.md § Gate wiring) rather than a `just verify` check.
       # The file list is materialised and tested non-empty before lychee runs: a failed or empty
       # listing has judged nothing and must not read as a clean scan.
@@ -329,7 +329,7 @@ jobs:
       - name: FuzzShape, FuzzDecodeRequest and FuzzValidate each run fuzzed for 10s
         run: just check-fuzz
 
-      - name: The backend Go tree is clean under golangci-lint's default linter set
+      - name: The backend Go tree is clean under golangci-lint's default linter set and depguard's standard-library-and-module allow-list
         run: just check-lint-go
 
       - name: Exactly one non-test reference unwraps the confined secret type
@@ -497,7 +497,7 @@ jobs:
     # reaches main under squash-merge — is a Conventional Commit. The branch check
     # is `just check-branch`, handed the PR's head ref, reading its pattern from
     # scripts/branch-shape.regex; the title runs through the hook layer's pinned
-    # commitlint (ADR 0016 rev 11) against the pull-request-title configuration,
+    # commitlint (ADR 0016 rev 12) against the pull-request-title configuration,
     # which drops the fixup!/squash!/merge allowances that never reach main.
     # The branch check also gates the recorded PR↔ticket
     # linkage: the PR's Development field (closingIssuesReferences) must link

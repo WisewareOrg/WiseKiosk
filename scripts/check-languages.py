@@ -57,7 +57,7 @@ EXTENSIONS = {
     "yml": "derived — a toolchain's own required input format: GitHub Actions workflow YAML, "
     "Doorstop item and silo config YAML (ADR 0017 rev 9)",
     "yaml": "derived — a toolchain's own required input format: pre-commit's "
-    ".pre-commit-config.yaml (ADR 0016 rev 11), the boundary schema both code generators "
+    ".pre-commit-config.yaml (ADR 0016 rev 12), the boundary schema both code generators "
     "read and oapi-codegen's own configuration (ADR 0008 rev 6, ADR 0017 rev 9)",
     "mod": "derived — the Go toolchain's own manifest format: backend/go.mod "
     "(ADR 0017 rev 9)",

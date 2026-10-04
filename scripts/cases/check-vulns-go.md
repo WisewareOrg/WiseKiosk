@@ -70,7 +70,7 @@ lands blocking rather than reporting.
 
 - **A finding whose scanner-reported package name genuinely names a first-party path passes uncaught
   if the register also names it — this cannot be seeded against a live run.**
-  [ADR 0016 rev 11](../../docs/decisions/0016-maintained-tools-for-standard-artifacts.md)'s obligation
+  [ADR 0016 rev 12](../../docs/decisions/0016-maintained-tools-for-standard-artifacts.md)'s obligation
   ("no entry matches a first-party finding") is implemented (`check_vulns.py`'s `first_party` field, compared
   against `--go-dir`'s own `go.mod` module line), but govulncheck cannot be made to report a finding
   against the module being scanned: Go refuses a module that requires itself (the self-import a seed

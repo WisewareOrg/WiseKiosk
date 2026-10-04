@@ -31,7 +31,7 @@ under the requirements rewrite #18); rev 4's binding reframe and 100% ratchet ta
   (owner: nothing to exempt while non-blocking; if we do, that's a problem at that time) — and
   #300 coverage gate blocking is what promotes it
   and designs the exemption mechanism (owner, 2026-09-07). Built from two maintained tools
-  ([ADR 0016 rev 11](0016-maintained-tools-for-standard-artifacts.md)), no custom check script (#190
+  ([ADR 0016 rev 12](0016-maintained-tools-for-standard-artifacts.md)), no custom check script (#190
   coverage closure gate).
 - **rev 2** — 2026-08-23 — walks back the bespoke per-test attribution channel. Forward evidence for
   Test-method items is native Doorstop `references` carrying a `keyword`, which reaffirms
@@ -238,7 +238,7 @@ The four stored attributes — `verification-method`, `status`, `verification-ju
   Doorstop documents, not a sibling script, so gate 1 stays configured rather than authored. Gate 3's
   backend half is `go-test-coverage`, likewise configured; its frontend half is
   `scripts/merge-coverage.ts` — the per-file four-metric union and the completeness guard below are
-  this repository's own rule, so [ADR 0016 rev 11](0016-maintained-tools-for-standard-artifacts.md)'s
+  this repository's own rule, so [ADR 0016 rev 12](0016-maintained-tools-for-standard-artifacts.md)'s
   authored/configured line runs through gate 3 rather than around it. Vitest itself carries no
   coverage thresholds (`vitest.config.ts` states none); the one number gate 3 enforces is
   externalised to `frontend/coverage-thresholds.json`, a config an authored script reads, not a

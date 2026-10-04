@@ -1,4 +1,4 @@
-# The local hook layer (ADR 0016 rev 11). `pre-commit install` wires the stages listed in
+# The local hook layer (ADR 0016 rev 12). `pre-commit install` wires the stages listed in
 # default_install_hook_types; CI runs the pre-commit stage over every tracked file via
 # `just check-hooks`. pre-commit skips a hook whose file set is empty and reports success; the
 # `local` hooks below carry `always_run`, and none reads the staged-file set — the commitlint
@@ -38,7 +38,7 @@ repos:
         pass_filenames: false
         stages: [pre-push]
         verbose: true
-      # The Conventional-Commit gate at both of its stages (ADR 0016 rev 11), one base
+      # The Conventional-Commit gate at both of its stages (ADR 0016 rev 12), one base
       # configuration: .commitlintrc.json, which the pull-request-title configuration extends with
       # `defaultIgnores` off — fixup!/squash!/merge subjects pass at commit-msg because the squash
       # discards them, and are refused on the title because the squash makes it the commit on main.

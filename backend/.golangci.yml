@@ -3,3 +3,25 @@ version: "2"
 # `standard` expands to errcheck, govet, ineffassign, staticcheck, unused.
 linters:
   default: standard
+  enable:
+    - depguard
+  settings:
+    depguard:
+      rules:
+        main:
+          files:
+            - $all
+            - "!$test"
+          allow:
+            - $gostd
+            - github.com/WisewareOrg/WiseKiosk/backend
+  exclusions:
+    generated: disable
+    rules:
+      - path: '\.gen\.go$'
+        linters:
+          - errcheck
+          - govet
+          - ineffassign
+          - staticcheck
+          - unused

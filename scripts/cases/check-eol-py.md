@@ -6,7 +6,7 @@ The inputs this check has been run against, in both directions. What it *asserts
 `git grep -lIP '\r$' -- .`, inverted, run as the `check-eol` local hook in
 [`.pre-commit-config.yaml`](../../.pre-commit-config.yaml). It is the authored remainder beside the
 adopted `mixed-line-ending` hook, scoped to what that hook cannot reach
-([ADR 0016 rev 11](../../docs/decisions/0016-maintained-tools-for-standard-artifacts.md)) — the gap is
+([ADR 0016 rev 12](../../docs/decisions/0016-maintained-tools-for-standard-artifacts.md)) — the gap is
 demonstrated in the two rows marked *(gap)*, each run against `mixed-line-ending` itself, which
 passed where this fails.
 
@@ -23,7 +23,7 @@ passed where this fails.
 | Must pass | a binary file containing CR — excluded by `-I` |
 | Must pass | the untracked all-LF file from above, once tracked — the guard is silent and the search judges it |
 | Must pass | CR appearing mid-line, where the line still ends in LF |
-| Must pass | a repository with no tracked file — the retired population guard, exercised to confirm the ruling's side, not to guard: ADR 0016 rev 11's owner ruling is that an empty scan may report success |
+| Must pass | a repository with no tracked file — the retired population guard, exercised to confirm the ruling's side, not to guard: ADR 0016 rev 12's owner ruling is that an empty scan may report success |
 
 **What it does not catch: a file whose `.gitattributes` sets the `binary` attribute.** That attribute
 both exempts the file from CRLF→LF normalisation when it is added *and* makes `-I` skip it during the

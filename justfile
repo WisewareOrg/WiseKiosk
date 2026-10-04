@@ -126,17 +126,15 @@ boundary-install:
     go -C backend mod download
     npm --prefix frontend ci
 
-# Each generator runs from its own package root: oapi-codegen so its config's relative paths resolve,
-# orval so its config is the one beside it and prettier resolves from that package's dependencies.
 [group('boundary')]
 [doc('Regenerate the Go and TypeScript boundary contract — routes, client, server and types — from the one schema')]
 codegen:
-    cd backend && go tool oapi-codegen -config oapi-codegen.yaml ../boundary/openapi.yaml
+    cd backend && go generate ./internal/boundary
     cd frontend && node_modules/.bin/orval
 
 [private]
 _boundary-go-gen:
-    test -f backend/internal/boundary/boundary.gen.go || (cd backend && go tool oapi-codegen -config oapi-codegen.yaml ../boundary/openapi.yaml)
+    test -f backend/internal/boundary/boundary.gen.go || (cd backend && go generate ./internal/boundary)
 
 [private]
 _boundary-node-gen:
@@ -168,7 +166,7 @@ check-fuzz: _boundary-go-gen
     go -C backend test ./internal/modules/park_wait_times/ -run '^$' -fuzz '^FuzzResolvePark$' -fuzztime 10s
 
 [group('checks')]
-[doc('The backend Go tree is clean under golangci-lint default linter set (errcheck, govet, ineffassign, staticcheck, unused), non-zero exit on any finding')]
+[doc("The backend Go tree is clean under golangci-lint's default linter set and depguard's standard-library-and-module allow-list, non-zero exit on any finding")]
 check-lint-go: _boundary-go-gen
     go -C backend tool golangci-lint run ./...
 
