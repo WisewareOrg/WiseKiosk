@@ -3,10 +3,16 @@
 **Status:** accepted
 **Decided:** 2026-08-03 (#103 authored-vs-adopted check trade, measured against the cases recorded in
 [`../../scripts/README.md`](../../scripts/README.md))
-**Rev:** 11
+**Rev:** 12
 
 ## Revisions
 
+- **rev 12** — 2026-10-04 — the `golangci-lint` adoption row gains `depguard`, confining non-test
+  backend code, generated code included, to the standard library and this module's own packages —
+  ADR 0008's zero-runtime-dependency constraint, enforced on the Go side for the first time; cites
+  [ADR 0001 rev 1](0001-backend-language-go.md) and
+  [ADR 0008 rev 6](0008-boundary-contract-openapi-codegen.md). The adoptions are otherwise
+  unchanged (#425 renovate go module resolution).
 - **rev 11** — 2026-09-06 — extends the decision to a further net-new adoption, `Trivy`, scanning the
   built container image and retiring [`../CI.md`](../CI.md) § *Image vulnerabilities*'s "Unbuilt;
   owned by #67" line (#265 image vulnerability scan).
@@ -105,7 +111,7 @@ is a net-new gate, adopted where no authored check ever existed for it to replac
 | `lychee` | `check-links.mjs`, `upstream-hosts.txt` | 123 |
 | `commitlint` at both the commit-message and pull-request-title stages | `check-commit-msg.sh`, `conventional-commit.regex` | 40 |
 | `pre-commit` as the local hook layer | `.githooks/`, `check-eol.sh` | 33 |
-| `golangci-lint` at the default linter set | — | [`../CI.md`](../CI.md) § *Lint and type checks*'s "Unbuilt; owned by #67" line (Go half) |
+| `golangci-lint` at the default linter set, plus `depguard` confining non-test backend code, generated code included, to the standard library and this module's own packages ([ADR 0001 rev 1](0001-backend-language-go.md), [ADR 0008 rev 6](0008-boundary-contract-openapi-codegen.md)) | — | [`../CI.md`](../CI.md) § *Lint and type checks*'s "Unbuilt; owned by #67" line (Go half) |
 | `eslint` (flat config, recommended sets), with `svelte-check` (`--tsgo`) alongside | — | the same line's frontend half |
 | `CodeQL`'s default code-scanning suite, over Go, Svelte/TypeScript, Python and Actions | — | [`../CI.md`](../CI.md) § *First-party source scanning*'s "Unbuilt; owned by #67" line |
 | `govulncheck`, pinned by a `tool` directive in `backend/go.mod` | — | [`../CI.md`](../CI.md) § *Dependency vulnerabilities*'s "Unbuilt; owned by #67" line (Go half) |

@@ -80,7 +80,13 @@ Every source package's linters run as blocking checks. **No linter is advisory-o
 that reports without failing degrades to noise within a release.
 
 - Go: `golangci-lint`'s default linter set (errcheck, govet, ineffassign, staticcheck, unused), the
-  production invocation, non-zero exit asserted. Recorded in
+  production invocation, non-zero exit asserted; plus `depguard`, confining every non-test backend
+  file — generated code included — to the standard library and this module's own packages, the
+  structural enforcement of ADR 0008's zero-runtime-dependency constraint
+  ([ADR 0001 rev 1](decisions/0001-backend-language-go.md),
+  [ADR 0008 rev 6](decisions/0008-boundary-contract-openapi-codegen.md)). The configuration disables
+  golangci-lint's generated-file skip outright and re-excludes a generated file from the five
+  linters named above by path, so depguard alone still inspects one. Recorded in
   [`../scripts/cases/check-lint-go.md`](../scripts/cases/check-lint-go.md).
 - Frontend: `eslint` (flat config, recommended sets), non-zero exit asserted; `svelte-check`
   (`--tsgo`), non-zero exit asserted; and the whole-project TypeScript typecheck (`tsc --noEmit`,

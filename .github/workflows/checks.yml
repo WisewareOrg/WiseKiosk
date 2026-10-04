@@ -329,7 +329,7 @@ jobs:
       - name: FuzzShape, FuzzDecodeRequest and FuzzValidate each run fuzzed for 10s
         run: just check-fuzz
 
-      - name: The backend Go tree is clean under golangci-lint's default linter set
+      - name: The backend Go tree is clean under golangci-lint's default linter set and depguard's standard-library-only allow-list
         run: just check-lint-go
 
       - name: Exactly one non-test reference unwraps the confined secret type
