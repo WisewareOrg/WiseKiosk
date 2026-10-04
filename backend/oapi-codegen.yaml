@@ -3,9 +3,10 @@
 # routes rather than types alone (ADR 0008 rev 6). `std-http-server` binds against the standard
 # library's own ServeMux and pulls no router (ADR 0001 rev 1), and no route binds a parameter, so the
 # emitted Go imports nothing outside the standard library at all.
-# Paths are resolved against the working directory, which is `backend/` (the `codegen` recipe).
+# Paths are resolved against the working directory, which is `backend/internal/boundary/` (the
+# `go:generate` directive in its `doc.go`).
 package: boundary
-output: internal/boundary/boundary.gen.go
+output: boundary.gen.go
 generate:
   models: true
   std-http-server: true
