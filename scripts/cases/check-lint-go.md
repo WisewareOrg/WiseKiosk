@@ -41,6 +41,6 @@ the five — a loud finding on the next bump, not a silent pass, but a gap this 
 on its own.
 
 Of the five, only `errcheck`'s exclusion is seeded against the generated file (the unchecked error
-return seeded in the generated file, then hand-written, above). `govet`, `ineffassign`,
-`staticcheck` and `unused` are not seeded against the generated file for this case; their
-exclusion's effect there is not demonstrated by a seed.
+return seeded in the generated file, then hand-written, above). Against the generated file at the
+pinned commit, none of `govet`, `ineffassign`, `staticcheck` or `unused` reports a finding with or
+without the exclusion rule, so their exclusion is not demonstrated by a seed.
