@@ -42,6 +42,5 @@ on its own.
 
 Of the five, only `errcheck`'s exclusion is seeded against the generated file (the unchecked error
 return seeded in the generated file, then hand-written, above). `govet`, `ineffassign`,
-`staticcheck` and `unused` report nothing on the current `boundary.gen.go` whether or not the
-exclusion rule is present — there is nothing in the file today that would trip any of them — so the
-exclusion's effect for those four linters is not demonstrated by a seed.
+`staticcheck` and `unused` are not seeded against the generated file for this case; their
+exclusion's effect there is not demonstrated by a seed.
