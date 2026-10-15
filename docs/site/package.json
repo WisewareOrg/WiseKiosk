@@ -8,7 +8,7 @@
     "node": "26"
   },
   "devDependencies": {
-    "swagger-ui-dist": "5.33.1",
+    "swagger-ui-dist": "5.33.2",
     "vite": "8.3.4"
   }
 }
