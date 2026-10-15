@@ -17,17 +17,18 @@ ten of sixteen open tickets were unbranchable on 2026-07-24, and the identical d
 days later.
 
 **This skill is advisory.** Nothing forces its use, and a session that does not invoke it is not
-stopped by it. The half with teeth is `scripts/check-branch.py`, which refuses the merge later —
-so a ticket filed wrong is not lost, only expensive. What follows is how to not pay that.
+stopped by it. The half with teeth is `process-gates.yml`'s `check-branch` job, which refuses the
+merge later — so a ticket filed wrong is not lost, only expensive. What follows is how to not pay
+that.
 
 ## What the gate will demand
 
 From [`docs/CI.md` § *Repository shape*](../../../docs/CI.md#repository-shape) and
-[ADR 0013 rev 4](../../../docs/decisions/0013-work-tracking-invariants.md), decided against the ticket
+[ADR 0013 rev 5](../../../docs/decisions/0013-work-tracking-invariants.md), decided against the ticket
 whose branch is being cut:
 
 - **open** — it cannot be closed when the branch is worked;
-- **exactly one type label** from `task`, `bug`, `design`, `module` — a second makes the branch type
+- **exactly one type label** from `task`, `bug`, `design` — a second makes the branch type
   ambiguous. Non-type labels (`documentation`) are free;
 - **a milestone**;
 - **a parent iff the work targets an integration branch** — see *Epic membership* below.
@@ -42,7 +43,6 @@ the template its ticket was opened from ([ADR 0006 rev 6](../../../docs/decision
 | `task` | [`task.md`](../../../.github/ISSUE_TEMPLATE/task.md) | `task_<n>-…` |
 | `bug` | [`bug_report.md`](../../../.github/ISSUE_TEMPLATE/bug_report.md) | `bug_<n>-…` |
 | `design` | [`design_decision.md`](../../../.github/ISSUE_TEMPLATE/design_decision.md) | `design_<n>-…` |
-| `module` | [`new_module.md`](../../../.github/ISSUE_TEMPLATE/new_module.md) | `module_<n>-…` |
 
 **The labels are not listed here.** Read them out of the chosen template's own `labels:` frontmatter
 and pass exactly those — a design decision carries `documentation` alongside `design`, and a copy of

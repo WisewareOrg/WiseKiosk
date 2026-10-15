@@ -33,7 +33,7 @@ for k, v in items.items():
 ```
 
 Run the tool from its own venv — it is siloed with the feature it serves:
-`docs/requirements/.venv/bin/python`, installed from `docs/requirements/requirements-dev.txt`.
+`docs/requirements/.venv/bin/python`, installed by `uv sync --project docs/requirements`.
 
 **`pathlib.Path.glob("*.yml")` matches dotfiles; `glob.glob` does not.** Each silo holds its own
 `.doorstop.yml`, so a script written with `pathlib` parses three config files as items and every
@@ -56,7 +56,7 @@ So `reviewed: null` is **not a stable "unreviewed" state**. It survives exactly 
 run, and the run that clears it is the one that was supposed to be checking for it. This is the most
 likely explanation for bookkeeping drift that five review rounds found and none could source.
 
-`scripts/check-unreviewed.py` runs **first** in `check-reqs` and fails, so Doorstop never reaches the
+check-reqs's `check_unreviewed` stage runs **first** and fails, so Doorstop never reaches the
 tree while anything is unstamped. Two rules follow:
 
 - **Never clear that failure by re-running the gate.** It is `doorstop review <uid>`, deliberately,
@@ -96,7 +96,7 @@ then, one written after means what it says now. The map cannot tell you which, s
 2. **No childless active item.** An active parent with no children fails the strict gate.
 3. **Method rule.** A parent's `verification-method` equals the **least-decidable** method among its
    children, ordered by mechanical decidability: `test` > `analysis` > `inspection` >
-   `demonstration`. Gated by `scripts/check-method-consistency.py`. Re-parenting one `inspection`
+   `demonstration`. Gated by check-reqs's `check_method_consistency` stage. Re-parenting one `inspection`
    child onto an all-`test` parent silently drags the parent down — this has happened, three times
    in one pass.
 4. **Cascade recorded.** Deleting an `SRS` orphans its `TST` children. Enumerate them, and note
@@ -123,7 +123,7 @@ consequences:
 Clearing suspect links and re-stamping is a **human read**, never scripted
 (`docs/requirements/README.md`). Inactive items are skipped by Doorstop entirely, so a stamp on a
 pending item carries no authority — edits to its *content* are nearly free, and expensive after
-activation. Its *links* are not free: re-point one and `scripts/check-suspect-links.py` fires. **Neither
+activation. Its *links* are not free: re-point one and check-reqs's `check_suspect_links` stage fires. **Neither
 `doorstop review` nor `doorstop clear` can reach an inactive item at all**: `Tree.find_item` is
 active-only and both answer `no item with UID`. Stamping a pending item means a loop over
 `document._iter()`.
@@ -156,7 +156,7 @@ routing. Two traps in applying it:
   exactly this ground; an authoring rule parked where nobody walks it fails the same test.
 
 Every item must carry a `verification-justification` — below `test`, what blocks a mechanical check;
-at `test`, what the check leaves unproven ([ADR 0009 rev 2](../../../docs/decisions/0009-verification-justification-attribute.md)).
+at `test`, what the check leaves unproven ([ADR 0009 rev 3](../../../docs/decisions/0009-verification-justification-attribute.md)).
 
 ## Recording — in the repository, never in a ticket
 

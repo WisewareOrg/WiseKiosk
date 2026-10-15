@@ -3,10 +3,17 @@
 **Status:** accepted
 **Decided:** 2026-08-03 (#103 authored-vs-adopted check trade, measured against the cases recorded in
 [`../../scripts/README.md`](../../scripts/README.md))
-**Rev:** 12
+**Rev:** 13
 
 ## Revisions
 
+- **rev 13** — 2026-10-15 — `check-branch`, and the worked example's suspect-link check, move
+  into wise-ci (its `check-branch` and `check-reqs` respectively), authored there instead of
+  duplicated here (#400 switch to wise-ci's actions); the obligation census is reworded to say
+  so, naming the organization rather than this repository as the authoring home — neither
+  becomes a maintained third-party tool, and `check-reqs`'s "commands" become "stages", since the
+  recipe runs the one wise-ci command rather than six of its own; what was chosen is
+  unchanged, so the Decided date does not move.
 - **rev 12** — 2026-10-04 — the `golangci-lint` adoption row gains `depguard`, confining non-test
   backend code, generated code included, to the standard library and this module's own packages —
   [ADR 0008 rev 6](0008-boundary-contract-openapi-codegen.md)'s zero-runtime-dependency constraint's
@@ -134,25 +141,30 @@ beside it. **The gap is demonstrated, not asserted:** the tool is run against th
 uncovered, and the result recorded, because *"it only covers part of it"* is otherwise available to
 anyone who would rather keep their own script.
 
-`scripts/check-suspect-links.py` is the worked example, and it meets that standard: suspect links are
-Doorstop's concept, `doorstop --error-all` decides them for every *active* item, and the authored script
-covers inactive items only. The gap is **structural** — Doorstop cannot see an inactive item at all — so
+The inactive-item suspect-link check is the worked example, and it meets that standard: suspect
+links are Doorstop's concept, `doorstop --error-all` decides them for every *active* item, and an
+authored check covers inactive items only — authored in wise-ci's shared `check-reqs` rather than
+in this repository directly (#400 switch to wise-ci's actions), since the obligation is this
+organization's own rule rather than a public convention, so it stays authored even where it is
+centralized. The gap is **structural** — Doorstop cannot see an inactive item at all — so
 the uncovered part has a boundary a scope can be written against. That is what separates this from the
 residue rejected below: a residue check is a second gate kept beside a tool that already reaches the
 case, whereas this is the only thing reaching it.
 
 **The unit this rule sorts is an obligation, not a `just` recipe.** A recipe may run several commands
 asserting different things, and three of them carry more than one kind: `check-reqs` delegates tree
-integrity to Doorstop while five of its six commands assert rules of this repository's own; `check-arch`
-delegates model validation to `likec4` while `splice-arch-diagrams.mjs` asserts this repository's
+integrity to Doorstop while five of its stages assert rules of this organization's own,
+authored in wise-ci rather than here; `check-arch` delegates model
+validation to `likec4` while `splice-arch-diagrams.mjs` asserts this repository's
 `arch-export` marker format and a following `git diff --exit-code` asserts that the generated artifacts
 are byte-identical to a regeneration; and `check-links` is split by this very decision — its link
 resolution delegated, its two other obligations retired. Sorting by recipe would misfile all three, and
 a census taken that way was wrong three times in the drafting of this record.
 
-The obligations that stay authored are everything in `check-branch`, `check-citations`,
-`check-adr-index`, `check-docs-index`, `check-repo-silo` and `check-verify-ci-parity`; the five
-repository-specific commands in `check-reqs`; and, in `check-arch`, both the marker checking in
+The obligations that stay authored are everything in `check-citations`, `check-adr-index`,
+`check-docs-index`, `check-repo-silo` and `check-verify-ci-parity`; `check-branch` and the five
+shared stages in `check-reqs`, both authored in wise-ci rather than here; and, in
+`check-arch`, both the marker checking in
 `splice-arch-diagrams.mjs` and the generated-artifact staleness comparison. `git` and `doorstop` are the
 mechanisms those last two use; neither owns the obligation, exactly as `git ls-files` does not own the
 documentation-index claim.

@@ -38,7 +38,7 @@ adds. Reasoning is
 
 ## Stamping one — the whole problem
 
-`check-unreviewed.py` reads inactive items and fails on a missing stamp on the item **or** on its
+check-reqs's `check_unreviewed` stage reads inactive items and fails on a missing stamp on the item **or** on its
 link. But **neither `doorstop review` nor `doorstop clear` can reach an inactive item**:
 `Tree.find_item` is active-only and both answer `no item with UID`. And editing a pending item through
 the Python API silently drops `links`, `level`, `reviewed`, `rationale` and both verification
@@ -61,8 +61,8 @@ flip it back.
 
 ## What still bites while it is pending
 
-- **Its parent moving is not free.** Doorstop skips inactive items, but `check-suspect-links.py`
-  fails when a pending item's parent moves after the link was reviewed — that is the drift Doorstop
+- **Its parent moving is not free.** Doorstop skips inactive items, but check-reqs's
+  `check_suspect_links` stage fails when a pending item's parent moves after the link was reviewed — that is the drift Doorstop
   cannot see. Edit a parent and you owe its pending children a re-stamp.
 - **Its own content is nearly free**, since nothing reads it until activation, which is exactly why
   activation is a full re-read rather than a formality.

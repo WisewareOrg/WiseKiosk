@@ -4,8 +4,8 @@ description: >-
   Add one item to the WiseKiosk Doorstop tree — SYS, SRS or TST — and leave it stamped, linked and
   gate-clean. Carries the create-attributes-link-stamp sequence, the two stamps a new item needs and
   which command writes each, and the per-item checklist a gate will otherwise fail you on. Invoke
-  whenever writing a new requirement or verification item, or when `check-unreviewed` fails on
-  something just authored. For deciding whether an item earns its place, use tree-pass.
+  whenever writing a new requirement or verification item, or when check-reqs's `check_unreviewed`
+  stage fails on something just authored. For deciding whether an item earns its place, use tree-pass.
 ---
 
 # Add a tree item
@@ -29,7 +29,7 @@ $D clear SRS0NN            # stamps the parent link
 
 **A new item needs two stamps and `review` writes only one.** After `link` the link reads
 `- SYS0MM: null` and `reviewed:` is null; `review` fills `reviewed:` and **leaves the link null**;
-`clear` is what writes the parent fingerprint into `links:`. `scripts/check-unreviewed.py` fails on
+`clear` is what writes the parent fingerprint into `links:`. check-reqs's `check_unreviewed` stage fails on
 that null, so add-link-review with no `clear` reds the gate on every item it produced.
 
 Their order is immaterial: neither command reads what the other writes, and the two sequences produce
@@ -66,7 +66,7 @@ a deliberate stub, which stays `proposed` — see [pending-stub](../pending-stub
   no command in the sequence changes it, so this is the one field an author has to remember; a
   `proposed` item cannot be tagged in the model and reds `check-arch-trace`.
 - **`verification-justification` on every item.** Required with no exception
-  ([ADR 0009 rev 2](../../../docs/decisions/0009-verification-justification-attribute.md)); at `test`
+  ([ADR 0009 rev 3](../../../docs/decisions/0009-verification-justification-attribute.md)); at `test`
   it says what the check leaves unproven, below `test` what blocks a mechanical check. The single most
   commonly missed attribute, because it is the one an item copied from older content will not have.
 - **`rationale` is required at the `SYS` tier**, optional below.

@@ -1,9 +1,9 @@
 # 0006 — Gate branch shape, ticket linkage, and PR titles in CI
 
-**Status:** accepted; ticket-metadata obligations extended and the parent-ticket definition added by
-[ADR 0013 rev 4](0013-work-tracking-invariants.md), whose read-only stance this ADR's rejected
+**Status:** deprecated; ticket-metadata obligations extended and the parent-ticket definition added by
+[ADR 0013 rev 5](0013-work-tracking-invariants.md), whose read-only stance this ADR's rejected
 write-scoped-token alternative supplies; gate path corrected by
-[ADR 0016 rev 12](0016-maintained-tools-for-standard-artifacts.md)
+[ADR 0016 rev 13](0016-maintained-tools-for-standard-artifacts.md)
 **Decided:** 2026-07-22 (process-gates design discussion, ticket #27)
 **Rev:** 6
 
@@ -103,7 +103,7 @@ mirrored locally by `just check-branch` and the advisory hooks `pre-commit insta
   mutate, and CI stays read-only.
 - **A gate path with no toolchain** — *plain sh + curl + jq — no toolchain*, the property this record
   was decided under. Rejected under
-  [ADR 0016 rev 12](0016-maintained-tools-for-standard-artifacts.md): the Conventional-Commit
+  [ADR 0016 rev 13](0016-maintained-tools-for-standard-artifacts.md): the Conventional-Commit
   convention is a public one rather than a rule of this repository's own, so it is delegated to a
   maintained tool and the local hook layer follows it there. What the property bought was a
   contributor needing nothing installed to run the gates; what it cost was an authored parser for a

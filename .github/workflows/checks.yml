@@ -8,8 +8,6 @@ on:
   push:
     branches: [main]
   pull_request:
-    # edited: the process gate validates the PR title, so title fixes must re-run it
-    types: [opened, edited, synchronize, reopened]
   merge_group:
 
 permissions:
@@ -31,6 +29,9 @@ jobs:
   # Every check with a local form runs as its `just` recipe — the recipe body is the one
   # spelling of what runs here and locally (docs/CI.md § Gate wiring) — and every setup-just
   # step pins `just-version:`, so the executor CI depends on is a decided version, not a float.
+  # check-eol here and check-branch in process-gates.yml are the exception: each runs through
+  # wise-ci's own `uses:` step, and its local recipe is a convenience outside `verify`, not a
+  # second spelling.
   docs-and-hygiene:
     name: docs-and-hygiene
     runs-on: ubuntu-latest
@@ -38,6 +39,8 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+
+      - uses: WisewareOrg/wise-ci/check-eol@1a6f407a8ec04644f7d18de380b88b74d90695d6
 
       - uses: extractions/setup-just@53165ef7e734c5c07cb06b3c8e7b647c5aa16db3 # v4
         with:
@@ -52,7 +55,7 @@ jobs:
         run: just check-untracked
 
       # lychee runs offline from the digest-pinned official image over the tracked Markdown set
-      # (ADR 0016 rev 12); docker is not assumed on a contributor machine, so the step is a named
+      # (ADR 0016 rev 13); docker is not assumed on a contributor machine, so the step is a named
       # CI-only exception (docs/CI.md § Gate wiring) rather than a `just verify` check.
       # The file list is materialised and tested non-empty before lychee runs: a failed or empty
       # listing has judged nothing and must not read as a clean scan.
@@ -115,10 +118,12 @@ jobs:
         with:
           just-version: "1.58.0"
 
-      - name: Install Doorstop into a local venv (siloed under docs/requirements/)
-        run: |
-          python -m venv docs/requirements/.venv
-          docs/requirements/.venv/bin/pip install -r docs/requirements/requirements-dev.txt
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          version: "0.12.20"
+
+      - name: Install Doorstop into a uv-managed venv (siloed under docs/requirements/)
+        run: uv sync --project docs/requirements --locked
 
       - name: Every requirements-tree check passes, and the proposed-item backlog prints (reports; not a gate)
         run: just check-reqs
@@ -194,10 +199,12 @@ jobs:
       - name: Install LikeC4 into the silo (docs/architecture/), locked
         run: npm --prefix docs/architecture ci
 
-      - name: Install Doorstop into a local venv (siloed under docs/requirements/)
-        run: |
-          python -m venv docs/requirements/.venv
-          docs/requirements/.venv/bin/pip install -r docs/requirements/requirements-dev.txt
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          version: "0.12.20"
+
+      - name: Install Doorstop into a uv-managed venv (siloed under docs/requirements/)
+        run: uv sync --project docs/requirements --locked
 
       - name: Architecture model validates and generated artifacts are neither stale, orphaned, nor uncommitted
         run: just check-arch
@@ -486,53 +493,6 @@ jobs:
 
       - name: The backend cross-compiles for armv6l and the application comes up serving natively on it
         run: just smoke-native
-
-  process:
-    name: process
-    # Process gates (ADR 0006 rev 6): the branch is named type_number-snake_name and
-    # links an open issue labeled with its type; the PR title — the commit that
-    # reaches main under squash-merge — is a Conventional Commit. The branch check
-    # is `just check-branch`, handed the PR's head ref, reading its pattern from
-    # scripts/branch-shape.regex; the title runs through the hook layer's pinned
-    # commitlint (ADR 0016 rev 12) against the pull-request-title configuration,
-    # which drops the fixup!/squash!/merge allowances that never reach main.
-    # The branch check also gates the recorded PR↔ticket
-    # linkage: the PR's Development field (closingIssuesReferences) must link
-    # the branch's issue on every base, so the ticket closes when the PR merges
-    # into the default branch.
-    # head_ref and the PR title are attacker-controlled, so they
-    # enter run steps only via env mapping, never inline. GITHUB_TOKEN is the
-    # GitHub-provided read-only token (API rate limits, GraphQL read), not a
-    # custom credential.
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - uses: extractions/setup-just@53165ef7e734c5c07cb06b3c8e7b647c5aa16db3 # v4
-        with:
-          just-version: "1.58.0"
-
-      - name: Branch named type_number-snake_name, its issue open, type-labeled, milestoned and parented to match the PR base
-        env:
-          HEAD_REF: ${{ github.head_ref }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: just check-branch "$HEAD_REF"
-
-      - name: Install pre-commit into a local venv (siloed under scripts/)
-        run: |
-          python3 -m venv scripts/.venv
-          scripts/.venv/bin/pip install -r scripts/requirements-dev.txt
-
-      - name: PR title is a Conventional Commit (the squash-merge commit on main)
-        env:
-          PR_TITLE: ${{ github.event.pull_request.title }}
-        run: |
-          printf '%s\n' "$PR_TITLE" > "$RUNNER_TEMP/pr-title"
-          COMMITLINT_TITLE_FILE="$RUNNER_TEMP/pr-title" scripts/.venv/bin/pre-commit run commitlint-pr-title --hook-stage manual
 
   secret-scan:
     name: secret-scan

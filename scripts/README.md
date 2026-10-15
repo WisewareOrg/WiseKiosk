@@ -30,9 +30,6 @@ when a link breaks. Nothing enforces this — a wrong success line fails no buil
 | `check-untracked.py` | [cases](cases/check-untracked-py.md) |
 | `check-repo-silo.py` | [cases](cases/check-repo-silo-py.md) |
 | `check-docs-index.py` | [cases](cases/check-docs-index-py.md) |
-| `check-branch.py` | [cases](cases/check-branch-py.md) |
-| `branch-shape.py` | [cases](cases/branch-shape-py.md) |
-| `check-eol.py` | [cases](cases/check-eol-py.md) |
 | `check-adr-index.py` | [cases](cases/check-adr-index-py.md) |
 | `check-adr-revs.py` | [cases](cases/check-adr-revs-py.md) |
 | `check-arch / splice-arch-diagrams.py` | [cases](cases/check-arch.md) |
@@ -58,9 +55,8 @@ when a link breaks. Nothing enforces this — a wrong success line fails no buil
 | `check-publish-permissions` (`publish/verify_permissions.py`) | [cases](cases/check-publish-permissions.md) |
 | `check-restart-policy.py` | [cases](cases/check-restart-policy-py.md) |
 | `check-site` | [cases](cases/check-site.md) |
-| `the seven requirements-tree checks` | [cases](cases/the-requirements-tree-checks.md) |
-| `report-proposed.py` | [cases](cases/report-proposed-py.md) |
-| the Conventional-Commit gate (`commitlint`, both stages) | [cases](cases/commitlint.md) |
+| `check-citations.py` | [cases](cases/check-citations-py.md) |
+| the Conventional-Commit gate (`commitlint`, commit-msg stage) | [cases](cases/commitlint.md) |
 | `adr-rev-reach.py` | [cases](cases/adr-rev-reach-py.md) |
 | CodeQL (first-party source scanning) | [cases](cases/codeql.md) |
 
@@ -135,8 +131,8 @@ Eight standing traps, each hit at least once:
 
 Local runs prove the script; they do not prove the step is wired, reached, and able to fail the job.
 For that, push a branch that adds its own name to `checks.yml`'s `push:` trigger — no pull request is
-needed, and the `process` job skips itself on a push event — seed the defect, read the run, then push
-the same branch with the seed removed and confirm it goes green.
+needed, and `process-gates.yml`'s jobs never trigger on a push at all — seed the defect, read the
+run, then push the same branch with the seed removed and confirm it goes green.
 
 Two things only a real run shows. A step that exits non-zero fails its job and the steps after it do
 not run, so seeding two defects into one job shows the first gate to fail and hides the second — two

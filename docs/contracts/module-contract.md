@@ -23,12 +23,12 @@ the boundary. Each part and each build step below carries the shape it applies t
 
 ## How a module is tracked
 
-A module is authored in **three phases, and filed as an epic** — a `module`-type parent ticket
-anchoring an integration branch `module_<n>-<name>`, decomposed into three `task` sub-issues whose
-pull requests target that branch rather than `main`
-([ADR 0013 rev 4](../decisions/0013-work-tracking-invariants.md) defines a sub-issue as exactly that
-shared merge target). The phases are not new kinds of work, so they take no new branch type: they are `task`s
-named for the phase, and what distinguishes them is the sub-issue they are, not their prefix. The
+A module is authored in **three phases, and filed as an epic** — an integration branch whose
+anchor ticket and three sub-issues all carry the standard types (`task`, `bug` or `design`,
+whichever fits each one), the sub-issues' pull requests targeting that branch rather than `main`
+([ADR 0013 rev 5](../decisions/0013-work-tracking-invariants.md) defines a sub-issue as exactly that
+shared merge target). The phases are not new kinds of work, so they take no dedicated type: what
+distinguishes them is the sub-issue they are, not their type label. The
 integration branch keeps the module's churn off `main` and lets a decision taken in one phase be
 revised in another before the whole lands — it merges to `main` when the module is done.
 

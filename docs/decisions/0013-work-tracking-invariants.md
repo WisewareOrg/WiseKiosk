@@ -2,10 +2,15 @@
 
 **Status:** accepted
 **Decided:** 2026-08-02 (work-tracking invariants discussion, ticket #64 work-tracking invariants)
-**Rev:** 4
+**Rev:** 5
 
 ## Revisions
 
+- **rev 5** — 2026-10-15 — drops `check-branch.py` and `branch-shape.regex`, retired in favor of
+  wise-ci's `check-branch`, and the retired `module` template from a template count; also drops the
+  unreadable-type-set clause, since wise-ci's `check-branch` reads its type set from a literal
+  tuple in its own source, not a file that could fail to parse; what was
+  chosen is unchanged, so the Decided date does not move.
 - **rev 4** — 2026-08-17 — renames `scripts/check-branch.sh` to `scripts/check-branch.py` throughout,
   converted by #109 check-branch conversion; no ground changes (#160 post-adoption-wave sweep).
 - **rev 3** — 2026-08-06 — drops the appended restatement of the advisory half's grounds; the ground
@@ -16,7 +21,7 @@
 ## Context
 
 [ADR 0006 rev 6](0006-process-gates.md) specifies exactly one property of a ticket — that it is open and
-type-labelled — and only because `scripts/check-branch.py` can decide it. Everything else about how
+type-labelled — and only because `check-branch` can decide it. Everything else about how
 work is tracked was convention, and convention drifted twice in five days. On 2026-07-24, ten of
 sixteen open tickets could not legally be branched on: unlabeled, or carrying stock `enhancement` in
 type duty, which is not a branch type. Four days after that cleanup, #70 configuration generator
@@ -25,10 +30,10 @@ links to a closed parent. A convention a document merely describes is a comment-
 the defect class this project forbids for code, wearing project-management clothes.
 
 The root cause is not habit. `gh issue create --title … --body …`, which is how a ticket gets filed
-from an agent session, bypasses the template picker entirely: all four `.github/ISSUE_TEMPLATE/`
-files apply to none of it, so no type label, no headings and no milestone arrive. GitHub also drops a
-template's declared label when no such label exists, which is how `new_module.md` — declaring
-`labels: module` against a label this repository had never created — produced unlabeled, unbranchable
+from an agent session, bypasses the template picker entirely: every `.github/ISSUE_TEMPLATE/`
+file applies to none of it, so no type label, no headings and no milestone arrive. GitHub also drops a
+template's declared label when no such label exists, which is how the retired `module`-type
+template — declaring a label this repository had never created — produced unlabeled, unbranchable
 module tickets from the path that was supposed to be the safe one.
 
 What GitHub does **not** offer is enforcement at creation. An `on: issues` workflow runs after the
@@ -38,16 +43,16 @@ anything.
 
 ## Decision
 
-Four candidates were weighed. Two are gated in `check-branch.py`, one is recorded ungated, one is
+Four candidates were weighed. Two are gated in `check-branch`, one is recorded ungated, one is
 dropped.
 
-**Gated: the ticket a branch names carries a milestone and exactly one type label.** The type set is
-read from `scripts/branch-shape.regex`, never restated, so adding a branch type cannot leave the
-label rule behind; an unreadable set fails rather than counting zero. A second type label makes the
+**Gated: the ticket a branch names carries a milestone and exactly one type label.** The type set
+is `check-branch`'s own, never restated, so adding a branch type cannot leave the
+label rule behind. A second type label makes the
 branch type ambiguous — the branch type is supposed to name the template the ticket was opened from,
 and two candidates break that correspondence. An unmilestoned ticket is absent from the phase axis
 that carries the definition of done. Both read fields already present in the issue payload
-`check-branch.py` fetches, so neither costs an API call.
+`check-branch` fetches, so neither costs an API call.
 
 **Gated: a sub-issue means a shared merge target.** A parent ticket exists *iff* there is an
 integration branch, and a ticket is that parent's sub-issue *iff* its pull request targets that
