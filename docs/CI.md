@@ -892,47 +892,52 @@ changed, which the citation resolver above decides without anyone declaring anyt
   ([ADR 0016 rev 12](decisions/0016-maintained-tools-for-standard-artifacts.md)): no private key, no
   file over `check-added-large-files`' threshold, every YAML and JSON file parses, no merge-conflict
   marker committed while a merge is in progress (outside one, `check-merge-conflict` judges nothing —
-  a bare `=======` is also a Markdown setext underline), no file mixing line-ending kinds — plus the
-  authored `check-eol` hook, which carries the
-  tracked-tree CRLF scan of the CRLF bullet above, scoped to what `mixed-line-ending` cannot reach:
-  that hook judges only the files pre-commit hands it and counts one uniform ending kind as unmixed,
-  so a committed-but-unstaged CRLF file and a uniformly-CRLF file both pass it. Its population is
-  `git ls-files`, so it carries the untracked guard of the bullet above — an untracked, non-ignored
-  file is reported as unsearchable and fails, beside any CRLF finding rather than in place of one.
-  Locally the layer is
+  a bare `=======` is also a Markdown setext underline), no file mixing line-ending kinds. The
+  tracked-tree CRLF scan of the CRLF bullet above is not one of these hooks: it is wise-ci's
+  `check-eol`, a `uses:` step in the `docs-and-hygiene` job (§ *Gate wiring*), with `just check-eol`
+  running the same script locally as a convenience outside `verify`, not a second spelling. It is
+  scoped to what `mixed-line-ending` cannot reach: that hook judges only the files pre-commit hands
+  it and counts one uniform ending kind as unmixed, so a committed-but-unstaged CRLF file and a
+  uniformly-CRLF file both pass it. check-eol's population is the whole tracked tree
+  (`git ls-files`), not pre-commit's file set, so it carries the untracked guard of the bullet above
+  regardless — an untracked, non-ignored file is reported as unsearchable and fails, beside any CRLF
+  finding rather than in place of one.
+  Locally the remaining hook layer is
   advisory fast feedback at commit, on the commit message, and at push (`pre-commit install`, once
   per clone); the binding run for the file-scanning hooks is CI's, over every tracked file — the
-  commitlint hooks of the bullet below run at their own stages, not in that run. **A hook whose file set is empty is skipped and reports
+  commitlint hook of the bullet below runs at its own stage, not in that run. **A hook whose file set is empty is skipped and reports
   success** — pre-commit's own behaviour, which ADR 0016 rev 12's empty-population ruling permits;
-  the authored hook runs regardless of the file set (`always_run`) and reports success over an empty
-  tracked tree, under the same ruling. pre-commit itself is pinned in `scripts/requirements-dev.txt`
+  check-eol, unbound to pre-commit's file set, reports success over an empty tracked tree under the
+  same ruling regardless. pre-commit itself is pinned in `scripts/requirements-dev.txt`
   — installed into `scripts/.venv` by `just hooks-install` and by CI's install step, and covered by
   Renovate's `pip` manager; each hook repository is pinned by commit SHA in the config, which no
   Renovate manager covers — its `pre-commit` manager stays off — so `pre-commit autoupdate`, run by
   hand, is its updater.
-- **The pull-request title is a Conventional Commit, and so is each local commit message** — one
-  obligation at two stages, delegated to `commitlint`
+- **The pull-request title is a Conventional Commit, and so is each local commit message** — two
+  separate obligations, each delegated to `commitlint`
   ([ADR 0016 rev 12](decisions/0016-maintained-tools-for-standard-artifacts.md); the gate itself is
-  [ADR 0006 rev 6](decisions/0006-process-gates.md)'s). Both stages run through the hook layer's
-  `repo: local` hooks and one base configuration, `.commitlintrc.json` —
-  `@commitlint/config-conventional`, plus a `scope-case` rule restoring the retired check's
-  lowercase-scope refusal, which the preset does not carry. The `commit-msg` hook is the
-  advisory local stage: its `defaultIgnores` pass `fixup!`/`squash!`/merge subjects, whose text the
-  squash discards. The manual-stage `commitlint-pr-title` hook, run only by CI's `process` job,
-  reads `.commitlintrc-pr-title.json`, which extends the base with `defaultIgnores` off, because
-  the squash makes the title the commit on `main` — the same string accepted at one stage and
-  refused at the other, recorded in both directions in
-  [`../scripts/cases/commitlint.md`](../scripts/cases/commitlint.md), beside what the rules let
+  [ADR 0006 rev 6](decisions/0006-process-gates.md)'s). The local commit message runs through the
+  hook layer's one remaining `repo: local` hook, `commit-msg`, against the base configuration,
+  `.commitlintrc.json` — `@commitlint/config-conventional`, plus a `scope-case` rule restoring the
+  retired check's lowercase-scope refusal, which the preset does not carry. Its `defaultIgnores`
+  pass `fixup!`/`squash!`/merge subjects, whose text the squash discards, recorded in
+  [`../scripts/cases/commitlint.md`](../scripts/cases/commitlint.md) beside what the rule lets
   through that the retired regex refused: an empty scope, which no rule can refuse without also
-  refusing a scopeless header. The npm packages are
-  pinned by exact version in the hooks' `additional_dependencies`, written once as a YAML anchor;
+  refusing a scopeless header. Its npm packages are
+  pinned by exact version in the hook's `additional_dependencies`, written once as a YAML anchor;
   neither Renovate nor `pre-commit autoupdate` reaches such a pin, so those versions are updated
-  by hand, beside the hook-repository revs `autoupdate` does move.
+  by hand, beside the hook-repository revs `autoupdate` does move. The pull-request title runs
+  through wise-ci's `pr-title` instead — a `uses:` step in `process-gates.yml`, CI-only with no
+  local form, carrying its own commitlint configuration (`defaultIgnores` off, because the squash
+  makes the title the commit on `main`) and dependencies; WiseKiosk neither seeds nor cases it
+  (wise-ci's own tests are its evidence).
 - The branch is named `type_number-snake_name`, links an open issue labelled with its type, and its
   default-base pull request records the ticket linkage.
-- That issue carries a milestone and **exactly one** type label. The type set is read from
-  `scripts/branch-shape.regex` rather than restated, so a new branch type cannot leave the label rule
-  behind. A second type label makes the branch type ambiguous, and an unmilestoned ticket is absent
+- That issue carries a milestone and **exactly one** type label. The type set and the branch-name
+  shape it backs are wise-ci's `check-branch`'s own (a `uses:` step in `process-gates.yml`'s
+  `check-branch` job; `just check-branch` runs the same script locally once a PR exists, a
+  convenience outside `verify`), not restated here, so a new branch type cannot leave this
+  description behind. A second type label makes the branch type ambiguous, and an unmilestoned ticket is absent
   from the phase axis that carries the definition of done. This is detected at merge, on the change
   whose ticket is wrong, rather than at filing: GitHub cannot refuse to create a malformed issue, and
   CI does not write ([ADR 0013 rev 4](decisions/0013-work-tracking-invariants.md)).

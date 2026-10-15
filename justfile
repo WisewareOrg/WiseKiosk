@@ -28,18 +28,12 @@ check-branch *ref:
 [group('checks')]
 [doc('Requirements tree validates: refs resolve, no suspect/unreviewed/orphan items, methods consistent, headers non-empty and prefix-free, no identifier cited in an item statement; the proposed backlog prints on a passing run (reports; not a gate)')]
 check-reqs:
-    docs/requirements/.venv/bin/python scripts/check-unreviewed.py
-    docs/requirements/.venv/bin/python scripts/check-suspect-links.py
-    docs/requirements/.venv/bin/doorstop --error-all --no-reformat
-    docs/requirements/.venv/bin/python scripts/check-method-consistency.py
-    docs/requirements/.venv/bin/python scripts/check-text-citations.py
-    docs/requirements/.venv/bin/python scripts/check-headers.py
-    docs/requirements/.venv/bin/python scripts/report-proposed.py
+    uv run --locked --project docs/requirements check-reqs --root docs/requirements
 
 [group('checks')]
 [doc('Every requirement identifier and ADR number cited outside .claude/ resolves, and every requirement citation carries its item header')]
 check-citations:
-    docs/requirements/.venv/bin/python scripts/check-citations.py
+    uv run --locked --project docs/requirements python scripts/check-citations.py
 
 [group('checks')]
 [doc('The decisions directory and its index table agree: every ADR has a row, every row a file, numbering contiguous')]
@@ -108,7 +102,7 @@ check-arch:
 [group('checks')]
 [doc('Every requirement identifier tagged in the architecture model resolves to an accepted item, and every accepted, active SYS or SRS item is tagged somewhere in the model')]
 check-arch-trace:
-    docs/requirements/.venv/bin/python scripts/check-arch-trace.py
+    uv run --locked --project docs/requirements python scripts/check-arch-trace.py
 
 [group('docs')]
 [doc('Live-preview the architecture model in a local dev server (browser; not a gate)')]

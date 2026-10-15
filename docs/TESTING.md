@@ -195,7 +195,7 @@ or [`DEPLOYMENT.md`](DEPLOYMENT.md) where it is not
 - **A verification item's fit against its parent is re-read when the item is activated.** Every
   `TST` item is `active: false` until the code it checks exists, and Doorstop skips inactive items
   entirely, so the suspect-link mechanism that normally flags a check whose parent moved beneath it
-  is inert across the whole tier. `check-suspect-links.py` restores that one signal
+  is inert across the whole tier. check-reqs's `check_suspect_links` stage restores that one signal
   ([`requirements/README.md § Running the gate`](requirements/README.md#running-the-gate)): a parent
   rewritten under a pending check fails a gate in the commit that rewrites it. What it cannot decide
   is the question activation exists to ask, and that stays a human read — does this check still

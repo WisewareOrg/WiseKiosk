@@ -29,7 +29,7 @@ $D clear SRS0NN            # stamps the parent link
 
 **A new item needs two stamps and `review` writes only one.** After `link` the link reads
 `- SYS0MM: null` and `reviewed:` is null; `review` fills `reviewed:` and **leaves the link null**;
-`clear` is what writes the parent fingerprint into `links:`. `scripts/check-unreviewed.py` fails on
+`clear` is what writes the parent fingerprint into `links:`. check-reqs's `check_unreviewed` stage fails on
 that null, so add-link-review with no `clear` reds the gate on every item it produced.
 
 Their order is immaterial: neither command reads what the other writes, and the two sequences produce

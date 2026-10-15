@@ -81,7 +81,7 @@ ISO/IEC/IEEE 29148's *complete* and *singular* characteristics — and an identi
 that twice over: the reader cannot tell what is required without a lookup, and a renumber rewrites
 `links:` while leaving the sentence pointing at whatever now occupies the number. `rationale` and
 `verification-justification` explain the tree to someone reading it as a tree, so they may name items
-freely; `check-text-citations.py` fails on `text` only.
+freely; check-reqs's `check_text_citations` stage fails on `text` only.
 
 ### Choosing a verification method
 
@@ -197,7 +197,7 @@ against it goes suspect. Flipping `active` moves nothing: it is not among the va
 
 **Activation is a review act.** Doorstop skips inactive items entirely, so a `reviewed` stamp on a
 pending item carries no authority and edits to a pending item's own text are invisible to the gate.
-One half of that is mechanical: `check-suspect-links.py` fails when a pending item's *parent* moves
+One half of that is mechanical: check-reqs's `check_suspect_links` stage fails when a pending item's *parent* moves
 after the link was reviewed, which is the drift Doorstop cannot see. The rest lands at activation —
 the change that activates an item re-reads it in full and stamps its review (`doorstop review <UID>`)
 then, never before, never scripted.
@@ -205,29 +205,29 @@ then, never before, never scripted.
 ## Running the gate
 
 Requires a local venv — siloed here beside the requirements it serves — with the pinned tool
-([`requirements-dev.txt`](requirements-dev.txt)). Create it from the repo root:
+([`pyproject.toml`](pyproject.toml), wise-ci's `check-reqs` at a pinned commit). Create it from the
+repo root:
 
 ```sh
-python3 -m venv docs/requirements/.venv
-docs/requirements/.venv/bin/pip install -r docs/requirements/requirements-dev.txt
+uv sync --project docs/requirements
 ```
 
 Then:
 
 ```sh
-just check-reqs   # the tree's own checks, in the order the recipe lists them
+just check-reqs   # wise-ci's check-reqs, running its seven stages in their fixed order
 just verify       # runs check-reqs alongside the other repo gates
 ```
 
 `just check-reqs` is the **same** invocation CI makes (job `requirements` in
 [`checks.yml`](../../.github/workflows/checks.yml) runs the recipe itself), so the local run and the
 gate are one spelling — a command added to the recipe is a command CI runs, with no second text to
-fall behind. The `--error-all` flag the recipe passes to Doorstop
-promotes its suspect / unreviewed / orphan / unresolved-reference warnings to errors, so the process
-exits non-zero and the gate actually blocks — plain `doorstop` only warns.
+fall behind. check-reqs's `doorstop` stage runs `doorstop --error-all --no-reformat`, which
+promotes Doorstop's suspect / unreviewed / orphan / unresolved-reference warnings to errors, so the
+process exits non-zero and the gate actually blocks — plain `doorstop` only warns.
 
-**`check-unreviewed.py` runs first because Doorstop writes.** Validating the tree stamps a review
-fingerprint into any item that has none, and into any link carrying no stamp — whether or not a
+**The `check_unreviewed` stage runs first because Doorstop writes.** Validating the tree stamps a
+review fingerprint into any item that has none, and into any link carrying no stamp — whether or not a
 person looked, and `--no-reformat` does not prevent it. An item authored in one commit would
 otherwise be "reviewed" by whoever next ran the gate, which is the one thing the fingerprint exists
 to prove. Failing first stops Doorstop before it can stamp. Clear it with `doorstop review <uid>`,
@@ -250,7 +250,7 @@ Each is a property of the specification, which is why they are stated here rathe
 [`../CI.md`](../CI.md) with the repository's checks — that document says they run and block, this one
 says what they mean.
 
-The recipe's last command is a report rather than a check: `report-proposed.py` prints the
+check-reqs's last stage is a report rather than a check: `report_proposed` prints the
 `proposed` backlog per tier and exits zero whatever it counts. Making the backlog visible on a green
 run is a property of the process rather than of the specification, so what that output asserts is
 stated in [`../CI.md`](../CI.md) § Gate wiring.
@@ -267,7 +267,7 @@ Run all commands with the venv (`docs/requirements/.venv/bin/doorstop …`).
 |---|---|---|
 | Add an item | `doorstop add SRS` | Creates the next `SRS0NN.yml`. Edit its `text` to a single "shall" statement; write a `header` summarising it |
 | Link it up | `doorstop link SRS0NN SYS0MM` (child first, parent second) | Every `SRS` needs a `SYS` parent and every `TST` a `SRS` parent, or the gate flags an orphan. The link is written **unstamped** — see the next row |
-| Stamp a new item | `doorstop review <UID>` **and** `doorstop clear <UID>` | Both, because they write different fields: `review` stamps the item body into `reviewed:`, `clear` writes the parent fingerprint into `links:`. `review` alone leaves the link reading `- SYS0MM: null` and `check-unreviewed.py` fails on that null, so an item added, linked and reviewed but never cleared reds the gate. Their order is immaterial — neither reads what the other writes, and the two sequences produce byte-identical files. The re-blessing row below is not a different order but a different obligation: a human re-reading a child after its parent moved |
+| Stamp a new item | `doorstop review <UID>` **and** `doorstop clear <UID>` | Both, because they write different fields: `review` stamps the item body into `reviewed:`, `clear` writes the parent fingerprint into `links:`. `review` alone leaves the link reading `- SYS0MM: null` and check-reqs's `check_unreviewed` stage fails on that null, so an item added, linked and reviewed but never cleared reds the gate. Their order is immaterial — neither reads what the other writes, and the two sequences produce byte-identical files. The re-blessing row below is not a different order but a different obligation: a human re-reading a child after its parent moved |
 | Point a `TST` at its check | add one `references` entry per verifying site: `{path: <repo-relative-file>, type: file, keyword: <the test's declaration>}`, then `doorstop review <UID>` to stamp the file hash | The path must resolve to a real tracked file and the keyword to the line declaring the test — `func TestXxx`, `test('<title>'` — never the bare name, which also matches the doc comment above it. A whole-file check artifact no runner discovers omits `keyword`, per ADR 0005 rev 4. **Doorstop cannot reference a file under a dot-directory** (e.g. anything in `.github/`) — see ADR 0002 rev 4; cite such wiring in the item's `text` instead |
 | Re-bless a child after editing its parent | `doorstop clear <UID>`, then `doorstop review <UID>` | `clear` updates the stored parent fingerprint in the child's `links:`; `review` alone re-stamps the item but leaves the link suspect. Re-blessing is the human act of re-reading a downstream item after its parent moved — do not script it blindly |
 | Re-bless an item after moving it to a different parent | `doorstop review <UID>` | `clear` is not enough: the item's parent UIDs are inside its own stamp, so the item itself is unreviewed. Read it against the parent it now has. `--error-all` reports it as `unreviewed changes` until you do |
@@ -295,7 +295,7 @@ enough — it cannot see a reflow, and reflow is how an unintended change hides.
   rather than re-stamping it — `_get_parent_uid_and_item` resolves through the active-only lookup and
   yields an unknown item, whose stamp is empty. The loop above reaches the child but not the parent,
   so assign `link.stamp = parent.stamp()` from the item found through `document._iter()` and save.
-  `check-unreviewed.py` catches the null, so this fails loudly rather than silently; retiring a
+  check-reqs's `check_unreviewed` stage catches the null, so this fails loudly rather than silently; retiring a
   parent whose child is pending is when it arises.
 - **A `keyword` that fails to resolve is reported by its `path`.** Doorstop builds
   `external reference not found: <path>` from the entry's path whichever half failed, so a deleted or

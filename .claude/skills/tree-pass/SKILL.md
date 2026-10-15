@@ -33,7 +33,7 @@ for k, v in items.items():
 ```
 
 Run the tool from its own venv — it is siloed with the feature it serves:
-`docs/requirements/.venv/bin/python`, installed from `docs/requirements/requirements-dev.txt`.
+`docs/requirements/.venv/bin/python`, installed by `uv sync --project docs/requirements`.
 
 **`pathlib.Path.glob("*.yml")` matches dotfiles; `glob.glob` does not.** Each silo holds its own
 `.doorstop.yml`, so a script written with `pathlib` parses three config files as items and every

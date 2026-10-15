@@ -1,8 +1,0 @@
-# Dev-only tooling. No application Python ships in WiseKiosk — this pins the
-# requirements-management tool (Doorstop) used by the `check-reqs` gate. The tool
-# is siloed here with the feature it serves (not the repo root); install into a
-# local venv beside it, never globally, run from the repo root:
-#   python3 -m venv docs/requirements/.venv
-#   docs/requirements/.venv/bin/pip install -r docs/requirements/requirements-dev.txt
-# CI installs the same pin (see .github/workflows/checks.yml, job `requirements`).
-doorstop==3.2
