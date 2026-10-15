@@ -26,6 +26,11 @@ check-branch:
     sha=$(grep -oE 'WisewareOrg/wise-ci/check-branch@[0-9a-f]{40}' .github/workflows/process-gates.yml | head -1 | cut -d@ -f2); if [ -z "$sha" ]; then echo "check-branch: no WisewareOrg/wise-ci/check-branch@<sha> pin found in .github/workflows/process-gates.yml" >&2; exit 1; fi; tmp=$(mktemp); curl -fsSL "https://raw.githubusercontent.com/WisewareOrg/wise-ci/$sha/check-branch/check-branch.py" -o "$tmp"; rc=$?; if [ $rc -ne 0 ]; then echo "check-branch: failed to fetch check-branch.py at $sha (curl exit $rc)" >&2; rm -f "$tmp"; exit $rc; fi; HEAD_REF=$(git rev-parse --abbrev-ref HEAD) PR_NUMBER=$(gh pr view --json number -q .number 2>/dev/null) GITHUB_REPOSITORY=WisewareOrg/WiseKiosk GITHUB_TOKEN=$(gh auth token) DEFAULT_BRANCH=main python3 "$tmp"; rc=$?; rm -f "$tmp"; exit $rc
 
 [group('checks')]
+[doc('No file git treats as text has a CRLF line ending, over the whole tracked tree, and no untracked file is left unsearched')]
+check-eol:
+    sha=$(grep -oE 'WisewareOrg/wise-ci/check-eol@[0-9a-f]{40}' .github/workflows/checks.yml | head -1 | cut -d@ -f2); if [ -z "$sha" ]; then echo "check-eol: no WisewareOrg/wise-ci/check-eol@<sha> pin found in .github/workflows/checks.yml" >&2; exit 1; fi; tmp=$(mktemp); curl -fsSL "https://raw.githubusercontent.com/WisewareOrg/wise-ci/$sha/check-eol/check-eol.py" -o "$tmp"; rc=$?; if [ $rc -ne 0 ]; then echo "check-eol: failed to fetch check-eol.py at $sha (curl exit $rc)" >&2; rm -f "$tmp"; exit $rc; fi; python3 "$tmp"; rc=$?; rm -f "$tmp"; exit $rc
+
+[group('checks')]
 [doc('Requirements tree validates: refs resolve, no suspect/unreviewed/orphan items, methods consistent, headers non-empty and prefix-free, no identifier cited in an item statement; the proposed backlog prints on a passing run (reports; not a gate)')]
 check-reqs:
     uv run --locked --project docs/requirements check-reqs --root docs/requirements

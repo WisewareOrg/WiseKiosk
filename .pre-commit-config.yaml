@@ -17,12 +17,6 @@ repos:
         args: [--fix=no]
   - repo: local
     hooks:
-      - id: check-eol
-        name: no CRLF line ending in the tracked tree
-        entry: python3 scripts/check-eol.py
-        language: system
-        always_run: true
-        pass_filenames: false
       - id: rev-reach
         name: ADR citations re-pinned with the sentence untouched (reports)
         entry: python3 scripts/adr-rev-reach.py
