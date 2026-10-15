@@ -7,7 +7,9 @@
 ## Revisions
 
 - **rev 5** — 2026-10-15 — drops `check-branch.py` and `branch-shape.regex`, retired in favor of
-  wise-ci's `check-branch`, and the retired `module` template from a template count; what was
+  wise-ci's `check-branch`, and the retired `module` template from a template count; also drops the
+  unreadable-type-set clause, since wise-ci's `check-branch` reads its type set from a literal
+  tuple in its own source, not a file that could fail to parse; what was
   chosen is unchanged, so the Decided date does not move.
 - **rev 4** — 2026-08-17 — renames `scripts/check-branch.sh` to `scripts/check-branch.py` throughout,
   converted by #109 check-branch conversion; no ground changes (#160 post-adoption-wave sweep).
@@ -46,7 +48,7 @@ dropped.
 
 **Gated: the ticket a branch names carries a milestone and exactly one type label.** The type set
 is `check-branch`'s own, never restated, so adding a branch type cannot leave the
-label rule behind; an unreadable set fails rather than counting zero. A second type label makes the
+label rule behind. A second type label makes the
 branch type ambiguous — the branch type is supposed to name the template the ticket was opened from,
 and two candidates break that correspondence. An unmilestoned ticket is absent from the phase axis
 that carries the definition of done. Both read fields already present in the issue payload

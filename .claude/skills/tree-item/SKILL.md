@@ -4,8 +4,8 @@ description: >-
   Add one item to the WiseKiosk Doorstop tree — SYS, SRS or TST — and leave it stamped, linked and
   gate-clean. Carries the create-attributes-link-stamp sequence, the two stamps a new item needs and
   which command writes each, and the per-item checklist a gate will otherwise fail you on. Invoke
-  whenever writing a new requirement or verification item, or when `check-unreviewed` fails on
-  something just authored. For deciding whether an item earns its place, use tree-pass.
+  whenever writing a new requirement or verification item, or when check-reqs's `check_unreviewed`
+  stage fails on something just authored. For deciding whether an item earns its place, use tree-pass.
 ---
 
 # Add a tree item

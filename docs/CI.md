@@ -918,14 +918,14 @@ changed, which the citation resolver above decides without anyone declaring anyt
   separate obligations, each delegated to `commitlint`
   ([ADR 0016 rev 13](decisions/0016-maintained-tools-for-standard-artifacts.md); the gate itself is
   [ADR 0006 rev 6](decisions/0006-process-gates.md)'s). The local commit message runs through the
-  hook layer's one remaining `repo: local` hook, `commit-msg`, against the base configuration,
+  hook layer's `commitlint` hook, at its `commit-msg` stage, against the base configuration,
   `.commitlintrc.json` — `@commitlint/config-conventional`, plus a `scope-case` rule restoring the
   retired check's lowercase-scope refusal, which the preset does not carry. Its `defaultIgnores`
   pass `fixup!`/`squash!`/merge subjects, whose text the squash discards, recorded in
   [`../scripts/cases/commitlint.md`](../scripts/cases/commitlint.md) beside what the rule lets
   through that the retired regex refused: an empty scope, which no rule can refuse without also
   refusing a scopeless header. Its npm packages are
-  pinned by exact version in the hook's `additional_dependencies`, written once as a YAML anchor;
+  pinned by exact version in the hook's own `additional_dependencies`;
   neither Renovate nor `pre-commit autoupdate` reaches such a pin, so those versions are updated
   by hand, beside the hook-repository revs `autoupdate` does move. The pull-request title runs
   through wise-ci's `pr-title` instead — a `uses:` step in `process-gates.yml`, CI-only with no

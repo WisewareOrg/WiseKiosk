@@ -29,7 +29,7 @@ jobs:
   # Every check with a local form runs as its `just` recipe — the recipe body is the one
   # spelling of what runs here and locally (docs/CI.md § Gate wiring) — and every setup-just
   # step pins `just-version:`, so the executor CI depends on is a decided version, not a float.
-  # check-eol here and check-branch in process-gates.yml are the one exception: each runs through
+  # check-eol here and check-branch in process-gates.yml are the exception: each runs through
   # wise-ci's own `uses:` step, and its local recipe is a convenience outside `verify`, not a
   # second spelling.
   docs-and-hygiene:

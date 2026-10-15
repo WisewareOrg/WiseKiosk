@@ -11,7 +11,9 @@ installed by pre-commit 4.6.2 from the `additional_dependencies` pins in
 [`.pre-commit-config.yaml`](../../.pre-commit-config.yaml), reading
 [`.commitlintrc.json`](../../.commitlintrc.json). A case fails if the hook exits non-zero.
 
-**Run a case** from the repository root, against the same hook definition CI uses:
+**Run a case** from the repository root, against the same hook definition a local commit invokes —
+CI's `check-hooks` step runs only the `pre-commit` stage, never `commit-msg`, so this hook runs
+locally only:
 
 ```sh
 printf '%s\n' "<message>" > "$f"
