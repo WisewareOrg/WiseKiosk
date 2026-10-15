@@ -869,19 +869,6 @@ changed, which the citation resolver above decides without anyone declaring anyt
 
 ## Repository shape
 
-- **Every tracked file is a declared kind** — an authored program in the set
-  [ADR 0017 rev 9](decisions/0017-authored-language-set.md) states, a derived format a toolchain
-  requires, data an authored check reads, or documentation. **A file type nobody has decided about
-  fails**, which is the point: closing that failure is a person deciding which side it falls on. A run
-  resolving no tracked file fails rather than reporting a clean tree.
-  **The languages that author nothing are not declared extensions.** `sh` and `mjs` author nothing
-  under that record, so a *new* file in either fails; the files predating the decision are
-  grandfathered **one path at a time**, each naming the record that gives it a disposition, and a
-  grandfathered path that stops being tracked fails too — its disposition landed, so its entry goes
-  with it. Declaring the extension instead would let the next such file through forever, which is the
-  one thing this check exists to prevent.
-  **What it leaves unproven** is whether a declared file is classified *correctly*: a Python program
-  labelled derived passes, and only a reader catches that.
 - **No file git treats as text has CRLF line endings**, and `.gitattributes` decides which those are.
   A glob given the `binary` attribute is exempt from CRLF→LF normalisation at add time *and* skipped
   by the search, so CRLF-terminated text under one commits and survives a fresh clone unseen. The

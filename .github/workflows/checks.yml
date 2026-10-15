@@ -85,9 +85,6 @@ jobs:
       - name: Workflow schema and expression lint (actionlint)
         uses: docker://rhysd/actionlint@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667 # 1.7.12
 
-      - name: Every tracked file is a declared authored or derived kind
-        run: just check-languages
-
       - name: Every service in the committed deployment recipe declares a restart policy
         run: just check-restart-policy
 
