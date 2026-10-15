@@ -3,7 +3,7 @@
 **Status:** accepted
 **Decided:** 2026-08-16 (CSS's product-stylesheet disposition added; the audience rule itself taken
 2026-08-04 in #60 authored-language set, taken after
-[ADR 0016 rev 12](0016-maintained-tools-for-standard-artifacts.md) settled which authored checks survive at all)
+[ADR 0016 rev 13](0016-maintained-tools-for-standard-artifacts.md) settled which authored checks survive at all)
 **Rev:** 10
 
 ## Revisions
@@ -126,7 +126,7 @@ sits in. It is the one place where the argument that a new language arrives as a
 the loudest thing in a diff, does not hold at all.
 
 Nothing above needs revising when a tool arrives with a format not yet seen here — which is the
-point, since [ADR 0016 rev 12](0016-maintained-tools-for-standard-artifacts.md) adopts four such tools.
+point, since [ADR 0016 rev 13](0016-maintained-tools-for-standard-artifacts.md) adopts four such tools.
 
 **Documentation, and the assets a build serves, are not authored programs and this decision does not
 reach them.** Which build is not the distinguishing fact — a rendered figure the docs site serves and
@@ -140,7 +140,7 @@ provisions for itself. The distinction is who wrote the code being run.
 
 **POSIX sh authors nothing.** The rule that admitted it — sh only where no interpreter can be
 assumed — had `.githooks/` as its entire population, and
-[ADR 0016 rev 12](0016-maintained-tools-for-standard-artifacts.md) retires those for `pre-commit`, which is
+[ADR 0016 rev 13](0016-maintained-tools-for-standard-artifacts.md) retires those for `pre-commit`, which is
 itself Python. A rule with no subject is not kept for the one file that predates it.
 
 **TypeScript is product-only.** Extending it to repository tooling would leave the runtime, the
@@ -190,7 +190,7 @@ tree decided rather than on anyone's intention.
   language.
 - **Enumerate every permitted format instead of deriving them.** Rejected: an enumeration would need
   revising the first time an adopted tool brings a configuration format, and
-  [ADR 0016 rev 12](0016-maintained-tools-for-standard-artifacts.md) adopts four tools that bring TOML and a
+  [ADR 0016 rev 13](0016-maintained-tools-for-standard-artifacts.md) adopts four tools that bring TOML and a
   JavaScript-or-JSON-or-YAML configuration between them. An ADR revved one ticket after it is written
   was written too early.
 - **Keep every product style rule inside a `.svelte` `<style>` block, authoring no standalone
@@ -209,7 +209,7 @@ tree decided rather than on anyone's intention.
   with a clean-looking diff.
 - **`check-branch` loses `curl` and `jq` for `urllib` and `json`.** [ADR 0006 rev 6](0006-process-gates.md)'s
   *plain sh + curl + jq — no toolchain* property, already corrected by
-  [ADR 0016 rev 12](0016-maintained-tools-for-standard-artifacts.md) when `commitlint` and `pre-commit` were
+  [ADR 0016 rev 13](0016-maintained-tools-for-standard-artifacts.md) when `commitlint` and `pre-commit` were
   adopted, ends completely. What replaces it is a weaker but real property: the interpreter the gates
   need is one this repository already owes for its requirements tree and its documentation site.
 - **A check that wants logic already written in TypeScript must reimplement it in Python or shell out
@@ -227,7 +227,7 @@ tree decided rather than on anyone's intention.
   placed beside the dependency question it most resembles. Inserting it there would have renumbered
   the questions below it, against [ADR 0002 rev 4](0002-requirements-management-doorstop.md),
   [ADR 0003 rev 4](0003-architecture-as-code-likec4.md) and
-  [ADR 0016 rev 12](0016-maintained-tools-for-standard-artifacts.md), which cite one by number with
+  [ADR 0016 rev 13](0016-maintained-tools-for-standard-artifacts.md), which cite one by number with
   nothing gating the citation. That constraint does not bind a later change:
   [`../../CONTRIBUTING.md`](../../CONTRIBUTING.md) requires a citation to carry the question's name
   beside its number, so a renumbered citation still names what it meant.

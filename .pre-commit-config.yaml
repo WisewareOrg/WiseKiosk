@@ -1,4 +1,4 @@
-# The local hook layer (ADR 0016 rev 12). `pre-commit install` wires the stages listed in
+# The local hook layer (ADR 0016 rev 13). `pre-commit install` wires the stages listed in
 # default_install_hook_types; CI runs the pre-commit stage over every tracked file via
 # `just check-hooks`. pre-commit skips a hook whose file set is empty and reports success; the
 # `local` hooks below carry `always_run`, and none reads the staged-file set — the commitlint
@@ -25,7 +25,7 @@ repos:
         pass_filenames: false
         stages: [pre-push]
         verbose: true
-      # The Conventional-Commit gate at its one stage (ADR 0016 rev 12): .commitlintrc.json,
+      # The Conventional-Commit gate at its one stage (ADR 0016 rev 13): .commitlintrc.json,
       # whose `defaultIgnores` pass fixup!/squash!/merge subjects, discarded by the squash anyway.
       # The npm pin is written once in additional_dependencies; neither Dependabot nor
       # `pre-commit autoupdate` reaches it, so the version is updated by hand.

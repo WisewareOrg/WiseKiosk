@@ -1,7 +1,7 @@
 # 0005 — Trace all work to the requirements tree with in-repo gates
 
-**Status:** accepted; stored-attribute set superseded by
-[ADR 0009 rev 2](0009-verification-justification-attribute.md); traceability scope narrowed and gate 4 retired
+**Status:** deprecated; stored-attribute set superseded by
+[ADR 0009 rev 3](0009-verification-justification-attribute.md); traceability scope narrowed and gate 4 retired
 by [ADR 0011 rev 2](0011-requirement-or-convention.md)
 **Decided:** 2026-09-07 (rev 3's coverage-bar reframe, in the #190 coverage closure gate planning
 session; rev 2's evidence-channel pivot taken 2026-08-23 in the #25 traceability gates planning
@@ -238,7 +238,7 @@ The four stored attributes — `verification-method`, `status`, `verification-ju
   Doorstop documents, not a sibling script, so gate 1 stays configured rather than authored. Gate 3's
   backend half is `go-test-coverage`, likewise configured; its frontend half is
   `scripts/merge-coverage.ts` — the per-file four-metric union and the completeness guard below are
-  this repository's own rule, so [ADR 0016 rev 12](0016-maintained-tools-for-standard-artifacts.md)'s
+  this repository's own rule, so [ADR 0016 rev 13](0016-maintained-tools-for-standard-artifacts.md)'s
   authored/configured line runs through gate 3 rather than around it. Vitest itself carries no
   coverage thresholds (`vitest.config.ts` states none); the one number gate 3 enforces is
   externalised to `frontend/coverage-thresholds.json`, a config an authored script reads, not a

@@ -2,7 +2,7 @@
 
 The inputs the adopted gate has been run against, in both directions. The gate replaces
 `check-commit-msg.sh` and `conventional-commit.regex`
-(ADR 0016 rev 12; #107 adopt commitlint), and the rows below are that check's recorded cases re-run
+(ADR 0016 rev 13; #107 adopt commitlint), and the rows below are that check's recorded cases re-run
 against the adopted tool — including the must-pass rows, since an adopted tool may reject legal
 input the authored check accepted.
 
@@ -46,5 +46,5 @@ Three notes the rows cannot carry alone:
   measured). The gap stays recorded here, deferred to the owner.
 - **Legal input the adopted tool rejects**, each measured: `fix: Sentence case subject` fails
   `subject-case`, `fix: a thing.` fails `subject-full-stop`, and a 105-character header fails
-  `header-max-length` (100) — the tightening ADR 0016 rev 12 accepts, titles adapting rather than
+  `header-max-length` (100) — the tightening ADR 0016 rev 13 accepts, titles adapting rather than
   the tool being configured around them.

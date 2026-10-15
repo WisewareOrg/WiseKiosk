@@ -55,7 +55,7 @@ jobs:
         run: just check-untracked
 
       # lychee runs offline from the digest-pinned official image over the tracked Markdown set
-      # (ADR 0016 rev 12); docker is not assumed on a contributor machine, so the step is a named
+      # (ADR 0016 rev 13); docker is not assumed on a contributor machine, so the step is a named
       # CI-only exception (docs/CI.md § Gate wiring) rather than a `just verify` check.
       # The file list is materialised and tested non-empty before lychee runs: a failed or empty
       # listing has judged nothing and must not read as a clean scan.

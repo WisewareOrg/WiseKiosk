@@ -66,7 +66,7 @@ a deliberate stub, which stays `proposed` — see [pending-stub](../pending-stub
   no command in the sequence changes it, so this is the one field an author has to remember; a
   `proposed` item cannot be tagged in the model and reds `check-arch-trace`.
 - **`verification-justification` on every item.** Required with no exception
-  ([ADR 0009 rev 2](../../../docs/decisions/0009-verification-justification-attribute.md)); at `test`
+  ([ADR 0009 rev 3](../../../docs/decisions/0009-verification-justification-attribute.md)); at `test`
   it says what the check leaves unproven, below `test` what blocks a mechanical check. The single most
   commonly missed attribute, because it is the one an item copied from older content will not have.
 - **`rationale` is required at the `SYS` tier**, optional below.

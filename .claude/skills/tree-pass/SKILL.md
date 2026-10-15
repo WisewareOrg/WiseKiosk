@@ -156,7 +156,7 @@ routing. Two traps in applying it:
   exactly this ground; an authoring rule parked where nobody walks it fails the same test.
 
 Every item must carry a `verification-justification` — below `test`, what blocks a mechanical check;
-at `test`, what the check leaves unproven ([ADR 0009 rev 2](../../../docs/decisions/0009-verification-justification-attribute.md)).
+at `test`, what the check leaves unproven ([ADR 0009 rev 3](../../../docs/decisions/0009-verification-justification-attribute.md)).
 
 ## Recording — in the repository, never in a ticket
 

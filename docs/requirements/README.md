@@ -33,7 +33,7 @@ references to it stay valid.
 
 Beyond Doorstop's native fields, every item carries four stored attributes
 ([ADR 0005 rev 4](../decisions/0005-traceability-gating.md),
-[ADR 0009 rev 2](../decisions/0009-verification-justification-attribute.md)):
+[ADR 0009 rev 3](../decisions/0009-verification-justification-attribute.md)):
 
 | Attribute | Values | Meaning |
 |---|---|---|

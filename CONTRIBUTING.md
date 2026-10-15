@@ -63,7 +63,7 @@ design_119-c4_model_completion
 `main` and Renovate branches (`renovate/*`) are exempt. Every other branch must also satisfy all of:
 
 - the issue is **open**, **milestoned**, and carries **exactly one** type label — a second one makes
-  the branch type ambiguous ([ADR 0013 rev 4](docs/decisions/0013-work-tracking-invariants.md));
+  the branch type ambiguous ([ADR 0013 rev 5](docs/decisions/0013-work-tracking-invariants.md));
 - its **parent matches the PR base** — a sub-issue's PR targets its integration branch, a top-level
   issue's targets `main`, and the gate asserts that in both directions;
 - the PR's **Development field links the ticket**: `Closes #N` in the body writes that record on a

@@ -3,10 +3,15 @@
 **Status:** accepted
 **Decided:** 2026-08-03 (#103 authored-vs-adopted check trade, measured against the cases recorded in
 [`../../scripts/README.md`](../../scripts/README.md))
-**Rev:** 12
+**Rev:** 13
 
 ## Revisions
 
+- **rev 13** — 2026-10-15 — `check-branch` and five of `check-reqs`'s six commands move from
+  authored to wise-ci's maintained actions (#400 switch to wise-ci's actions); the worked example
+  and the obligation census that named them are updated to match, and the now-stale "five of its
+  six commands" and "all three" counts in the recipe-vs-obligation paragraph drop with them; what
+  was chosen is unchanged, so the Decided date does not move.
 - **rev 12** — 2026-10-04 — the `golangci-lint` adoption row gains `depguard`, confining non-test
   backend code, generated code included, to the standard library and this module's own packages —
   [ADR 0008 rev 6](0008-boundary-contract-openapi-codegen.md)'s zero-runtime-dependency constraint's
@@ -134,25 +139,26 @@ beside it. **The gap is demonstrated, not asserted:** the tool is run against th
 uncovered, and the result recorded, because *"it only covers part of it"* is otherwise available to
 anyone who would rather keep their own script.
 
-`scripts/check-suspect-links.py` is the worked example, and it meets that standard: suspect links are
-Doorstop's concept, `doorstop --error-all` decides them for every *active* item, and the authored script
-covers inactive items only. The gap is **structural** — Doorstop cannot see an inactive item at all — so
-the uncovered part has a boundary a scope can be written against. That is what separates this from the
+The inactive-item suspect-link check was the worked example proving that standard: suspect links are
+Doorstop's concept, `doorstop --error-all` decides them for every *active* item, and an authored
+remainder covered inactive items only, until that remainder itself moved into wise-ci's maintained
+`check-reqs` (#400 switch to wise-ci's actions). The gap is **structural** — Doorstop cannot see an
+inactive item at all — so the uncovered part has a boundary a scope can be written against, whichever
+side of the authored/maintained line currently closes it. That is what separates this from the
 residue rejected below: a residue check is a second gate kept beside a tool that already reaches the
 case, whereas this is the only thing reaching it.
 
 **The unit this rule sorts is an obligation, not a `just` recipe.** A recipe may run several commands
-asserting different things, and three of them carry more than one kind: `check-reqs` delegates tree
-integrity to Doorstop while five of its six commands assert rules of this repository's own; `check-arch`
-delegates model validation to `likec4` while `splice-arch-diagrams.mjs` asserts this repository's
+asserting different things, and some carry more than one kind: `check-arch` delegates model
+validation to `likec4` while `splice-arch-diagrams.mjs` asserts this repository's
 `arch-export` marker format and a following `git diff --exit-code` asserts that the generated artifacts
 are byte-identical to a regeneration; and `check-links` is split by this very decision — its link
-resolution delegated, its two other obligations retired. Sorting by recipe would misfile all three, and
+resolution delegated, its two other obligations retired. Sorting by recipe would misfile both, and
 a census taken that way was wrong three times in the drafting of this record.
 
-The obligations that stay authored are everything in `check-branch`, `check-citations`,
-`check-adr-index`, `check-docs-index`, `check-repo-silo` and `check-verify-ci-parity`; the five
-repository-specific commands in `check-reqs`; and, in `check-arch`, both the marker checking in
+The obligations that stay authored are everything in `check-citations`, `check-adr-index`,
+`check-docs-index`, `check-repo-silo` and `check-verify-ci-parity`; and, in
+`check-arch`, both the marker checking in
 `splice-arch-diagrams.mjs` and the generated-artifact staleness comparison. `git` and `doorstop` are the
 mechanisms those last two use; neither owns the obligation, exactly as `git ls-files` does not own the
 documentation-index claim.

@@ -2,10 +2,13 @@
 
 **Status:** accepted
 **Decided:** 2026-07-24 (closing review pass of the requirements rewrite #18)
-**Rev:** 2
+**Rev:** 3
 
 ## Revisions
 
+- **rev 3** — 2026-10-15 — drops the `scripts/check-method-consistency.py` path, retired with the
+  other six requirements-tree scripts in favor of wise-ci's `check-reqs`; what was chosen is
+  unchanged, so the Decided date does not move.
 - **rev 2** — 2026-08-06 — the Context argues the ground the decision is held to — that the attribute
   records the limit of a check as well as the blocker below one — with the audit evidencing it, and
   states each count as a measurement of its moment rather than of the tree (#126 absorb amendment
@@ -77,8 +80,8 @@ Two distinctions the attribute depends on:
   referenced artifact; that reference is the *evidence the weaker method produced*. The justification
   is why that channel is in use at all. An item at `inspection` owes both.
 
-The gate asserting that every item carries a non-empty justification is
-`scripts/check-method-consistency.py`. Of the gates it was to be built alongside,
+The gate asserting that every item carries a non-empty justification is check-reqs's
+`check_method_consistency` stage. Of the gates it was to be built alongside,
 [ADR 0005 rev 4](0005-traceability-gating.md) drops the reverse-direction one, and gate 3 is a
 tree-blind coverage bar (#190 coverage closure gate), folded into `just verify` like every other
 gate here.
