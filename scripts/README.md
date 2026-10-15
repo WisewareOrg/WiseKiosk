@@ -58,8 +58,7 @@ when a link breaks. Nothing enforces this — a wrong success line fails no buil
 | `check-publish-permissions` (`publish/verify_permissions.py`) | [cases](cases/check-publish-permissions.md) |
 | `check-restart-policy.py` | [cases](cases/check-restart-policy-py.md) |
 | `check-site` | [cases](cases/check-site.md) |
-| `the seven requirements-tree checks` | [cases](cases/the-requirements-tree-checks.md) |
-| `report-proposed.py` | [cases](cases/report-proposed-py.md) |
+| `check-citations.py` | [cases](cases/check-citations-py.md) |
 | the Conventional-Commit gate (`commitlint`, both stages) | [cases](cases/commitlint.md) |
 | `adr-rev-reach.py` | [cases](cases/adr-rev-reach-py.md) |
 | CodeQL (first-party source scanning) | [cases](cases/codeql.md) |
