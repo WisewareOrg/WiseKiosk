@@ -7,12 +7,13 @@
 
 ## Revisions
 
-- **rev 13** — 2026-10-15 — `check-branch` and the worked example's suspect-link check move into
-  wise-ci's shared `check-reqs`, authored there instead of duplicated here (#400 switch to
-  wise-ci's actions); the obligation census is reworded to say so, naming the organization rather
-  than this repository as the authoring home — neither becomes a maintained third-party tool, and
-  neither count in the recipe-vs-obligation paragraph changes; what was chosen is unchanged, so the
-  Decided date does not move.
+- **rev 13** — 2026-10-15 — `check-branch`, and the worked example's suspect-link check, move
+  into wise-ci (its `check-branch` and `check-reqs` respectively), authored there instead of
+  duplicated here (#400 switch to wise-ci's actions); the obligation census is reworded to say
+  so, naming the organization rather than this repository as the authoring home — neither
+  becomes a maintained third-party tool. `check-reqs`'s "commands" become "stages", since the
+  recipe runs the one wise-ci command rather than six of its own; what was chosen is
+  unchanged, so the Decided date does not move.
 - **rev 12** — 2026-10-04 — the `golangci-lint` adoption row gains `depguard`, confining non-test
   backend code, generated code included, to the standard library and this module's own packages —
   [ADR 0008 rev 6](0008-boundary-contract-openapi-codegen.md)'s zero-runtime-dependency constraint's
@@ -152,7 +153,7 @@ case, whereas this is the only thing reaching it.
 
 **The unit this rule sorts is an obligation, not a `just` recipe.** A recipe may run several commands
 asserting different things, and three of them carry more than one kind: `check-reqs` delegates tree
-integrity to Doorstop while five of its six commands assert rules of this organization's own,
+integrity to Doorstop while five of its stages assert rules of this organization's own,
 authored in wise-ci rather than here; `check-arch` delegates model
 validation to `likec4` while `splice-arch-diagrams.mjs` asserts this repository's
 `arch-export` marker format and a following `git diff --exit-code` asserts that the generated artifacts
@@ -162,7 +163,7 @@ a census taken that way was wrong three times in the drafting of this record.
 
 The obligations that stay authored are everything in `check-citations`, `check-adr-index`,
 `check-docs-index`, `check-repo-silo` and `check-verify-ci-parity`; `check-branch` and the five
-shared commands in `check-reqs`, both authored in wise-ci rather than here; and, in
+shared stages in `check-reqs`, both authored in wise-ci rather than here; and, in
 `check-arch`, both the marker checking in
 `splice-arch-diagrams.mjs` and the generated-artifact staleness comparison. `git` and `doorstop` are the
 mechanisms those last two use; neither owns the obligation, exactly as `git ls-files` does not own the
