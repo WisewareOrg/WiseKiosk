@@ -57,7 +57,7 @@ design_119-c4_model_completion
 └──┬──┘ └┬┘ └────────┬────────┘
    │     │           └─ lowercase snake_case
    │     └─ the issue's own number
-   └─ task | bug | design | module — the issue's template, and its label
+   └─ task | bug | design — the issue's template, and its label
 ```
 
 `main` and Renovate branches (`renovate/*`) are exempt. Every other branch must also satisfy all of:
