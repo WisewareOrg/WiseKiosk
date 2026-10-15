@@ -39,7 +39,7 @@ served as files by the Go backend. **No server-side rendering, no router, no met
 what it asserts against.
 
 Components are authored in the Svelte component format and everything around them in TypeScript,
-which is what [ADR 0017 rev 9](0017-authored-language-set.md) admits for what ships: the
+which is what [ADR 0017 rev 10](0017-authored-language-set.md) admits for what ships: the
 configuration-validation engine of [ADR 0007 rev 2](0007-config-validation-allocation.md) and the generated
 boundary types of [ADR 0008 rev 6](0008-boundary-contract-openapi-codegen.md) both live here. Vite is an
 invoked toolchain under that decision, not an authoring language.

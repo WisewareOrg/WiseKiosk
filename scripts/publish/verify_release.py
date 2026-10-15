@@ -15,7 +15,7 @@ command whose failure text comes from here and stays unique to its cause
               notes
 
 This is authored Python rather than `run:` blocks with loops and multi-field jq assertions, per
-ADR 0017 rev 9: a workflow `run:` block carrying control flow is authored sh, and sh authors
+ADR 0017 rev 10: a workflow `run:` block carrying control flow is authored sh, and sh authors
 nothing here. Each per-child loop and every content assertion below is a plain Python `for`/`if`,
 not shell.
 

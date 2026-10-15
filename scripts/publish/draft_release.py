@@ -22,7 +22,7 @@ values into an invoked script):
 checked-out git remote; no `GH_REPO` is set. Any `gh` failure is surfaced as `gh`'s own error text,
 unaltered — no text of this script's own authorship stands in for it.
 
-This is authored Python rather than a `run:` block with branching, per ADR 0017 rev 9: a workflow
+This is authored Python rather than a `run:` block with branching, per ADR 0017 rev 10: a workflow
 `run:` block carrying control flow is authored sh, and sh authors nothing here.
 
 What this has been run against, in both directions: cases/publish-draft.md

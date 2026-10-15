@@ -30,7 +30,7 @@ every build). **Swagger UI's source is never committed** — no `.js`/`.css`/`.m
 the built site's `_static/swagger-ui/` and `_static/openapi.yaml` are pure build output, the same way
 `docs/site/generated/` (the sphinx-needs pages) already is.
 
-This needs no new rev of [ADR 0017 rev 9](0017-authored-language-set.md): it already carves out
+This needs no new rev of [ADR 0017 rev 10](0017-authored-language-set.md): it already carves out
 "documentation, and the assets a build serves" from the authored-language-set decision entirely — a
 build-fetched, build-copied bundle a docs build serves is exactly that carve-out, not a new authored
 JS/CSS surface.

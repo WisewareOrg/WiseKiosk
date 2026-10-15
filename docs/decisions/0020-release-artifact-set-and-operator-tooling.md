@@ -101,7 +101,7 @@ signed too, so an operator who pins a child digest can verify it on its own.
 `scripts/publish/sbom_attest.py`, `scripts/publish/verify_metadata.py` and
 `scripts/publish/verify_release.py` iterate the platform children and assert their content; a
 workflow `run:` block carrying that same loop would be authored sh, which nothing here authors
-([ADR 0017 rev 9](0017-authored-language-set.md)).
+([ADR 0017 rev 10](0017-authored-language-set.md)).
 
 **Bring-up and the image swap run once verification passes.** Both depend on `draft` and `verify`, so
 a release whose signature, attestation or attached set fails to verify never reaches either exercise.
@@ -202,7 +202,7 @@ out of scope, the display host is out of reach, and the remainder is a compose f
 one compose file and one example configuration is those two files with an archive around them.
 
 **A compiled binary attached to the release tag.** It fits the language rule for what an operator runs
-([ADR 0017 rev 9](0017-authored-language-set.md)) as written and needs no runtime on the host, so it was
+([ADR 0017 rev 10](0017-authored-language-set.md)) as written and needs no runtime on the host, so it was
 the strongest form of a shipped helper. Rejected with the helper itself, and independently by the
 single-enforcer rule above: the only thing it could usefully do is emit a configuration, and it cannot
 check what it emits.
