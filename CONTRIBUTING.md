@@ -25,7 +25,9 @@ where deployed.
 
 ```sh
 just                # the gate roster: every check, beside what it asserts
-just verify         # every check the PR gate runs that has a local form
+just verify         # every check the PR gate runs that has a local form — check-branch and
+                    # check-eol are excluded, and pr-title and repo-floor have no local form at
+                    # all (docs/CI.md § Gate wiring)
 just hooks-install  # once per clone: the pinned pre-commit toolchain, into scripts/.venv
 scripts/.venv/bin/pre-commit install  # once per clone: advisory hooks at commit, commit message and push
 ```
@@ -42,11 +44,12 @@ configured, this repo's hook layer on demand via `just check-hooks`, and the bin
 
 ## Tickets, branches, and titles
 
-Open an issue from a template first: the branch name is derived from it. Enforced by the `process` CI
-check ([ADR 0006 rev 6](docs/decisions/0006-process-gates.md)). The `branch-shape` pre-push hook
-from `pre-commit install` checks the shape only — not the issue conditions below — and only at push, when
-the branch and its commits already exist. **Nothing checks the name at `git switch -c`**, which is
-where it is chosen and where it goes wrong, so this section is in the file
+Open an issue from a template first: the branch name is derived from it. Enforced by
+`process-gates.yml`'s `check-branch` job ([ADR 0006 rev 6](docs/decisions/0006-process-gates.md)),
+wise-ci's action at a pinned commit, with `just check-branch` the same script run locally once a
+PR exists. Nothing checks branch shape before that: there is no local pre-push mirror. **Nothing
+checks the name at `git switch -c`**, which is where it is chosen and where it goes wrong, and the
+first check of it is on the PR, so this section is in the file
 [`.claude/settings.json`](.claude/settings.json) injects at session start.
 
 ```

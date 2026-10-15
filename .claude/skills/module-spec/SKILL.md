@@ -176,15 +176,13 @@ nobody made at worst — and it ships looking exactly like a decision somebody d
 what this work can fail, and all four run from `docs/requirements/.venv` and
 `docs/architecture/node_modules`, which the module-spec path already needs.
 
-Then `just verify` — with two caveats, because **it halts at the first failing recipe**, so a stop
+Then `just verify` — with one caveat, because **it halts at the first failing recipe**, so a stop
 early in the list means every gate after it did not run and the change was not measured:
 
-- **`check-branch` needs the GitHub API.** It resolves the branch's issue over HTTPS; a sandbox
-  without a usable trust store, or no network, fails it on the environment rather than on the branch.
 - **`check-site` needs `docs/site/.venv`**, which nothing on this path installs. Create it with
   `just site-install` once, or expect the stop.
 
-Neither failure says anything about the module spec. When `verify` stops on one, run the rest by
+This failure says nothing about the module spec. When `verify` stops on it, run the rest by
 name rather than reading the stop as a verdict — the recipe list is in the `verify` line of the
 [justfile](../../../justfile). **CI is the source of truth either way**, and it has both.
 

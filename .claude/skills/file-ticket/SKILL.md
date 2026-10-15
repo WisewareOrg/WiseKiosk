@@ -17,8 +17,9 @@ ten of sixteen open tickets were unbranchable on 2026-07-24, and the identical d
 days later.
 
 **This skill is advisory.** Nothing forces its use, and a session that does not invoke it is not
-stopped by it. The half with teeth is `scripts/check-branch.py`, which refuses the merge later —
-so a ticket filed wrong is not lost, only expensive. What follows is how to not pay that.
+stopped by it. The half with teeth is `process-gates.yml`'s `check-branch` job, which refuses the
+merge later — so a ticket filed wrong is not lost, only expensive. What follows is how to not pay
+that.
 
 ## What the gate will demand
 

@@ -18,14 +18,16 @@ those are), so on every such PR the keyword writes nothing while the body still 
 did.
 
 That is what makes the failure expensive rather than obvious: the body looks right, and
-[`scripts/check-branch.py`](../../../scripts/check-branch.py) fails anyway with
-`link it there manually — body keywords record nothing against base '<the base>'`. **The gate reads
+`process-gates.yml`'s `check-branch` job (wise-ci's check-branch) fails anyway with
+`PR #<n>'s Development field does not link issue #<m> in <repo> — link it there (a 'Closes #<m>'
+body keyword writes the same record against the default branch; other bases need the manual
+link)`. **The gate reads
 GitHub's recorded state**, so no wording in the body will satisfy it. Requirement and rationale are
 [`CONTRIBUTING.md`](../../../CONTRIBUTING.md)'s and
 [ADR 0006 rev 6](../../../docs/decisions/0006-process-gates.md)'s; this skill is the mechanism.
 
-**This skill is advisory.** Nothing forces its use. The half with teeth is the `process` job, which
-refuses the merge later — so an unlinked PR is not lost, only expensive.
+**This skill is advisory.** Nothing forces its use. The half with teeth is `process-gates.yml`'s
+`check-branch` job, which refuses the merge later — so an unlinked PR is not lost, only expensive.
 
 ## Writing the record
 

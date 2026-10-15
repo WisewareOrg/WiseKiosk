@@ -26,9 +26,9 @@ Not everything CI does is a gate. These produce material a person acts on.
   conflicts with `main`, since the queue tests each pull request against the current `main` itself;
   major updates open a pull request and wait. A release sits for three days before its update opens a
   branch. Renovate's default title convention, `chore(deps): …`, is already a Conventional Commit, so
-  `checks.yml`'s process job runs its pre-commit install and title-lint steps unconditionally for
-  every pull request — the exemption Dependabot's capitalised `build(deps): Bump …` default needed
-  has no counterpart to carry. Renovate also keeps one open Dependency Dashboard issue, carrying no
+  `process-gates.yml`'s `pr-title` job runs unconditionally for every pull request — the exemption
+  Dependabot's capitalised `build(deps): Bump …` default needed has no counterpart to carry. Renovate
+  also keeps one open Dependency Dashboard issue, carrying no
   milestone or type label; the ticket gates ([ADR 0013 rev 4](decisions/0013-work-tracking-invariants.md))
   read only the issue a branch names, so the dashboard issue is exempt by construction and no branch
   may be cut from it. That the root `renovate.json` resolves the pinned preset is § *Repository
@@ -1126,13 +1126,16 @@ already decided, which is what makes it a check and not a want.
   that defect class). What enforces the wiring is execution itself: a step invoking a recipe the
   justfile does not define fails its job loudly, and a recipe edit is an edit to what CI runs.
   **The CI steps below are exceptions with no local form**, named here and machine-checked nowhere:
-  secret scanning (gitleaks — walks history a checkout's tree does not carry), the PR-title
-  commitlint run (no PR title exists locally), the lychee link check, the zizmor and actionlint
+  secret scanning (gitleaks — walks history a checkout's tree does not carry), `pr-title` and
+  `repo-floor` (wise-ci actions with no local form at all — no PR title or repository ruleset
+  exists locally), the lychee link check, the zizmor and actionlint
   workflow audits (each run from a digest-pinned image; docker is not assumed on a contributor
   machine, and no local install channel is decided), CodeQL (§ *First-party source scanning*
   — the action provisions its own CodeQL CLI bundle, and no local invocation is decided), and the
   image vulnerability scan (`check_vulns.py --scope image` — needs the daemon-built image and the
   network, so it carries no `just` recipe of its own, unlike its sibling scopes below).
+  A shared wise-ci check that does have a local form — `check-branch`, `check-eol` — runs in CI
+  through its `uses:` step, and the recipe is a convenience outside `verify`, not a second spelling.
   **A different shape holds `check-vulns-go`, `check-vulns-npm`, `check-image` and `smoke-native`:**
   each has an ordinary `just` recipe, so this bullet's own claim still holds for them, but none is a
   `just verify` dependency. The vulnerability pair needs the network on every run and `verify` stays
@@ -1173,8 +1176,12 @@ already decided, which is what makes it a check and not a want.
   [`../scripts/cases/check-dead-test-py.md`](../scripts/cases/check-dead-test-py.md).
   **What it leaves unproven** is that a reached test asserts anything: discovery decides that a
   runner would execute the file, and what the tiers must guarantee is [`TESTING.md`](TESTING.md)'s.
-- The default branch's required status checks equal the gate jobs the workflow defines — a gate job
-  absent from the required set fails, and so does a required entry naming no defined job. **`main`
+- The default branch's required status checks, summed across its two rulesets, equal the gate jobs
+  the two workflows define: `process-gates`'s required checks equal `checks.yml`'s gate jobs plus
+  `process-gates.yml`'s three (`check-branch`, `pr-title`, `repo-floor`); `pull-request`'s required
+  rules are its own (pull request required, no deletion, no force-push), naming no status check at
+  all. A gate job absent from the required set fails, and so does a required entry naming no defined
+  job. **`main`
   merges through a merge queue, and administrators are bound by it**: the queue builds and merges
   one pull request at a time, re-running the required checks on that pull request applied to the
   current `main`, so nothing merges on a stale green and no pull request's green depends on another
