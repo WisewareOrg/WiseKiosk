@@ -7,7 +7,7 @@
 ## Revisions
 
 - **rev 5** — 2026-10-15 — drops `check-branch.py` and `branch-shape.regex`, retired in favor of
-  wise-ci's `check-branch`, and the now-retired `module` template from a template count; what was
+  wise-ci's `check-branch`, and the retired `module` template from a template count; what was
   chosen is unchanged, so the Decided date does not move.
 - **rev 4** — 2026-08-17 — renames `scripts/check-branch.sh` to `scripts/check-branch.py` throughout,
   converted by #109 check-branch conversion; no ground changes (#160 post-adoption-wave sweep).

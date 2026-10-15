@@ -205,7 +205,8 @@ then, never before, never scripted.
 ## Running the gate
 
 Requires a local venv — siloed here beside the requirements it serves — with the pinned tool
-([`pyproject.toml`](pyproject.toml), wise-ci's `check-reqs` at a pinned commit). Create it from the
+([`pyproject.toml`](pyproject.toml), [`WisewareOrg/wise-ci`](https://github.com/WisewareOrg/wise-ci)'s
+`check-reqs` at a pinned commit). Create it from the
 repo root:
 
 ```sh

@@ -9,7 +9,7 @@
 
 - **rev 13** — 2026-10-15 — `check-branch` and five of `check-reqs`'s six commands move from
   authored to wise-ci's maintained actions (#400 switch to wise-ci's actions); the worked example
-  and the obligation census that named them are updated to match, and the now-stale "five of its
+  and the obligation census that named them are updated to match, and the stale "five of its
   six commands" and "all three" counts in the recipe-vs-obligation paragraph drop with them; what
   was chosen is unchanged, so the Decided date does not move.
 - **rev 12** — 2026-10-04 — the `golangci-lint` adoption row gains `depguard`, confining non-test
@@ -144,7 +144,7 @@ Doorstop's concept, `doorstop --error-all` decides them for every *active* item,
 remainder covered inactive items only, until that remainder itself moved into wise-ci's maintained
 `check-reqs` (#400 switch to wise-ci's actions). The gap is **structural** — Doorstop cannot see an
 inactive item at all — so the uncovered part has a boundary a scope can be written against, whichever
-side of the authored/maintained line currently closes it. That is what separates this from the
+side of the authored/maintained line closes it. That is what separates this from the
 residue rejected below: a residue check is a second gate kept beside a tool that already reaches the
 case, whereas this is the only thing reaching it.
 
