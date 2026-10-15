@@ -11,7 +11,7 @@
   into wise-ci (its `check-branch` and `check-reqs` respectively), authored there instead of
   duplicated here (#400 switch to wise-ci's actions); the obligation census is reworded to say
   so, naming the organization rather than this repository as the authoring home — neither
-  becomes a maintained third-party tool. `check-reqs`'s "commands" become "stages", since the
+  becomes a maintained third-party tool, and `check-reqs`'s "commands" become "stages", since the
   recipe runs the one wise-ci command rather than six of its own; what was chosen is
   unchanged, so the Decided date does not move.
 - **rev 12** — 2026-10-04 — the `golangci-lint` adoption row gains `depguard`, confining non-test
