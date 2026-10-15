@@ -1196,15 +1196,11 @@ already decided, which is what makes it a check and not a want.
   `codeql (javascript-typescript, none)`, `codeql (python, none)` and `codeql (actions, none)`, which
   fail only on an execution error, and GitHub's own `CodeQL` check (`GitHub Advanced Security`),
   which is what fails on a finding at the repository's configured severity threshold.
-- `repo-floor` compares this repository's live rulesets against the floor
+- `repo-floor` checks that this repository's live settings and rulesets meet the floor
   [`WisewareOrg/.github`'s `repository-floor.yml`](https://github.com/WisewareOrg/.github/blob/main/repository-floor.yml)
-  states once (PROC-011): every ruleset the floor names must exist live under that name, every
-  field and rule it lists matching exactly and type-strict, lists compared as sets (a
-  `required_status_checks` context is the one exception — a floor entry must be present live, and
-  an extra live context passes). A value the floor lists is an exact match, not a minimum, so a
-  stricter setting belongs to a ruleset of the repository's own, which the floor never compares.
-  Bypass actors are never verifiable with a workflow token, so every floor-named ruleset reports
-  "bypass not verified" regardless of pass or fail.
+  states once (PROC-011). Its comparison semantics are
+  [`WisewareOrg/wise-ci`'s `repo-floor`](https://github.com/WisewareOrg/wise-ci/tree/main/repo-floor)'s
+  own documentation's, not restated here, since they move with that action's automerged pin bumps.
 
 The requirements tree's own integrity checks run here too, but what they assert is a property of the
 specification rather than of the repository, so they are stated where the specification is:
