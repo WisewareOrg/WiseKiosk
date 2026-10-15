@@ -4,10 +4,12 @@
 **Decided:** 2026-08-16 (CSS's product-stylesheet disposition added; the audience rule itself taken
 2026-08-04 in #60 authored-language set, taken after
 [ADR 0016 rev 12](0016-maintained-tools-for-standard-artifacts.md) settled which authored checks survive at all)
-**Rev:** 9
+**Rev:** 10
 
 ## Revisions
 
+- **rev 10** — 2026-10-15 — removes the enforcement mechanism and the alternative that adopted it;
+  what was chosen is unchanged, so the `Decided` date does not move (#432 delete check-languages).
 - **rev 9** — 2026-09-13 — `scripts/check-languages.py` declares `svg` an asset a build serves rather
   than an authored program: the park-wait-times module's icon set
   (`frontend/src/modules/park_wait_times/icons/`) is original, stylised line-glyph artwork, the same
@@ -105,10 +107,8 @@ authors **programs** in.
 
 **CSS carries a second, unrelated disposition beside the row above: a Furo theme override that is
 documentation rather than a program**, an asset the Sphinx docs-site build serves and outside this
-decision's reach on that ground alone
-([`../../scripts/check-languages.py`](../../scripts/check-languages.py) records both dispositions
-under the one extension). A product stylesheet is different: it ships to an operator, styling what
-they see, and is authored the same way the table's other product formats are.
+decision's reach on that ground alone. A product stylesheet is different: it ships to an operator,
+styling what they see, and is authored the same way the table's other product formats are.
 
 **Everything else present in the tree is derived, not enumerated.** A toolchain's own required input
 format — its configuration, its model, the items it stores — is part of invoking that toolchain
@@ -122,11 +122,8 @@ recipe's clothes.
 
 **A program embedded in a derived format is still an authored program**, and the rule above reaches
 it: a workflow `run:` block or a hook `entry:` carrying control flow is authored sh whatever file it
-sits in. Only the `justfile` leg of this has a check behind it; an embedded program is one of the
-things the gate below cannot see, and so the reviewer's, under
-[`../../CONTRIBUTING.md`](../../CONTRIBUTING.md) review checklist item 12, *Languages*. It is the one
-place where the argument that a new language arrives as a new file extension, the loudest thing in a
-diff, does not hold at all.
+sits in. It is the one place where the argument that a new language arrives as a new file extension,
+the loudest thing in a diff, does not hold at all.
 
 Nothing above needs revising when a tool arrives with a format not yet seen here — which is the
 point, since [ADR 0016 rev 12](0016-maintained-tools-for-standard-artifacts.md) adopts four such tools.
@@ -166,41 +163,11 @@ in for. Tree validation was not what went; the exception was.
 **That deletion was conditional, and the condition is discharged.** The wrapper was to go when the
 first `TST` item activated and the exception it stood in for stopped being needed — which happened
 under #10 frontend skeleton, in the same change that activated the first seven verification items, so
-sh now authors nothing in this tree and `LEGACY` in
-[`../../scripts/check-languages.py`](../../scripts/check-languages.py) is empty. Until then sh
-remained an authored language here for exactly one file — a classifier arm and its fixtures, which is
-the price the grandfathering alternative was rejected for paying. The disposition was deletion rather
-than conversion because converting a script another change deletes is the waste this decision's own
-sequencing avoids elsewhere. The difference from grandfathering is that it ended on a condition the
+sh now authors nothing in this tree. Until then sh remained an authored language here for exactly one
+file — a classifier arm and its fixtures, which is the price the grandfathering alternative was
+rejected for paying. The disposition was deletion rather than conversion because converting a script
+another change deletes is the waste this decision's own sequencing avoids elsewhere. The difference from grandfathering is that it ended on a condition the
 tree decided rather than on anyone's intention.
-
-That list is a snapshot taken on the decision date, not a standing inventory — no check compares it
-against the tree, and the rule above is what governs anything written after it.
-[`../../scripts/check-languages.py`](../../scripts/check-languages.py) keeps a second copy of it, of
-the files above written in a language that authors nothing plus the ones
-[ADR 0016 rev 12](0016-maintained-tools-for-standard-artifacts.md) disposes of in the same languages —
-the remainder of that record's list carries a declared extension and needs no entry. That copy is
-grandfathered by exact path and fails once a path stops being tracked, so a disposition that lands
-takes its grant with it. **The two copies are not compared with each other**, so a conversion drops
-its entry from the check's list and leaves this one saying that conversion is pending.
-
-**The declared kinds are gated; the audience binding is not.**
-[`../../scripts/check-languages.py`](../../scripts/check-languages.py) fails any tracked file whose
-extension is outside the declared set, or whose exact path is undeclared where it has no extension,
-and fails a run resolving no tracked file rather than reporting a clean tree. What it holds is that
-*set*, tree-wide. It judges a file by path and extension and never opens one, so the table above —
-which binds a language to an audience — is outside it: a repository check authored in TypeScript
-satisfies the gate on an extension this record declares for what ships, and TypeScript being
-product-only is not a claim any run makes. Outside it too are the content behind a declared path, a
-program embedded in a derived format, and whether an entry added to the declared set — or to the
-grandfather list beside it, which needs no new extension and is the cheaper of the two — arrived with
-the rev that decided it. A language outside this set is still a decision with a rejected alternative, so it
-arrives as a rev of this record or an ADR superseding it, and the reviewer is the mechanism for
-everything the gate leaves —
-[`../../CONTRIBUTING.md`](../../CONTRIBUTING.md) review checklist item 12, *Languages*, added with this record.
-#59 comment-discipline gate's coverage registry is **not** this decision's enforcement: it exists so
-that gate cannot go silently blind on a language it has no arm for, and it would fail-closed on an
-unregistered language whatever this record said.
 
 ## Alternatives considered
 
@@ -226,23 +193,6 @@ unregistered language whatever this record said.
   [ADR 0016 rev 12](0016-maintained-tools-for-standard-artifacts.md) adopts four tools that bring TOML and a
   JavaScript-or-JSON-or-YAML configuration between them. An ADR revved one ticket after it is written
   was written too early.
-- **Gate the set with a check.** Machine-decidable, and [ADR 0011 rev 2](0011-requirement-or-convention.md)
-  routes a machine-decidable convention to a check — which is why this was the drafted answer.
-  Rejected: a new authored language usually arrives as a new file extension in a diff's file list,
-  which is the loudest thing a review sees — the embedded case named in the Decision above is the
-  exception, and it is a residue rather than the population — and
-  [ADR 0016 rev 12](0016-maintained-tools-for-standard-artifacts.md) had just ruled that one residual obligation
-  does not earn a gate of its own. The two work in sequence rather than in parallel — the first sizes
-  the case as a residue, which is the condition under which the second reaches it at all. The
-  checklist question is what 0011 requires so the obligation is not a dead letter; a gate on top of it
-  would be ceremony.
-  **Adopted at rev 5**, for less than it was refused on. What the arithmetic priced was a gate bought
-  against one residual obligation; built, it also makes the declared set an artifact in the tree, each
-  entry naming what it serves and which record grants it, and gives the grandfather list a
-  fails-when-stale property no reviewer reading a diff can supply. It adds no toolchain this
-  repository was not already installing. The rejection's own reasoning survives adoption rather than
-  being overturned by it — a new extension is the loud case, and gating it is what leaves review a
-  residue small enough to state, which is why item 12 narrows rather than retires.
 - **Keep every product style rule inside a `.svelte` `<style>` block, authoring no standalone
   `.css`.** [the display styling contract](../contracts/display-styling-contract.md) had this as a live
   option — CSS inside a component's `<style>` block, root-component globals included, was already
@@ -281,11 +231,6 @@ unregistered language whatever this record said.
   nothing gating the citation. That constraint does not bind a later change:
   [`../../CONTRIBUTING.md`](../../CONTRIBUTING.md) requires a citation to carry the question's name
   beside its number, so a renumbered citation still names what it meant.
-- **`.css` now carries two dispositions under one declared extension.**
-  [`../../scripts/check-languages.py`](../../scripts/check-languages.py) judges by extension alone
-  and never opens a file, so it cannot tell a docs-site override from a product stylesheet apart; its
-  one `css` entry names both rather than splitting the extension, the same shape the audience binding
-  already takes for every other row in the Decision table above.
 
 **Premise that would reopen this:** an artifact appears that neither audience covers — something that
 must run where neither Python nor a shipped toolchain is reachable — or Python stops being

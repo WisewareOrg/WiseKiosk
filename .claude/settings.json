@@ -46,7 +46,6 @@
       "Bash(just check-docs-index)",
       "Bash(just check-site)",
       "Bash(just check-arch-trace)",
-      "Bash(just check-languages)",
       "Bash(just check-go)",
       "Bash(just check-secret-unwrap)",
       "Bash(just check-eol)"

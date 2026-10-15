@@ -122,7 +122,7 @@ jobs:
 
       # Reads the pushed index's platform children and, per child, runs the pinned syft into an
       # SPDX SBOM and `cosign attest`s it — a Python loop rather than a `run:` block one
-      # (ADR 0017 rev 9; docs/CI.md § Publishing and provenance).
+      # (ADR 0017 rev 10; docs/CI.md § Publishing and provenance).
       - name: Generate and attest one SPDX SBOM per platform child
         env:
           REF: ghcr.io/wisewareorg/wisekiosk

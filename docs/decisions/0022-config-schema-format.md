@@ -161,7 +161,7 @@ SRS002<!-- A module-scoped configuration error is reported at that module -->.
   is the same generated-not-hand-written pattern the boundary contract carries — one more pinned
   generator to keep current.
 - JSON Schema is authored data, not a new authored language: it is a format a tool consumes, which
-  [ADR 0017 rev 9](0017-authored-language-set.md) counts as invoking rather than authoring, so the
+  [ADR 0017 rev 10](0017-authored-language-set.md) counts as invoking rather than authoring, so the
   authored-language set is unchanged.
 - The `additionalProperties: false` discipline the sample shows is what lets an unknown key be a
   rejection an operator sees, rather than a silently ignored typo — the schema is the finite

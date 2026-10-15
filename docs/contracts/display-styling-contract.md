@@ -227,7 +227,7 @@ the clock module's own recompose (ticket #236, "recompose the clock module") the
 (owner, 2026-09-03). A module's own layout, and anything not shared by name with another module,
 stays in that module's own Svelte `<style>` block, never in a standalone stylesheet of its own. A
 standalone product `.css` file is a disposition
-[ADR 0017 rev 9](../decisions/0017-authored-language-set.md) grants; this contract's shared tokens
+[ADR 0017 rev 10](../decisions/0017-authored-language-set.md) grants; this contract's shared tokens
 and classes are what it holds.
 
 **Considered and set aside:**
@@ -238,7 +238,7 @@ and classes are what it holds.
   coherence both modules are built for otherwise lives as two copies kept in sync by a comment
   rather than in one place.
 - All shared styling in the root component's global `<style>` block — real, and needs no
-  [ADR 0017 rev 9](../decisions/0017-authored-language-set.md) disposition at all, but couples
+  [ADR 0017 rev 10](../decisions/0017-authored-language-set.md) disposition at all, but couples
   every module to `App.svelte` rather than to a token sheet each imports from.
 - A utility-first CSS framework (Tailwind or similar) — extra weight against the bundle ceiling
   SRS021<!-- Frontend runs on a Pi Zero-class browser host --> holds the frontend to, for a handful

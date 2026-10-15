@@ -333,11 +333,6 @@ rev-reach *ref:
     python3 scripts/adr-rev-reach.py {{ref}}
 
 [group('checks')]
-[doc('Every tracked file is a declared authored or derived kind; a legacy file is grandfathered by path, never its language')]
-check-languages:
-    python3 scripts/check-languages.py
-
-[group('checks')]
 [doc('Every service in the committed deployment recipe declares restart policy `unless-stopped`; that one key and no other value in the recipe')]
 check-restart-policy:
     python3 scripts/check-restart-policy.py
@@ -349,4 +344,4 @@ check-publish-permissions:
 
 [group('checks')]
 [doc('Run every check the PR gate runs that has a local form and needs neither Docker nor emulation nor the network; secret scanning, the PR-title check (commitlint, via the hook layer), the link check (lychee, from a digest-pinned image) and the workflow audit (zizmor, actionlint) are CI-only, the image tier is `just check-image`, the native armv6l run is `just smoke-native`, the bring-up check against a release directory is `just check-bringup`, the image-swap check against the previous published release and a release directory is `just check-image-swap`, and the two online dependency-vulnerability checks are `just check-vulns-go` and `just check-vulns-npm`')]
-verify: check-untracked check-hooks check-branch check-reqs check-citations check-arch check-arch-trace check-go check-fuzz check-lint-go check-secret-unwrap check-build check-static-bundle check-lint-frontend check-typecheck-frontend check-unit check-render check-render-policy check-site check-adr-index check-adr-revs check-docs-index check-repo-silo check-languages check-dead-test check-restart-policy check-publish-permissions check-coverage
+verify: check-untracked check-hooks check-branch check-reqs check-citations check-arch check-arch-trace check-go check-fuzz check-lint-go check-secret-unwrap check-build check-static-bundle check-lint-frontend check-typecheck-frontend check-unit check-render check-render-policy check-site check-adr-index check-adr-revs check-docs-index check-repo-silo check-dead-test check-restart-policy check-publish-permissions check-coverage

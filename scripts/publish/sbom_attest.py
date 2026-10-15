@@ -7,7 +7,7 @@ child's own digest and platform into an SPDX-JSON file, then `cosign attest` bin
 child as an SPDX attestation (docs/CI.md § Publishing and provenance). The index itself is signed by
 a separate `cosign sign --recursive` workflow step, which needs no per-child loop.
 
-This is authored Python rather than a `run:` block with a loop, per ADR 0017 rev 9: a workflow
+This is authored Python rather than a `run:` block with a loop, per ADR 0017 rev 10: a workflow
 `run:` block carrying control flow is authored sh, and sh authors nothing here.
 
 Inputs, read from the environment (matching this workflow's existing style for passing run-time
