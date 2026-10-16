@@ -40,7 +40,7 @@ jobs:
         with:
           persist-credentials: false
 
-      - uses: WisewareOrg/wise-ci/check-eol@2bd7ee92c8118223b637487860e05ee2e8ebe39f
+      - uses: WisewareOrg/wise-ci/check-eol@3c5f0a4ca4013d2405eeea95615fa4951118bdd6
 
       - uses: extractions/setup-just@53165ef7e734c5c07cb06b3c8e7b647c5aa16db3 # v4
         with:
