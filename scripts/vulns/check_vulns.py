@@ -57,7 +57,7 @@ REGISTER_FIELDS = ("advisory", "scope", "no_fix_because", "no_alternative_becaus
 VALID_SCOPES = ("go", "npm", "image")
 REVIEW_WINDOW_DAYS = 90
 
-TRIVY_IMAGE = "aquasec/trivy:0.75.0@sha256:af6acf9a6b85dfe389a1941505c0ce9efef52a4719635e1a962f022a3d855daa"
+TRIVY_IMAGE = "aquasec/trivy:0.76.0@sha256:2416d1f74045b57274df1a340eee6b510cacd73c66a6ccb8da092b117eb7d222"
 
 GHSA_IN_URL = re.compile(r"(GHSA-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4})")
 
