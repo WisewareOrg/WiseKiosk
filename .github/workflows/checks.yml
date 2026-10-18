@@ -44,7 +44,7 @@ jobs:
 
       - uses: extractions/setup-just@53165ef7e734c5c07cb06b3c8e7b647c5aa16db3 # v4
         with:
-          just-version: "1.58.0"
+          just-version: "1.59.0"
 
       - name: Install pre-commit into a local venv (siloed under scripts/)
         run: |
@@ -116,7 +116,7 @@ jobs:
 
       - uses: extractions/setup-just@53165ef7e734c5c07cb06b3c8e7b647c5aa16db3 # v4
         with:
-          just-version: "1.58.0"
+          just-version: "1.59.0"
 
       - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
@@ -152,7 +152,7 @@ jobs:
 
       - uses: extractions/setup-just@53165ef7e734c5c07cb06b3c8e7b647c5aa16db3 # v4
         with:
-          just-version: "1.58.0"
+          just-version: "1.59.0"
 
       - name: Install the docs-site toolchain into a local venv (siloed under docs/site/)
         run: |
@@ -194,7 +194,7 @@ jobs:
 
       - uses: extractions/setup-just@53165ef7e734c5c07cb06b3c8e7b647c5aa16db3 # v4
         with:
-          just-version: "1.58.0"
+          just-version: "1.59.0"
 
       - name: Install LikeC4 into the silo (docs/architecture/), locked
         run: npm --prefix docs/architecture ci
@@ -234,7 +234,7 @@ jobs:
 
       - uses: extractions/setup-just@53165ef7e734c5c07cb06b3c8e7b647c5aa16db3 # v4
         with:
-          just-version: "1.58.0"
+          just-version: "1.59.0"
 
       - name: Install the frontend toolchain into the silo (frontend/), locked
         run: npm --prefix frontend ci
@@ -278,7 +278,7 @@ jobs:
 
       - uses: extractions/setup-just@53165ef7e734c5c07cb06b3c8e7b647c5aa16db3 # v4
         with:
-          just-version: "1.58.0"
+          just-version: "1.59.0"
 
       - name: Install the frontend toolchain into the silo (frontend/), locked
         run: npm --prefix frontend ci
@@ -322,7 +322,7 @@ jobs:
 
       - uses: extractions/setup-just@53165ef7e734c5c07cb06b3c8e7b647c5aa16db3 # v4
         with:
-          just-version: "1.58.0"
+          just-version: "1.59.0"
 
       - name: Install the Go module's dependencies into the silo (backend/), locked
         run: go -C backend mod download
@@ -372,7 +372,7 @@ jobs:
 
       - uses: extractions/setup-just@53165ef7e734c5c07cb06b3c8e7b647c5aa16db3 # v4
         with:
-          just-version: "1.58.0"
+          just-version: "1.59.0"
 
       - name: Install the Go module's dependencies into the silo (backend/), locked
         run: go -C backend mod download
@@ -419,7 +419,7 @@ jobs:
 
       - uses: extractions/setup-just@53165ef7e734c5c07cb06b3c8e7b647c5aa16db3 # v4
         with:
-          just-version: "1.58.0"
+          just-version: "1.59.0"
 
       - name: The image runs non-root, serves only a mounted configuration, carries no deployment content or secret material, keeps two instances independent, and reports its health in both directions
         run: just check-image
@@ -452,7 +452,7 @@ jobs:
 
       - uses: extractions/setup-just@53165ef7e734c5c07cb06b3c8e7b647c5aa16db3 # v4
         with:
-          just-version: "1.58.0"
+          just-version: "1.59.0"
 
       - name: The image builds for this leg's platform and comes up serving on it
         env:
@@ -483,7 +483,7 @@ jobs:
 
       - uses: extractions/setup-just@53165ef7e734c5c07cb06b3c8e7b647c5aa16db3 # v4
         with:
-          just-version: "1.58.0"
+          just-version: "1.59.0"
 
       - name: Install the frontend toolchain into the silo (frontend/), locked
         run: npm --prefix frontend ci
