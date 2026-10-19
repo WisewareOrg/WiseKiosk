@@ -138,7 +138,7 @@ wheels = [
 [[package]]
 name = "check-reqs"
 version = "0"
-source = { git = "https://github.com/WisewareOrg/wise-ci?subdirectory=check-reqs&rev=3de5ab33eea931ec3ec06c2f8dc6a63101c86e6a#3de5ab33eea931ec3ec06c2f8dc6a63101c86e6a" }
+source = { git = "https://github.com/WisewareOrg/wise-ci?subdirectory=check-reqs&rev=e105b49606c5f1e7143c86b2c23fc4e692b892a2#e105b49606c5f1e7143c86b2c23fc4e692b892a2" }
 dependencies = [
     { name = "doorstop" },
     { name = "pyyaml" },
@@ -331,4 +331,4 @@ dev = [
 [package.metadata]
 
 [package.metadata.requires-dev]
-dev = [{ name = "check-reqs", git = "https://github.com/WisewareOrg/wise-ci?subdirectory=check-reqs&rev=3de5ab33eea931ec3ec06c2f8dc6a63101c86e6a" }]
+dev = [{ name = "check-reqs", git = "https://github.com/WisewareOrg/wise-ci?subdirectory=check-reqs&rev=e105b49606c5f1e7143c86b2c23fc4e692b892a2" }]
