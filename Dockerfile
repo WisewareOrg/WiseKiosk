@@ -17,7 +17,7 @@ COPY boundary/ ../boundary/
 RUN go generate ./internal/boundary
 RUN CGO_ENABLED=0 go build -o /out/wisekiosk ./cmd
 
-FROM alpine:3.24@sha256:294b683cb724975bec92580e1e685676bd4b50bda910ddb8c51d4cabeaec77e6
+FROM alpine:3.24@sha256:be2656061b536c1883c4034790e21d0a09c5aaaf51968b89368a3c0371ea2c9a
 RUN apk upgrade --no-cache
 # Why the image carries trust anchors is docs/ARCHITECTURE.md § Deployment's.
 RUN apk add --no-cache ca-certificates
