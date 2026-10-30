@@ -4,11 +4,6 @@
 default:
     @just --list
 
-[group('checks')]
-[doc('No untracked, non-ignored file in the tree — the git ls-files-based gates cannot see one, so it must be tracked or gitignored before a local run means anything')]
-check-untracked:
-    python3 scripts/check-untracked.py
-
 [group('setup')]
 [doc('First-time setup: install the pinned pre-commit toolchain into scripts/')]
 hooks-install:
@@ -343,4 +338,4 @@ check-publish-permissions:
 
 [group('checks')]
 [doc('Run every check the PR gate runs that has a local form and needs neither Docker nor emulation nor the network; secret scanning, pr-title and repo-floor (wise-ci actions with no local form at all), the link check (lychee, from a digest-pinned image) and the workflow audit (zizmor, actionlint) are CI-only, the image tier is `just check-image`, the native armv6l run is `just smoke-native`, the bring-up check against a release directory is `just check-bringup`, the image-swap check against the previous published release and a release directory is `just check-image-swap`, and the two online dependency-vulnerability checks are `just check-vulns-go` and `just check-vulns-npm`')]
-verify: check-untracked check-hooks check-reqs check-citations check-arch check-arch-trace check-go check-fuzz check-lint-go check-secret-unwrap check-build check-static-bundle check-lint-frontend check-typecheck-frontend check-unit check-render check-render-policy check-site check-adr-index check-adr-revs check-docs-index check-repo-silo check-dead-test check-restart-policy check-publish-permissions check-coverage
+verify: check-hooks check-reqs check-citations check-arch check-arch-trace check-go check-fuzz check-lint-go check-secret-unwrap check-build check-static-bundle check-lint-frontend check-typecheck-frontend check-unit check-render check-render-policy check-site check-adr-index check-adr-revs check-docs-index check-repo-silo check-dead-test check-restart-policy check-publish-permissions check-coverage

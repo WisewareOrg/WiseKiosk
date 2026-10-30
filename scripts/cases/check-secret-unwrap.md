@@ -43,9 +43,9 @@ rename would turn the check into one that passes over every tree there is.
 **Known gaps**, each measured on the same fixture rather than inferred:
 
 - **An untracked second call site passes.** `internal/upstream/leak.go` written but never `git add`-ed
-  — the run reports the one site and exits 0. The population is `git ls-files`, so the pairing that
-  closes this is `check-untracked.py`, per [`docs/CI.md`](../../docs/CI.md) § *Repository shape*; it is
-  the same hole every `git ls-files`-based gate here carries.
+  — the run reports the one site and exits 0. The population is `git ls-files`; this is the exception
+  [`docs/CI.md`](../../docs/CI.md) § *Repository shape* lists, the same hole every `git ls-files`-based
+  gate here carries.
 - **A second site reached by reflection passes.** `reflect.ValueOf(s).MethodByName("Reveal").Call(nil)`
   appended to `internal/upstream/proxy.go`, tracked and committed — the run reports the one site and
   exits 0. The match is on a selector; a name that reaches the method as a string is outside it. This

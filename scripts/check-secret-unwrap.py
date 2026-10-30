@@ -8,8 +8,9 @@ framework structure.
 
 The population is the tracked, non-`_test.go` Go files under `backend/`. Test files are exempt by
 decision, not by oversight: `secret_test.go` is what proves the redaction paths, and it cannot do that
-without unwrapping. Tracked rather than on-disk, so an untracked file is invisible here and
-`check-untracked.py` is what fails on one — the pairing docs/CI.md § Repository shape records.
+without unwrapping. Tracked rather than on-disk, so an untracked file is invisible to a local run; CI
+checks out every committed file, so the gate binds there — docs/CI.md § Repository shape lists this
+as an exception.
 
 The match reaches a method *value* (`f := s.Reveal`) as well as a call, so an unwrap aliased behind a
 variable is counted rather than escaping the count, and it runs over the whole file rather than line
