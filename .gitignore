@@ -66,6 +66,9 @@ CLAUDE.local.md
 # Claude Code per-machine permissions (`*.local` does not match `.local.json`)
 .claude/settings.local.json
 
+# A per-machine Claude Code hook, wired by settings.local.json.
+.claude/hooks/block-host-installs.sh
+
 # Playwright output
 frontend/test-results/
 frontend/playwright-report/
