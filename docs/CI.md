@@ -880,8 +880,9 @@ changed, which the citation resolver above decides without anyone declaring anyt
   of the kind it inspects. The remedy is `git add`, after which the gates judge the file, or a
   gitignore entry, which declares it not material. A CI checkout holds only tracked files and every
   build artifact is gitignored, so the mechanism does not fire there; what it gates is the local run,
-  the one place an untracked file exists. `check-adr-index` carries no guard: it reads the
-  decisions directory rather than the tracked set, so an untracked ADR is judged, not skipped.
+  the one place an untracked file exists. How
+  [wise-ci's `check-adrs`](https://github.com/WisewareOrg/wise-ci/tree/main/check-adrs) treats an
+  untracked file is its own documentation's, not restated here.
   `adr-rev-reach.py` also reads the tracked set and carries no guard either — it reports and exits
   zero by design (§ *What is not gated here*), so there is no verdict for an untracked file to
   escape. `check-secret-unwrap` reads the tracked set the same way and carries no guard: an
@@ -1133,8 +1134,9 @@ already decided, which is what makes it a check and not a want.
   — the action provisions its own CodeQL CLI bundle, and no local invocation is decided), and the
   image vulnerability scan (`check_vulns.py --scope image` — needs the daemon-built image and the
   network, so it carries no `just` recipe of its own, unlike its sibling scopes below).
-  A shared wise-ci check that does have a local form — `check-branch`, `check-eol` — runs in CI
-  through its `uses:` step, and the recipe is a convenience outside `verify`, not a second spelling.
+  A shared wise-ci check that does have a local form — `check-branch`, `check-eol`,
+  `check-docs-index`, `check-adrs` — runs in CI through its `uses:` step, and the recipe is a
+  convenience outside `verify`, not a second spelling.
   **A different shape holds `check-vulns-go`, `check-vulns-npm`, `check-image` and `smoke-native`:**
   each has an ordinary `just` recipe, so this bullet's own claim still holds for them, but none is a
   `just verify` dependency. The vulnerability pair needs the network on every run and `verify` stays
