@@ -27,7 +27,6 @@ when a link breaks. Nothing enforces this — a wrong success line fails no buil
 | Check | Record |
 |---|---|
 | the workflow audit (`zizmor` + `actionlint`) | [cases](cases/workflow-audit.md) |
-| `check-untracked.py` | [cases](cases/check-untracked-py.md) |
 | `check-repo-silo.py` | [cases](cases/check-repo-silo-py.md) |
 | `check-docs-index.py` | [cases](cases/check-docs-index-py.md) |
 | `check-adr-index.py` | [cases](cases/check-adr-index-py.md) |
