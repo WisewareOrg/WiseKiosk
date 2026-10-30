@@ -25,8 +25,8 @@ where deployed.
 
 ```sh
 just                # the gate roster: every check, beside what it asserts
-just verify         # every check the PR gate runs that has a local form — check-branch and
-                    # check-eol are excluded, and pr-title and repo-floor have no local form at
+just verify         # every check the PR gate runs that has a local form — the wise-ci checks with
+                    # a local form are excluded, and pr-title and repo-floor have no local form at
                     # all (docs/CI.md § Gate wiring)
 just hooks-install  # once per clone: the pinned pre-commit toolchain, into scripts/.venv
 scripts/.venv/bin/pre-commit install  # once per clone: advisory hooks at commit, commit message and push
@@ -207,7 +207,7 @@ appended for the same reason; inserting one is permitted
 21. **Rev reach.** Where the change revs an ADR, has each citation the sweep re-pinned **without
     touching the sentence around it** been read against what that rev actually changed?
     The `pre-push` hook prints them, per file and line, whenever a branch revs one; `just rev-reach`
-    is the same list on demand. `just check-adr-revs` holds the pin and decides nothing about the
+    is the same list on demand. `just check-adrs` holds the pin and decides nothing about the
     claim. A rev that does not touch what a citation asserts is the ordinary case, so most of that
     list is sound — the failure is answering from having run the sweep rather than from having read
     it. **Separately, and whether or not the change revs anything: has a reflow left a citation split
