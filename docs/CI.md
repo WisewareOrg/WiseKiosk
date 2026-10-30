@@ -35,8 +35,8 @@ Not everything CI does is a gate. These produce material a person acts on.
   (PROC-003 through PROC-005) — they read only the issue a branch names, so the dashboard issue is
   exempt by construction and no branch may be cut from it. That the root `renovate.json` resolves the
   pinned preset is § *Repository shape*'s. The project's own image is excluded from Renovate: the
-  committed recipe names the
-  movable `latest` tag by design ([`DEPLOYMENT.md`](DEPLOYMENT.md) § *Bring-up*), and pinning it
+  committed recipe names the movable `latest` tag by design
+  ([`DEPLOYMENT.md`](DEPLOYMENT.md) § *Bring-up*), and pinning it
   would loop through `publish.yml` — a merged pin publishes a new digest, which opens the next pin.
 - **Code-scanning results.** Every static-analysis finding is reported to the repository's
   code-scanning dashboard and annotated on the pull request, whether or not it fails the build.
@@ -911,9 +911,10 @@ changed, which the citation resolver above decides without anyone declaring anyt
   restated here. WiseKiosk neither seeds nor cases it (wise-ci's own tests are its evidence).
 - The branch's name, its issue's type label, and its pull request's ticket-linkage record are
   [`WisewareOrg/.github`'s `PROCESS.md`](https://github.com/WisewareOrg/.github/blob/main/PROCESS.md)'s
-  (PROC-001, PROC-003, PROC-004, PROC-006), not restated here — a `uses:` step in
-  `process-gates.yml`'s `check-branch` job; `just check-branch` runs the same script locally once a
-  PR exists, a convenience outside `verify`.
+  (PROC-001, PROC-003, PROC-004, PROC-006), not restated here;
+  [wise-ci's `check-branch`](https://github.com/WisewareOrg/wise-ci/tree/main/check-branch) enforces
+  them — a `uses:` step in `process-gates.yml`'s `check-branch` job; `just check-branch` runs the
+  same script locally once a PR exists, a convenience outside `verify`.
 - That issue's milestone and type-label count are
   [`WisewareOrg/.github`'s `PROCESS.md`](https://github.com/WisewareOrg/.github/blob/main/PROCESS.md)'s
   (PROC-004, PROC-005), not restated here. The type set and the branch-name shape it backs are
