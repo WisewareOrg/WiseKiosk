@@ -750,10 +750,10 @@ resolve, a citation to something that does not exist, an index that has drifted 
   inside the header rather than text separating it. A number is only a handle — a renumber rewrites
   `links:` and leaves the sentence pointing at whatever now occupies it, still reading as correct —
   and the header is what turns that drift into a mismatch a machine can see. An ADR number carries no
-  header, and the rev beside it pins the version rather than the identity. How it pins is
+  header, and the rev beside it pins the version rather than the identity: numbers are reusable, so
+  what holds is that `check-citations` fails the instant a number is freed. How the rev pins is
   [wise-ci's `check-adrs`](https://github.com/WisewareOrg/wise-ci/tree/main/check-adrs)'s own, not
-  restated here: numbers are reusable, so what holds is that `check-citations` fails the instant a
-  number is freed. A citation written on a branch across a freeing and a re-taking of the same number
+  restated here. A citation written on a branch across a freeing and a re-taking of the same number
   is the case that leaves, and nothing here decides it.
 - **A header in an HTML comment does not open a line that continues a paragraph.** CommonMark reads
   a line-initial `<!--` as an HTML block, which interrupts the paragraph and splits it in two on the
@@ -919,7 +919,7 @@ changed, which the citation resolver above decides without anyone declaring anyt
   [`WisewareOrg/.github`'s `PROCESS.md`](https://github.com/WisewareOrg/.github/blob/main/PROCESS.md)'s
   (PROC-004, PROC-005), not restated here. The type set and the branch-name shape it backs are
   [`WisewareOrg/.github`'s `PROCESS.md`](https://github.com/WisewareOrg/.github/blob/main/PROCESS.md)'s
-  own (PROC-010), not restated here; `check-branch` enforces it (a `uses:` step in
+  own (PROC-001, PROC-010), not restated here; `check-branch` enforces it (a `uses:` step in
   `process-gates.yml`'s `check-branch` job; `just check-branch` runs the same script locally once a
   PR exists, a convenience outside `verify`), so a new branch type cannot leave this description
   behind. Why exactly one type label and a milestone are required, and why that is
