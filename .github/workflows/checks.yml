@@ -29,9 +29,8 @@ jobs:
   # Every check with a local form runs as its `just` recipe — the recipe body is the one
   # spelling of what runs here and locally (docs/CI.md § Gate wiring) — and every setup-just
   # step pins `just-version:`, so the executor CI depends on is a decided version, not a float.
-  # check-eol here and check-branch in process-gates.yml are the exception: each runs through
-  # wise-ci's own `uses:` step, and its local recipe is a convenience outside `verify`, not a
-  # second spelling.
+  # The wise-ci `uses:` steps, here and in process-gates.yml, are the exception: each runs wise-ci's
+  # own action, and any local recipe for one is a convenience outside `verify`, not a second spelling.
   docs-and-hygiene:
     name: docs-and-hygiene
     runs-on: ubuntu-latest
@@ -65,14 +64,9 @@ jobs:
       - name: Every pre-commit-stage hook passes over every tracked file
         run: just check-hooks
 
-      - name: The decisions directory and its index table agree
-        run: just check-adr-index
+      - uses: WisewareOrg/wise-ci/check-adrs@a51ce6032a02e26df62c9ced07fb9e4ca1c36a0b
 
-      - name: Every ADR citation pins that ADR's current rev
-        run: just check-adr-revs
-
-      - name: Every tracked document outside a dot-directory is claimed by the documentation index
-        run: just check-docs-index
+      - uses: WisewareOrg/wise-ci/check-docs-index@a51ce6032a02e26df62c9ced07fb9e4ca1c36a0b
 
       - name: No manifest at the repository root, no recipe is a shell script, and renovate.json extends the pinned WisewareOrg/wise-renovate preset
         run: just check-repo-silo
