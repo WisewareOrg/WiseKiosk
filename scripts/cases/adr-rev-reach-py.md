@@ -33,7 +33,7 @@ reward editing a sentence cosmetically to clear it.
 **The population is every tracked file, and was not always.** As first written this walked Markdown
 alone. The sweep that took the authored-language-set decision to its fifth revision is what exposed
 it: 28 of its 41 citations sit in a Python docstring and its comments, all of them held to the
-current rev by `check-adr-revs.py`, none of them visible
+current rev by `check-adr-revs`, none of them visible
 here — and the summary line still read as the whole population. Ablation on one fixture, the two
 scripts differing only in that restriction: **12 citations reported before, 40 after**, and the
 binary file named only by the second. A reporter whose population is narrower than the gate it audits
@@ -56,7 +56,7 @@ tool exists to make worth reading.
   citations are wrap-sensitive. Closing it means pairing on something other than line identity, which
   is a larger change than the tool has earned; a sweep that also reflows should be split into two
   commits, and the pin-only one is what to run this against.
-- **Its population is complete only while `check-adr-revs` is green** — a citation a sweep missed
+- **Its population is complete only while `check-adrs` is green** — a citation a sweep missed
   fails that gate and never reaches this tool.
 - **Line granularity is an approximation.** A claim can rot several lines below the citation it hangs
   off. The line printed is a handle to the paragraph a reader opens, not the extent of what they read.

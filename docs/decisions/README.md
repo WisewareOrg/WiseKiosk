@@ -8,9 +8,11 @@ belongs in a commit message, not here. New ADR: copy [`TEMPLATE.md`](TEMPLATE.md
 free number, and add it to the table.
 
 **An ADR is versioned, not frozen.** Merged text is revisable, and a correction is a new rev rather
-than a block appended to the old text. The rev is in the ADR's head, with one line per rev in its
-*Revisions* section; prior text is in git. Nothing bounds when a rev is permitted — that is a
-judgement call.
+than a block appended to the old text. Where the rev lives on the ADR, and how its *Revisions*
+section records one line per rev, are
+[wise-ci's `check-adrs`](https://github.com/WisewareOrg/wise-ci/tree/main/check-adrs)'s own, not
+restated here. Prior text is in git. Nothing bounds when a rev is permitted — that is a judgement
+call.
 
 **A rev that changes what was chosen moves the `Decided` date with it**, because that date is when
 the choice was taken, not when the work merged. A rev that changes only how the decision is stated
@@ -18,16 +20,20 @@ leaves it.
 
 **A citation pins a rev** — `ADR NNNN rev M`, never bare, and a link to an ADR is titled the same
 way. Revving an ADR therefore reaches every document citing it, each of which is then updated or
-re-decided rather than left to age silently; `just check-adr-revs` is what makes that unavoidable. A
-*Revisions* line pins the rev it names deliberately, and is the one exemption. **Write an
-illustrative example with `NNNN`, never a live number** — nothing distinguishes an example from a
-citation, so a real number in one is held to that ADR's current rev and breaks when it revs.
+re-decided rather than left to age silently; `check-adrs` is what makes that unavoidable. A
+*Revisions* line pins the rev it names deliberately. Which lines
+[wise-ci's `check-adrs`](https://github.com/WisewareOrg/wise-ci/tree/main/check-adrs) exempts from
+holding the current rev is its own, not restated here. **An illustrative example uses `NNNN`, never
+a live number** — [wise-ci's `check-adrs`](https://github.com/WisewareOrg/wise-ci/tree/main/check-adrs)'s
+own rejection, not restated here.
 
 **Supersession is expressed through revving.** The replacing ADR lands alongside, and the replaced
 one takes a rev whose *Revisions* line records `superseded by ADR NNNN rev M` — wholly, with
 `Status:` flipped, or in the named part. A decision simply gone is `deprecated`.
 
-**Numbers are contiguous and reusable.** Where documents merge, the freed numbers return to the pool.
+**Numbers are contiguous** —
+[wise-ci's `check-adrs`](https://github.com/WisewareOrg/wise-ci/tree/main/check-adrs)'s own rule,
+not restated here — **and reusable.** Where documents merge, the freed numbers return to the pool.
 A number identifies a document rather than a moment: a squash commit on `main` naming one cannot be
 amended, so a number in git history need not mean what it means here.
 

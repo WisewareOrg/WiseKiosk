@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """The citations a rev bump re-pinned without touching the sentence they hang off.
 
-`scripts/check-adr-revs.py` holds every citation to its ADR's current rev, and says in its own
-docstring that whether a citation pinning the current rev still means what the ADR says is decided by
-nothing there. A sweep that rewrites `rev N` to `rev N+1` across the tree satisfies that gate while
-re-deciding nothing, and the green result then certifies a reach that did not happen.
+wise-ci's `check-adrs`'s `check-adr-revs.py` holds every citation to its ADR's current rev, and says
+in its own docstring that whether a citation pinning the current rev still means what the ADR says is
+decided by nothing there. A sweep that rewrites `rev N` to `rev N+1` across the tree satisfies that
+gate while re-deciding nothing, and the green result then certifies a reach that did not happen.
 
 This enumerates the work that sweep leaves. It decides nothing about a claim and fails on no diff:
 what it produces is a list of file, line and sentence for a reader to judge, under
@@ -14,10 +14,12 @@ Reported. For each ADR whose head rev moved between the base ref and the head tr
 outside its head-rev line and its *Revisions* section also changed: every line in the tracked set
 that is identical across the two trees once every `rev N` token is masked, and different before
 masking. That is a line whose sole edit was the pin. The tracked set is every file, not the Markdown
-in it: `scripts/check-adr-revs.py` holds a citation in a docstring or a comment to its rev exactly as
-it holds one in prose, so a sweep reaches there too. A file not decodable as text at either tree is
-named in the output rather than passed over, with which of the two reasons applies, since a shrunken
-population reported as a whole one is the failure this tool exists to catch.
+in it: it mirrors
+[wise-ci's `check-adrs`](https://github.com/WisewareOrg/wise-ci/tree/main/check-adrs)'s own
+population, not restated here, so a sweep reaches every file that gate reads. A file not decodable
+as text at either tree is named in the output rather than passed over, with which of the two reasons
+applies, since a shrunken population reported as a whole one is the failure this tool exists to
+catch.
 
 Not reported, each deliberately:
 
@@ -27,7 +29,7 @@ Not reported, each deliberately:
 - Every citation of an ADR whose body did not move — a rev that only records its own text, or one
   whose only edit was re-pinning the ADRs it cites. Masking is applied to the body comparison for
   that second case, so a sweep does not cascade into the records it passes through.
-- A citation whose pin did not move, which `check-adr-revs` fails on independently, and one added by
+- A citation whose pin did not move, which `check-adrs` fails on independently, and one added by
   the change, which is not a re-pin.
 - A changelog line and its continuations in `docs/decisions/`, which pin a rev deliberately.
 
@@ -52,7 +54,7 @@ DECISIONS = "docs/decisions"
 ADR_FILE = re.compile(r"^(\d{4})-[a-z0-9-]+\.md$")
 HEAD_REV = re.compile(r"^\*\*Rev:\*\* *(\d+) *$", re.M)
 # The one accepted citation spelling, in prose and inside a link title alike; anything else is
-# `check-adr-revs`'s to reject, and a tree it has passed carries none.
+# `check-adrs`'s to reject, and a tree it has passed carries none.
 CITATION = re.compile(r"\bADR (\d{4}) rev (\d+)\b")
 REV_TOKEN = re.compile(r"\brev \d+\b")
 
@@ -209,7 +211,7 @@ def adrs(ref, problems):
         if len(heads) != 1:
             problems.append(
                 f"{path} declares {len(heads)} `**Rev:** N` lines at {ref or 'the worktree'}, "
-                "expected 1 — `check-adr-revs` is what fails on this"
+                "expected 1 — `check-adrs` is what fails on this"
             )
             continue
         found[number.group(1)] = (int(heads[0]), substance(text), text, path)
@@ -219,8 +221,9 @@ def adrs(ref, problems):
 def revved(base, head, problems):
     """Each ADR whose head rev moved, split on whether its substance moved with it."""
     before, after = adrs(base, problems), adrs(head, problems)
-    # The mirror of `check-adr-revs`'s guard, at both ends: a ref this read no ADR from is a ref this
-    # tool has not read, and reporting no work over it is the same output as a branch with none.
+    # The mirror of `check-adrs`'s `check-adr-revs.py`'s guard, at both ends: a ref this read no
+    # ADR from is a ref this tool has not read, and reporting no work over it is the same output
+    # as a branch with none.
     for ref, population in ((base, before), (head, after)):
         if not population:
             problems.append(
@@ -249,7 +252,7 @@ def pin_only(base, head, moved, problems):
         (old, why_old), (new, why_new) = read(base, path), read(head, path)
         if old is None or new is None:
             # Named rather than skipped: the population this walks is the population
-            # `check-adr-revs.py` holds to a rev, and a file dropped from it silently would shrink
+            # `check-adrs` holds to a rev, and a file dropped from it silently would shrink
             # the reach reported below without shrinking the sweep that produced it.
             unreadable.append((path, why_old or why_new))
             continue

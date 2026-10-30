@@ -36,12 +36,11 @@
   "permissions": {
     "allow": [
       "Bash(just verify)",
-      "Bash(just check-adr-revs)",
+      "Bash(just check-adrs)",
       "Bash(just check-citations)",
       "Bash(just check-links)",
       "Bash(just rev-reach)",
       "Bash(just check-arch)",
-      "Bash(just check-adr-index)",
       "Bash(just check-reqs)",
       "Bash(just check-docs-index)",
       "Bash(just check-site)",

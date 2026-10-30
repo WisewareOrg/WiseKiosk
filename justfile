@@ -1,5 +1,3 @@
-# WiseKiosk task runner. `just` lists recipes; the check recipes are what CI runs.
-
 # Show available recipes.
 default:
     @just --list
@@ -16,14 +14,24 @@ check-hooks:
     scripts/.venv/bin/pre-commit run --all-files
 
 [group('checks')]
-[doc('Branch is named type_number-snake_name; its issue is open, type-labeled, milestoned, and parented to match the PR base; the PR records the linkage')]
+[doc('Runs wise-ci check-branch at the SHA pinned in .github/workflows/process-gates.yml')]
 check-branch:
     sha=$(grep -oE 'WisewareOrg/wise-ci/check-branch@[0-9a-f]{40}' .github/workflows/process-gates.yml | head -1 | cut -d@ -f2); test -n "$sha" || { echo "check-branch: no WisewareOrg/wise-ci/check-branch@<sha> pin found in .github/workflows/process-gates.yml" >&2; exit 1; }; tmp=$(mktemp); curl -fsSL "https://raw.githubusercontent.com/WisewareOrg/wise-ci/$sha/check-branch/check-branch.py" -o "$tmp" || { rc=$?; echo "check-branch: failed to fetch check-branch.py at $sha (curl exit $rc)" >&2; rm -f "$tmp"; exit $rc; }; HEAD_REF=$(git rev-parse --abbrev-ref HEAD) PR_NUMBER=$(gh pr view --json number -q .number 2>/dev/null) GITHUB_REPOSITORY=WisewareOrg/WiseKiosk GITHUB_TOKEN=$(gh auth token) DEFAULT_BRANCH=main python3 "$tmp"; rc=$?; rm -f "$tmp"; exit $rc
 
 [group('checks')]
-[doc('No file git treats as text has a CRLF line ending, over the whole tracked tree, and no untracked file is left unsearched')]
+[doc('Runs wise-ci check-eol at the SHA pinned in .github/workflows/checks.yml')]
 check-eol:
     sha=$(grep -oE 'WisewareOrg/wise-ci/check-eol@[0-9a-f]{40}' .github/workflows/checks.yml | head -1 | cut -d@ -f2); test -n "$sha" || { echo "check-eol: no WisewareOrg/wise-ci/check-eol@<sha> pin found in .github/workflows/checks.yml" >&2; exit 1; }; tmp=$(mktemp); curl -fsSL "https://raw.githubusercontent.com/WisewareOrg/wise-ci/$sha/check-eol/check-eol.py" -o "$tmp" || { rc=$?; echo "check-eol: failed to fetch check-eol.py at $sha (curl exit $rc)" >&2; rm -f "$tmp"; exit $rc; }; python3 "$tmp"; rc=$?; rm -f "$tmp"; exit $rc
+
+[group('checks')]
+[doc('Runs wise-ci check-docs-index at the SHA pinned in .github/workflows/checks.yml')]
+check-docs-index:
+    sha=$(grep -oE 'WisewareOrg/wise-ci/check-docs-index@[0-9a-f]{40}' .github/workflows/checks.yml | head -1 | cut -d@ -f2); test -n "$sha" || { echo "check-docs-index: no WisewareOrg/wise-ci/check-docs-index@<sha> pin found in .github/workflows/checks.yml" >&2; exit 1; }; tmp=$(mktemp); curl -fsSL "https://raw.githubusercontent.com/WisewareOrg/wise-ci/$sha/check-docs-index/check-docs-index.py" -o "$tmp" || { rc=$?; echo "check-docs-index: failed to fetch check-docs-index.py at $sha (curl exit $rc)" >&2; rm -f "$tmp"; exit $rc; }; python3 "$tmp"; rc=$?; rm -f "$tmp"; exit $rc
+
+[group('checks')]
+[doc('Runs wise-ci check-adrs at the SHA pinned in .github/workflows/checks.yml')]
+check-adrs:
+    sha=$(grep -oE 'WisewareOrg/wise-ci/check-adrs@[0-9a-f]{40}' .github/workflows/checks.yml | head -1 | cut -d@ -f2); test -n "$sha" || { echo "check-adrs: no WisewareOrg/wise-ci/check-adrs@<sha> pin found in .github/workflows/checks.yml" >&2; exit 1; }; status=0; for script in check-adr-index check-adr-revs; do tmp=$(mktemp); curl -fsSL "https://raw.githubusercontent.com/WisewareOrg/wise-ci/$sha/check-adrs/$script.py" -o "$tmp" || { rc=$?; echo "check-adrs: failed to fetch $script.py at $sha (curl exit $rc)" >&2; rm -f "$tmp"; exit $rc; }; python3 "$tmp" || status=$?; rm -f "$tmp"; done; exit $status
 
 [group('checks')]
 [doc('Requirements tree validates: refs resolve, no suspect/unreviewed/orphan items, methods consistent, headers non-empty and prefix-free, no identifier cited in an item statement; the proposed backlog prints on a passing run (reports; not a gate)')]
@@ -34,21 +42,6 @@ check-reqs:
 [doc('Every requirement identifier and ADR number cited outside .claude/ resolves, and every requirement citation carries its item header')]
 check-citations:
     uv run --locked --project docs/requirements python scripts/check-citations.py
-
-[group('checks')]
-[doc('The decisions directory and its index table agree: every ADR has a row, every row a file, numbering contiguous')]
-check-adr-index:
-    python3 scripts/check-adr-index.py
-
-[group('checks')]
-[doc('Every ADR citation pins that ADR current rev, in prose and in a link title; the index rev column matches each ADR own head')]
-check-adr-revs:
-    python3 scripts/check-adr-revs.py
-
-[group('checks')]
-[doc('Every tracked document outside a top-level dot-directory is claimed by a row in the documentation index, every row links a tracked file, and no cell is empty')]
-check-docs-index:
-    python3 scripts/check-docs-index.py
 
 [group('checks')]
 [doc('No manifest or .venv/ at the repository root, no recipe is a shell script, and renovate.json extends the pinned WisewareOrg/wise-renovate preset')]
@@ -338,4 +331,4 @@ check-publish-permissions:
 
 [group('checks')]
 [doc('Run every check the PR gate runs that has a local form and needs neither Docker nor emulation nor the network; secret scanning, pr-title and repo-floor (wise-ci actions with no local form at all), the link check (lychee, from a digest-pinned image) and the workflow audit (zizmor, actionlint) are CI-only, the image tier is `just check-image`, the native armv6l run is `just smoke-native`, the bring-up check against a release directory is `just check-bringup`, the image-swap check against the previous published release and a release directory is `just check-image-swap`, and the two online dependency-vulnerability checks are `just check-vulns-go` and `just check-vulns-npm`')]
-verify: check-hooks check-reqs check-citations check-arch check-arch-trace check-go check-fuzz check-lint-go check-secret-unwrap check-build check-static-bundle check-lint-frontend check-typecheck-frontend check-unit check-render check-render-policy check-site check-adr-index check-adr-revs check-docs-index check-repo-silo check-dead-test check-restart-policy check-publish-permissions check-coverage
+verify: check-hooks check-reqs check-citations check-arch check-arch-trace check-go check-fuzz check-lint-go check-secret-unwrap check-build check-static-bundle check-lint-frontend check-typecheck-frontend check-unit check-render check-render-policy check-site check-repo-silo check-dead-test check-restart-policy check-publish-permissions check-coverage
