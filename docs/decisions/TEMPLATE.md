@@ -10,8 +10,9 @@ the choice was *taken*, not the date the work merged. A rev that changes what wa
 Newest first: what changed and the ticket that changed it, one line per rev —
 [wise-ci's `check-adrs`](https://github.com/WisewareOrg/wise-ci/tree/main/check-adrs)'s own
 requirement, not restated here. A rev that records a supersession says so here —
-`superseded by ADR NNNN rev M`. Which of these lines' rev numbers it does not hold to current is
-the same check's own, not restated here.
+`superseded by ADR NNNN rev M`. Which of these lines
+[wise-ci's `check-adrs`](https://github.com/WisewareOrg/wise-ci/tree/main/check-adrs) exempts from
+holding the current rev is its own, not restated here.
 
 - **rev 1** — YYYY-MM-DD — first written (#N ticket name).
 

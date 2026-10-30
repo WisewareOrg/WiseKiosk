@@ -9,7 +9,7 @@ free number, and add it to the table.
 
 **An ADR is versioned, not frozen.** Merged text is revisable, and a correction is a new rev rather
 than a block appended to the old text. Where the rev lives on the ADR, and how its *Revisions*
-section records one line per rev, is
+section records one line per rev, are
 [wise-ci's `check-adrs`](https://github.com/WisewareOrg/wise-ci/tree/main/check-adrs)'s own, not
 restated here. Prior text is in git. Nothing bounds when a rev is permitted — that is a judgement
 call.

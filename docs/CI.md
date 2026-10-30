@@ -28,13 +28,14 @@ Not everything CI does is a gate. These produce material a person acts on.
   branch. Renovate's default title convention, `chore(deps): …`, is already a Conventional Commit, so
   `process-gates.yml`'s `pr-title` job runs over it like any other pull request; the exemptions that
   job carries are
-  [`WisewareOrg/.github`'s `PROCESS.md`](https://github.com/WisewareOrg/.github/blob/main/PROCESS.md)
+  [`WisewareOrg/.github`'s `PROCESS.md`](https://github.com/WisewareOrg/.github/blob/main/PROCESS.md)'s
   (PROC-009), not restated here. Renovate also keeps one open Dependency Dashboard issue, carrying no
-  milestone or type label; the ticket gates
-  ([`WisewareOrg/.github`'s `PROCESS.md`](https://github.com/WisewareOrg/.github/blob/main/PROCESS.md)
-  (PROC-003 through PROC-005)) read only the issue a branch names, so the dashboard issue is exempt by
-  construction and no branch may be cut from it. That the root `renovate.json` resolves the pinned preset is § *Repository
-  shape*'s. The project's own image is excluded from Renovate: the committed recipe names the
+  milestone or type label; the ticket gates are
+  [`WisewareOrg/.github`'s `PROCESS.md`](https://github.com/WisewareOrg/.github/blob/main/PROCESS.md)'s
+  (PROC-003 through PROC-005) — they read only the issue a branch names, so the dashboard issue is
+  exempt by construction and no branch may be cut from it. That the root `renovate.json` resolves the
+  pinned preset is § *Repository shape*'s. The project's own image is excluded from Renovate: the
+  committed recipe names the
   movable `latest` tag by design ([`DEPLOYMENT.md`](DEPLOYMENT.md) § *Bring-up*), and pinning it
   would loop through `publish.yml` — a merged pin publishes a new digest, which opens the next pin.
 - **Code-scanning results.** Every static-analysis finding is reported to the repository's
@@ -749,11 +750,11 @@ resolve, a citation to something that does not exist, an index that has drifted 
   inside the header rather than text separating it. A number is only a handle — a renumber rewrites
   `links:` and leaves the sentence pointing at whatever now occupies it, still reading as correct —
   and the header is what turns that drift into a mismatch a machine can see. An ADR number carries no
-  header, and numbers are reusable, so what holds is that the check fails the instant a number is
-  freed. How the rev beside it pins the version rather than the identity is
+  header, and the rev beside it pins the version rather than the identity — how it pins is
   [wise-ci's `check-adrs`](https://github.com/WisewareOrg/wise-ci/tree/main/check-adrs)'s own, not
-  restated here. A citation written on a branch across a freeing and a re-taking of the same number is
-  the case that leaves, and nothing here decides it.
+  restated here: numbers are reusable, so what holds is that `check-citations` fails the instant a
+  number is freed. A citation written on a branch across a freeing and a re-taking of the same number
+  is the case that leaves, and nothing here decides it.
 - **A header in an HTML comment does not open a line that continues a paragraph.** CommonMark reads
   a line-initial `<!--` as an HTML block, which interrupts the paragraph and splits it in two on the
   rendered page while the source still reads as one. Nothing else reports it: the comment is a
@@ -763,13 +764,13 @@ resolve, a citation to something that does not exist, an index that has drifted 
   `decisions/` directory and its index table to agreement — a `uses:` step in the `docs-and-hygiene`
   job; `just check-adrs` runs the same scripts locally, a convenience outside `verify` — not restated
   here.
-- **Every citation of an ADR pins that ADR's current rev.** The prose and link-title forms this
-  recognises, the index table's rev column and the ADR's own head, numbering and *Revisions* section
-  it checks against, and the line-break and empty-population guards around all of that are
-  [wise-ci's `check-adrs`](https://github.com/WisewareOrg/wise-ci/tree/main/check-adrs)'s own, not
-  restated here. Two of its rules live only in
+- **Every citation of an ADR pins that ADR's current rev** —
+  [wise-ci's `check-adrs`](https://github.com/WisewareOrg/wise-ci/tree/main/check-adrs)'s own rule,
+  not restated here: the prose and link-title forms it recognises, the index table's rev column and
+  the ADR's own head, numbering and *Revisions* section it checks against, and the line-wrap blind
+  spot and empty-population guards around all of that. Two of its rules are stated in
   [`check-adr-revs.py`](https://github.com/WisewareOrg/wise-ci/tree/main/check-adrs/check-adr-revs.py)'s
-  docstring, not its README: that an ADR's versioning premise reaches every document citing it, and
+  docstring: that an ADR's versioning premise reaches every document citing it, and
   that a citation pinning the current rev is not thereby proven to still mean what the ADR says.
   **The second of those is read at review** — see § *What is not gated here*.
   **A citation split across a line break is not judged at all, in either direction.** It is a hole a
@@ -844,10 +845,10 @@ changed, which the citation resolver above decides without anyone declaring anyt
 ## Repository shape
 
 - [wise-ci's `check-eol`](https://github.com/WisewareOrg/wise-ci/tree/main/check-eol) (§ *Gate
-  wiring*) holds that no file git treats as text has a CRLF line ending, and how a glob given the
-  `binary` attribute is exempt from that — not restated here. The attribute is declared on the image,
-  font and PDF globs, which is the attribute used as intended; a *text* glob given it is the reachable
-  case, and the owner ruled on 2026-08-02 not to gate it.
+  wiring*) holds that no file git treats as text has a CRLF line ending; how a glob given the
+  `binary` attribute is exempt from that is its own, not restated here. The attribute is declared
+  on the image, font and PDF globs, which is the attribute used as intended; a *text* glob given it
+  is the reachable case, and the owner ruled on 2026-08-02 not to gate it.
 - **No untracked, non-ignored file is present when a `git ls-files`-population gate runs.** Those
   gates read tracked state only, so an untracked file is invisible to every one of them — a defect
   in exactly the file most likely to carry a fresh mistake passes a local run and fails in CI once
@@ -858,7 +859,7 @@ changed, which the citation resolver above decides without anyone declaring anyt
   the one place an untracked file exists. How
   [wise-ci's `check-adrs`](https://github.com/WisewareOrg/wise-ci/tree/main/check-adrs) treats an
   untracked file is its own documentation's, not restated here.
-  `adr-rev-reach.py` also reads the tracked set and carries no guard either — it reports and exits
+  `adr-rev-reach.py` also reads the tracked set and carries no guard of its own — it reports and exits
   zero by design (§ *What is not gated here*), so there is no verdict for an untracked file to
   escape. `check-secret-unwrap` reads the tracked set the same way and carries no guard: an
   untracked second unwrap site passes a local run and fails in CI once committed.
@@ -888,7 +889,7 @@ changed, which the citation resolver above decides without anyone declaring anyt
   Renovate manager covers — its `pre-commit` manager stays off — so `pre-commit autoupdate`, run by
   hand, is its updater.
 - **The pull-request title is a Conventional Commit** —
-  [`WisewareOrg/.github`'s `PROCESS.md`](https://github.com/WisewareOrg/.github/blob/main/PROCESS.md)
+  [`WisewareOrg/.github`'s `PROCESS.md`](https://github.com/WisewareOrg/.github/blob/main/PROCESS.md)'s
   (PROC-009), not restated here — and so is each local commit message, a separate obligation
   delegated to `commitlint`
   ([ADR 0016 rev 13](decisions/0016-maintained-tools-for-standard-artifacts.md)). The local commit
@@ -905,24 +906,24 @@ changed, which the citation resolver above decides without anyone declaring anyt
   by hand, beside the hook-repository revs `autoupdate` does move. The pull-request title runs
   through wise-ci's `pr-title` instead — a `uses:` step in `process-gates.yml`, CI-only with no
   local form; WiseKiosk neither seeds nor cases it (wise-ci's own tests are its evidence).
-- The branch's name, its issue's type label, and its default-base pull request's ticket-linkage
-  record are [wise-ci's `check-branch`](https://github.com/WisewareOrg/wise-ci/tree/main/check-branch)'s
-  own — a `uses:` step in `process-gates.yml`'s `check-branch` job; `just check-branch` runs the same
-  script locally once a PR exists, a convenience outside `verify` — not restated here.
+- The branch's name, its issue's type label, and its pull request's ticket-linkage record are
+  [`WisewareOrg/.github`'s `PROCESS.md`](https://github.com/WisewareOrg/.github/blob/main/PROCESS.md)'s
+  (PROC-001, PROC-003, PROC-004, PROC-006), not restated here — a `uses:` step in
+  `process-gates.yml`'s `check-branch` job; `just check-branch` runs the same script locally once a
+  PR exists, a convenience outside `verify`.
 - That issue's milestone and type-label count are
-  [`WisewareOrg/.github`'s `PROCESS.md`](https://github.com/WisewareOrg/.github/blob/main/PROCESS.md)
+  [`WisewareOrg/.github`'s `PROCESS.md`](https://github.com/WisewareOrg/.github/blob/main/PROCESS.md)'s
   (PROC-004, PROC-005), not restated here. The type set and the branch-name
   shape it backs are wise-ci's `check-branch`'s own (a `uses:` step in `process-gates.yml`'s
   `check-branch` job; `just check-branch` runs the same script locally once a PR exists, a
   convenience outside `verify`), not restated here, so a new branch type cannot leave this
-  description behind. Why exactly one type label and an open milestone are required, and why that is
+  description behind. Why exactly one type label and a milestone are required, and why that is
   checked at merge rather than at filing, are
   [ADR 0013 rev 5](decisions/0013-work-tracking-invariants.md)'s, not restated here.
-- A pull request's base and its issue's parent agreeing, including why an anchor the check cannot
-  resolve fails rather than skips, are
-  [`WisewareOrg/.github`'s `PROCESS.md`](https://github.com/WisewareOrg/.github/blob/main/PROCESS.md)
-  (PROC-007, PROC-008), not restated here. That sub-issue membership means a shared merge target
-  rather than topical grouping is
+- A pull request's base and its issue's parent agreeing are
+  [`WisewareOrg/.github`'s `PROCESS.md`](https://github.com/WisewareOrg/.github/blob/main/PROCESS.md)'s
+  (PROC-007, PROC-008), not restated here. Why an anchor the check cannot resolve fails rather than
+  skips, and why sub-issue membership means a shared merge target rather than topical grouping, are
   [ADR 0013 rev 5](decisions/0013-work-tracking-invariants.md)'s, not restated here.
 - The Docker build context excludes `.git` and `node_modules`, which the committed `.dockerignore`
   does, along with `.github/`, `.claude/`, `docs/`, the frontend's build and test output, and the

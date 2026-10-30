@@ -3,8 +3,8 @@
 
 wise-ci's `check-adrs`'s `check-adr-revs.py` holds every citation to its ADR's current rev, and says
 in its own docstring that whether a citation pinning the current rev still means what the ADR says is
-decided by nothing there. A sweep that rewrites `rev N` to `rev N+1` across the tree satisfies that gate while
-re-deciding nothing, and the green result then certifies a reach that did not happen.
+decided by nothing there. A sweep that rewrites `rev N` to `rev N+1` across the tree satisfies that
+gate while re-deciding nothing, and the green result then certifies a reach that did not happen.
 
 This enumerates the work that sweep leaves. It decides nothing about a claim and fails on no diff:
 what it produces is a list of file, line and sentence for a reader to judge, under
@@ -14,10 +14,12 @@ Reported. For each ADR whose head rev moved between the base ref and the head tr
 outside its head-rev line and its *Revisions* section also changed: every line in the tracked set
 that is identical across the two trees once every `rev N` token is masked, and different before
 masking. That is a line whose sole edit was the pin. The tracked set is every file, not the Markdown
-in it: it mirrors [wise-ci's `check-adrs`](https://github.com/WisewareOrg/wise-ci/tree/main/check-adrs)'s
-own population, not restated here, so a sweep reaches there too. A file not decodable as text at either tree is
-named in the output rather than passed over, with which of the two reasons applies, since a shrunken
-population reported as a whole one is the failure this tool exists to catch.
+in it: it mirrors
+[wise-ci's `check-adrs`](https://github.com/WisewareOrg/wise-ci/tree/main/check-adrs)'s own
+population, not restated here, so a sweep reaches every file that gate reads. A file not decodable
+as text at either tree is named in the output rather than passed over, with which of the two reasons
+applies, since a shrunken population reported as a whole one is the failure this tool exists to
+catch.
 
 Not reported, each deliberately:
 
