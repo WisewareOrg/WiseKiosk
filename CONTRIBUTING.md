@@ -24,7 +24,7 @@ where deployed.
 ## Running the checks
 
 ```sh
-just                # the gate roster: every check, beside what it asserts
+just                # the gate roster: every check, beside what it asserts or which wise-ci action it runs
 just verify         # every check the PR gate runs that has a local form — the wise-ci checks with
                     # a local form are excluded, and pr-title and repo-floor have no local form at
                     # all (docs/CI.md § Gate wiring)

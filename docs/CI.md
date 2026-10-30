@@ -750,7 +750,7 @@ resolve, a citation to something that does not exist, an index that has drifted 
   inside the header rather than text separating it. A number is only a handle — a renumber rewrites
   `links:` and leaves the sentence pointing at whatever now occupies it, still reading as correct —
   and the header is what turns that drift into a mismatch a machine can see. An ADR number carries no
-  header, and the rev beside it pins the version rather than the identity — how it pins is
+  header, and the rev beside it pins the version rather than the identity. How it pins is
   [wise-ci's `check-adrs`](https://github.com/WisewareOrg/wise-ci/tree/main/check-adrs)'s own, not
   restated here: numbers are reusable, so what holds is that `check-citations` fails the instant a
   number is freed. A citation written on a branch across a freeing and a re-taking of the same number
@@ -768,23 +768,24 @@ resolve, a citation to something that does not exist, an index that has drifted 
   [wise-ci's `check-adrs`](https://github.com/WisewareOrg/wise-ci/tree/main/check-adrs)'s own rule,
   not restated here: the prose and link-title forms it recognises, the index table's rev column and
   the ADR's own head, numbering and *Revisions* section it checks against, and the line-wrap blind
-  spot and empty-population guards around all of that. Two of its rules are stated in
-  [`check-adr-revs.py`](https://github.com/WisewareOrg/wise-ci/tree/main/check-adrs/check-adr-revs.py)'s
-  docstring: that an ADR's versioning premise reaches every document citing it, and
-  that a citation pinning the current rev is not thereby proven to still mean what the ADR says.
-  **The second of those is read at review** — see § *What is not gated here*.
-  **A citation split across a line break is not judged at all, in either direction.** It is a hole a
-  prose pass can *open*, since rewrapping is what one does. Held by review alone.
+  spot and empty-population guards around all of that. Three of its rules are stated in
+  [`check-adr-revs.py`](https://github.com/WisewareOrg/wise-ci/tree/main/check-adrs/check-adr-revs.py)
+  itself: that an ADR's versioning premise reaches every document citing it, that a link is matched
+  on its target rather than its title, and that a citation pinning the current rev is not thereby
+  proven to still mean what the ADR says.
+  **The last of those is read at review** — see § *What is not gated here*.
+  **A citation split across a line break** is
+  [wise-ci's `check-adrs`](https://github.com/WisewareOrg/wise-ci/tree/main/check-adrs)'s own blind
+  spot, not restated here. It is a hole a prose pass can *open*, since rewrapping is what one does.
+  Held by review alone.
 - [wise-ci's `check-docs-index`](https://github.com/WisewareOrg/wise-ci/tree/main/check-docs-index)
   holds every tracked Markdown file to a row in the documentation index, unless it sits under a
   top-level dot-directory — a `uses:` step in the `docs-and-hygiene` job; `just check-docs-index`
   runs the same script locally, a convenience outside `verify` — not restated here, including the
   trailing-slash subtree row, the link and cell checks, the self-exclusion, and the dot-directory
   exemption whose trade is recorded at
-  [ADR 0014 rev 4](decisions/0014-documentation-index-claims-documents.md). `decisions/`,
-  `requirements/`, `contracts/`, `architecture/` and `site/` are each covered by one such row. The
-  requirements tree's items are claimed by the tree and gated by `check-reqs`, and code is claimed by
-  nothing here.
+  [ADR 0014 rev 4](decisions/0014-documentation-index-claims-documents.md). The requirements tree's
+  items are claimed by the tree and gated by `check-reqs`, and code is claimed by nothing here.
 - The LikeC4 architecture model validates: no undefined element, no unresolved relationship.
 - Spliced diagrams and generated architecture artifacts are byte-identical to a regeneration. A
   marker's artifact resolves to a regular file inside `architecture/` — through any symlink, not
@@ -905,7 +906,9 @@ changed, which the citation resolver above decides without anyone declaring anyt
   neither Renovate nor `pre-commit autoupdate` reaches such a pin, so those versions are updated
   by hand, beside the hook-repository revs `autoupdate` does move. The pull-request title runs
   through wise-ci's `pr-title` instead — a `uses:` step in `process-gates.yml`, CI-only with no
-  local form; WiseKiosk neither seeds nor cases it (wise-ci's own tests are its evidence).
+  local form; its commitlint configuration and dependencies are
+  [wise-ci's `pr-title`](https://github.com/WisewareOrg/wise-ci/tree/main/pr-title)'s own, not
+  restated here. WiseKiosk neither seeds nor cases it (wise-ci's own tests are its evidence).
 - The branch's name, its issue's type label, and its pull request's ticket-linkage record are
   [`WisewareOrg/.github`'s `PROCESS.md`](https://github.com/WisewareOrg/.github/blob/main/PROCESS.md)'s
   (PROC-001, PROC-003, PROC-004, PROC-006), not restated here — a `uses:` step in
@@ -913,11 +916,12 @@ changed, which the citation resolver above decides without anyone declaring anyt
   PR exists, a convenience outside `verify`.
 - That issue's milestone and type-label count are
   [`WisewareOrg/.github`'s `PROCESS.md`](https://github.com/WisewareOrg/.github/blob/main/PROCESS.md)'s
-  (PROC-004, PROC-005), not restated here. The type set and the branch-name
-  shape it backs are wise-ci's `check-branch`'s own (a `uses:` step in `process-gates.yml`'s
-  `check-branch` job; `just check-branch` runs the same script locally once a PR exists, a
-  convenience outside `verify`), not restated here, so a new branch type cannot leave this
-  description behind. Why exactly one type label and a milestone are required, and why that is
+  (PROC-004, PROC-005), not restated here. The type set and the branch-name shape it backs are
+  [`WisewareOrg/.github`'s `PROCESS.md`](https://github.com/WisewareOrg/.github/blob/main/PROCESS.md)'s
+  own (PROC-010), not restated here; `check-branch` enforces it (a `uses:` step in
+  `process-gates.yml`'s `check-branch` job; `just check-branch` runs the same script locally once a
+  PR exists, a convenience outside `verify`), so a new branch type cannot leave this description
+  behind. Why exactly one type label and a milestone are required, and why that is
   checked at merge rather than at filing, are
   [ADR 0013 rev 5](decisions/0013-work-tracking-invariants.md)'s, not restated here.
 - A pull request's base and its issue's parent agreeing are
@@ -1113,9 +1117,8 @@ already decided, which is what makes it a check and not a want.
   — the action provisions its own CodeQL CLI bundle, and no local invocation is decided), and the
   image vulnerability scan (`check_vulns.py --scope image` — needs the daemon-built image and the
   network, so it carries no `just` recipe of its own, unlike its sibling scopes below).
-  A shared wise-ci check that does have a local form — `check-branch`, `check-eol`,
-  `check-docs-index`, `check-adrs` — runs in CI through its `uses:` step, and the recipe is a
-  convenience outside `verify`, not a second spelling.
+  A shared wise-ci check that does have a local form runs in CI through its `uses:` step, and the
+  recipe is a convenience outside `verify`, not a second spelling.
   **A different shape holds `check-vulns-go`, `check-vulns-npm`, `check-image` and `smoke-native`:**
   each has an ordinary `just` recipe, so this bullet's own claim still holds for them, but none is a
   `just verify` dependency. The vulnerability pair needs the network on every run and `verify` stays
@@ -1158,7 +1161,8 @@ already decided, which is what makes it a check and not a want.
   runner would execute the file, and what the tiers must guarantee is [`TESTING.md`](TESTING.md)'s.
 - The default branch's required status checks, summed across its two rulesets, equal the gate jobs
   the two workflows define: `process-gates`'s required checks equal `checks.yml`'s gate jobs plus
-  `process-gates.yml`'s three. Which three, and what `pull-request`'s required rules are, are
+  `process-gates.yml`'s three, and `pull-request` names no status check at all. Which three, and
+  what `pull-request`'s required rules are, are
   [`WisewareOrg/.github`'s `repository-floor.yml`](https://github.com/WisewareOrg/.github/blob/main/repository-floor.yml)'s
   (PROC-011 through PROC-014), not restated here. **`main`
   merges through a merge queue, and administrators are bound by it**: the queue builds and merges
