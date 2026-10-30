@@ -26,12 +26,14 @@ Not everything CI does is a gate. These produce material a person acts on.
   conflicts with `main`, since the queue tests each pull request against the current `main` itself;
   major updates open a pull request and wait. A release sits for three days before its update opens a
   branch. Renovate's default title convention, `chore(deps): …`, is already a Conventional Commit, so
-  `process-gates.yml`'s `pr-title` job runs unconditionally for every pull request — the exemption
-  Dependabot's capitalised `build(deps): Bump …` default needed has no counterpart to carry. Renovate
-  also keeps one open Dependency Dashboard issue, carrying no
-  milestone or type label; the ticket gates ([ADR 0013 rev 5](decisions/0013-work-tracking-invariants.md))
-  read only the issue a branch names, so the dashboard issue is exempt by construction and no branch
-  may be cut from it. That the root `renovate.json` resolves the pinned preset is § *Repository
+  `process-gates.yml`'s `pr-title` job runs over it like any other pull request; the exemptions that
+  job carries are
+  [`WisewareOrg/.github`'s `PROCESS.md`](https://github.com/WisewareOrg/.github/blob/main/PROCESS.md)
+  (PROC-009), not restated here. Renovate also keeps one open Dependency Dashboard issue, carrying no
+  milestone or type label; the ticket gates
+  ([`WisewareOrg/.github`'s `PROCESS.md`](https://github.com/WisewareOrg/.github/blob/main/PROCESS.md)
+  (PROC-003 through PROC-005)) read only the issue a branch names, so the dashboard issue is exempt by
+  construction and no branch may be cut from it. That the root `renovate.json` resolves the pinned preset is § *Repository
   shape*'s. The project's own image is excluded from Renovate: the committed recipe names the
   movable `latest` tag by design ([`DEPLOYMENT.md`](DEPLOYMENT.md) § *Bring-up*), and pinning it
   would loop through `publish.yml` — a merged pin publishes a new digest, which opens the next pin.
@@ -747,68 +749,40 @@ resolve, a citation to something that does not exist, an index that has drifted 
   inside the header rather than text separating it. A number is only a handle — a renumber rewrites
   `links:` and leaves the sentence pointing at whatever now occupies it, still reading as correct —
   and the header is what turns that drift into a mismatch a machine can see. An ADR number carries no
-  header, and the rev beside it pins the version rather than the identity: numbers are reusable, so
-  what holds is that the check fails the instant a number is freed. A citation written on a branch
-  across a freeing and a re-taking of the same number is the case that leaves, and nothing here
-  decides it.
+  header; how the rev beside it pins is
+  [wise-ci's `check-adrs`](https://github.com/WisewareOrg/wise-ci/tree/main/check-adrs)'s own, not
+  restated here. A citation written on a branch across a freeing and a re-taking of the same number is
+  the case that leaves, and nothing here decides it.
 - **A header in an HTML comment does not open a line that continues a paragraph.** CommonMark reads
   a line-initial `<!--` as an HTML block, which interrupts the paragraph and splits it in two on the
   rendered page while the source still reads as one. Nothing else reports it: the comment is a
   comment, the prose is correct, and Sphinx does not warn. A comment opening a line after a blank
   one is a block already, which is what an issue template's guidance comment is, and passes.
-- The `decisions/` directory and its index table agree — every ADR has a row, no gap or duplicate in
-  numbering, every row resolves to a regular file. A directory listing reports names, so an entry
-  named like an ADR is counted as one until something states it; a directory or a dangling symlink
-  carrying the name is not an ADR.
-- **Every citation of an ADR pins that ADR's current rev**, in prose as `ADR NNNN rev M` and in a
-  markdown link as its title. An ADR is a versioned document
-  ([`decisions/README.md`](decisions/README.md)), so revving one reaches every document citing it:
-  each is updated or re-decided in the same change rather than left asserting a claim the ADR's
-  current rev does not make. The link rule is what the prose rule cannot reach — a citation spelled
-  as a bare bracketed number names no ADR in prose at all. **It is anchored on the link's target, not
-  its title**: a title is arbitrary text and may carry brackets, so a title-shaped pattern is what a
-  link to an ADR escapes through. A link whose title cannot be resolved back to its opening bracket
-  fails rather than being passed over, which makes a link to an ADR wrapped across two lines an
-  error — legal Markdown this rejects, in exchange for a reader that cannot be stepped around.
-  **The prose reader recognises more than it accepts, so that each spelling can be rejected rather
-  than passed over**: `ADR` or `ADRs`, any case, up to three of space, underscore, hash or hyphen,
-  then one to four digits. Only the canonical form is accepted; everything else that set reaches is
-  reported, a reference-style link or a raw `<a href>` at an ADR among them. That set is stated
-  literally rather than as a universal because a citation the reader does not reach leaves the
-  population and is then reported success over — so what the set *is* is the reviewable claim, and a
-  separator outside it is a gap to close rather than a rule already broken.
-  The ADR's own head is authoritative for its rev, the index table's column is checked against it, its
-  title's number must match its filename's, and its *Revisions* section carries one changelog line per
-  rev from 1 — so a rev cannot be taken without recording what changed, and a number two files carry
-  is a collision rather than a silent choice between them. An ADR declaring no rev, or two, fails
-  rather than being read as rev zero. **Three empty-population guards, one per reader**, because
-  either reader falling to zero means it stopped seeing citations while the other kept the run green.
-  **One exemption, and it drops staleness alone:** a changelog line and any line continuing it records
-  what a rev did at the moment it did it, so a citation there is not held to the current rev. It is
-  held to everything else — it must name an ADR that exists and must carry a rev. An index row's
-  leading self-link is dropped for the same reason and no further.
-  **What this leaves unproven is whether a citation pinning the current rev still means what the ADR
-  says.** The pin is gated and the claim hanging off it is not, so a sentence describing what an
-  earlier rev said passes green. That is read at review — see § *What is not gated here*.
-  **A citation split across a line break is not judged at all**, in either direction: matching is
-  within one line, so a line ending in the bare keyword and the next opening with the number match
-  neither pattern, and that citation is exempt from the rule for as long as the wrap survives. It is
-  a hole a prose pass can *open*, since rewrapping is what one does. Held by review alone.
-- **Every tracked Markdown file is claimed by a row in the documentation index**, unless it sits under
-  a top-level dot-directory, which holds machinery rather than documents. Both sides are derived from
-  the repository rather than read from an inventory: adding a document without indexing it fails,
-  retiring one fails until its row goes, and there is no exclusions list to append to — excluding
-  anything that is not machinery by that rule takes a change to the check itself
-  ([ADR 0014 rev 4](decisions/0014-documentation-index-claims-documents.md)). A row whose *Document* cell
-  renders with a trailing slash claims the subtree beneath it, which is how `decisions/`,
-  `requirements/`, `contracts/`, `architecture/` and `site/` are covered by one row each. Every row's
-  link resolves to a tracked file, one rendered path carries one row, a row names a tracked document
-  or a directory holding one, no row indexes a dot-directory, and no *Guarantees* or *Excludes* cell
-  is empty. The index does not index itself. A new top-level dot-directory is excluded the moment it
-  exists, with no edit anywhere — the trade ADR 0014 rev 4 records, which is why the check names the
-  machinery directories it skipped on every run. A dot-prefixed file at the repository root is not a
-  directory and must be indexed like any other document. Scope is Markdown: the tree's items are
-  claimed by the tree and gated by `check-reqs`, and code is claimed by nothing here.
+- [wise-ci's `check-adrs`](https://github.com/WisewareOrg/wise-ci/tree/main/check-adrs) holds the
+  `decisions/` directory and its index table to agreement — a `uses:` step in the `docs-and-hygiene`
+  job; `just check-adrs` runs the same scripts locally, a convenience outside `verify` — not restated
+  here.
+- **Every citation of an ADR pins that ADR's current rev.** The prose and link-title forms this
+  recognises, the index table's rev column and the ADR's own head, numbering and *Revisions* section
+  it checks against, and the line-break and empty-population guards around all of that are
+  [wise-ci's `check-adrs`](https://github.com/WisewareOrg/wise-ci/tree/main/check-adrs)'s own, not
+  restated here. Two of its rules live only in
+  [`check-adr-revs.py`](https://github.com/WisewareOrg/wise-ci/tree/main/check-adrs/check-adr-revs.py)'s
+  docstring, not its README: that an ADR's versioning premise reaches every document citing it, and
+  that a citation pinning the current rev is not thereby proven to still mean what the ADR says.
+  **The second of those is read at review** — see § *What is not gated here*.
+  **A citation split across a line break is not judged at all, in either direction.** It is a hole a
+  prose pass can *open*, since rewrapping is what one does. Held by review alone.
+- [wise-ci's `check-docs-index`](https://github.com/WisewareOrg/wise-ci/tree/main/check-docs-index)
+  holds every tracked Markdown file to a row in the documentation index, unless it sits under a
+  top-level dot-directory — a `uses:` step in the `docs-and-hygiene` job; `just check-docs-index`
+  runs the same script locally, a convenience outside `verify` — not restated here, including the
+  trailing-slash subtree row, the link and cell checks, the self-exclusion, and the dot-directory
+  exemption whose trade is recorded at
+  [ADR 0014 rev 4](decisions/0014-documentation-index-claims-documents.md). `decisions/`,
+  `requirements/`, `contracts/`, `architecture/` and `site/` are each covered by one such row. The
+  requirements tree's items are claimed by the tree and gated by `check-reqs`, and code is claimed by
+  nothing here.
 - The LikeC4 architecture model validates: no undefined element, no unresolved relationship.
 - Spliced diagrams and generated architecture artifacts are byte-identical to a regeneration. A
   marker's artifact resolves to a regular file inside `architecture/` — through any symlink, not
@@ -868,11 +842,11 @@ changed, which the citation resolver above decides without anyone declaring anyt
 
 ## Repository shape
 
-- **No file git treats as text has CRLF line endings**, and `.gitattributes` decides which those are.
-  A glob given the `binary` attribute is exempt from CRLF→LF normalisation at add time *and* skipped
-  by the search, so CRLF-terminated text under one commits and survives a fresh clone unseen. The
-  attribute is declared on the image, font and PDF globs, which is the attribute used as intended; a
-  *text* glob given it is the reachable case, and the owner ruled on 2026-08-02 not to gate it.
+- [wise-ci's `check-eol`](https://github.com/WisewareOrg/wise-ci/tree/main/check-eol) (§ *Gate
+  wiring*) holds that no file git treats as text has a CRLF line ending, and how a glob given the
+  `binary` attribute is exempt from that — not restated here. The attribute is declared on the image,
+  font and PDF globs, which is the attribute used as intended; a *text* glob given it is the reachable
+  case, and the owner ruled on 2026-08-02 not to gate it.
 - **No untracked, non-ignored file is present when a `git ls-files`-population gate runs.** Those
   gates read tracked state only, so an untracked file is invisible to every one of them — a defect
   in exactly the file most likely to carry a fresh mistake passes a local run and fails in CI once
@@ -898,27 +872,28 @@ changed, which the citation resolver above decides without anyone declaring anyt
   running the same script locally as a convenience outside `verify`, not a second spelling. It is
   scoped to what `mixed-line-ending` cannot reach: that hook judges only the files pre-commit hands
   it and counts one uniform ending kind as unmixed, so a committed-but-unstaged CRLF file and a
-  uniformly-CRLF file both pass it. check-eol's population is the whole tracked tree
-  (`git ls-files`), not pre-commit's file set, so it carries the untracked guard of the bullet above
-  regardless — an untracked, non-ignored file is reported as unsearchable and fails, beside any CRLF
-  finding rather than in place of one.
+  uniformly-CRLF file both pass it. check-eol's population and untracked-file guard reach the whole
+  tracked tree (`git ls-files`) rather than pre-commit's file set — not restated here.
   Locally the remaining hook layer is
   advisory fast feedback at commit, on the commit message, and at push (`pre-commit install`, once
   per clone); the binding run for the file-scanning hooks is CI's, over every tracked file — the
   commitlint hook of the bullet below runs at its own stage, not in that run. **A hook whose file set is empty is skipped and reports
   success** — pre-commit's own behaviour, which ADR 0016 rev 13's empty-population ruling permits;
-  check-eol, unbound to pre-commit's file set, reports success over an empty tracked tree under the
-  same ruling regardless. pre-commit itself is pinned in `scripts/requirements-dev.txt`
+  [wise-ci's `check-eol`](https://github.com/WisewareOrg/wise-ci/tree/main/check-eol), unbound to
+  pre-commit's file set, reporting success over an empty tracked tree regardless is its own
+  behaviour, not restated here. pre-commit itself is pinned in `scripts/requirements-dev.txt`
   — installed into `scripts/.venv` by `just hooks-install` and by CI's install step, and covered by
   Renovate's `pip` manager; each hook repository is pinned by commit SHA in the config, which no
   Renovate manager covers — its `pre-commit` manager stays off — so `pre-commit autoupdate`, run by
   hand, is its updater.
-- **The pull-request title is a Conventional Commit, and so is each local commit message** — two
-  separate obligations, each delegated to `commitlint`
-  ([ADR 0016 rev 13](decisions/0016-maintained-tools-for-standard-artifacts.md); the gate itself is
-  [ADR 0006 rev 6](decisions/0006-process-gates.md)'s). The local commit message runs through the
-  hook layer's `commitlint` hook, at its `commit-msg` stage, against the base configuration,
-  `.commitlintrc.json` — `@commitlint/config-conventional`, plus a `scope-case` rule restoring the
+- **The pull-request title is a Conventional Commit** —
+  [`WisewareOrg/.github`'s `PROCESS.md`](https://github.com/WisewareOrg/.github/blob/main/PROCESS.md)
+  (PROC-009), not restated here — and so is each local commit message, a separate obligation
+  delegated to `commitlint`
+  ([ADR 0016 rev 13](decisions/0016-maintained-tools-for-standard-artifacts.md)). The local commit
+  message runs through the hook layer's `commitlint` hook, at its `commit-msg` stage, against the
+  base configuration, `.commitlintrc.json` —
+  `@commitlint/config-conventional`, plus a `scope-case` rule restoring the
   retired check's lowercase-scope refusal, which the preset does not carry. Its `defaultIgnores`
   pass `fixup!`/`squash!`/merge subjects, whose text the squash discards, recorded in
   [`../scripts/cases/commitlint.md`](../scripts/cases/commitlint.md) beside what the rule lets
@@ -928,24 +903,26 @@ changed, which the citation resolver above decides without anyone declaring anyt
   neither Renovate nor `pre-commit autoupdate` reaches such a pin, so those versions are updated
   by hand, beside the hook-repository revs `autoupdate` does move. The pull-request title runs
   through wise-ci's `pr-title` instead — a `uses:` step in `process-gates.yml`, CI-only with no
-  local form, carrying its own commitlint configuration (`defaultIgnores` off, because the squash
-  makes the title the commit on `main`) and dependencies; WiseKiosk neither seeds nor cases it
-  (wise-ci's own tests are its evidence).
-- The branch is named `type_number-snake_name`, links an open issue labelled with its type, and its
-  default-base pull request records the ticket linkage.
-- That issue carries a milestone and **exactly one** type label. The type set and the branch-name
+  local form; WiseKiosk neither seeds nor cases it (wise-ci's own tests are its evidence).
+- The branch's name, its issue's type label, and its default-base pull request's ticket-linkage
+  record are [wise-ci's `check-branch`](https://github.com/WisewareOrg/wise-ci/tree/main/check-branch)'s
+  own — a `uses:` step in `process-gates.yml`'s `check-branch` job; `just check-branch` runs the same
+  script locally once a PR exists, a convenience outside `verify` — not restated here.
+- That issue's milestone and type-label count are
+  [`WisewareOrg/.github`'s `PROCESS.md`](https://github.com/WisewareOrg/.github/blob/main/PROCESS.md)
+  (PROC-004, PROC-005), not restated here. The type set and the branch-name
   shape it backs are wise-ci's `check-branch`'s own (a `uses:` step in `process-gates.yml`'s
   `check-branch` job; `just check-branch` runs the same script locally once a PR exists, a
   convenience outside `verify`), not restated here, so a new branch type cannot leave this
-  description behind. A second type label makes the branch type ambiguous, and an unmilestoned ticket is absent
-  from the phase axis that carries the definition of done. This is detected at merge, on the change
-  whose ticket is wrong, rather than at filing: GitHub cannot refuse to create a malformed issue, and
-  CI does not write ([ADR 0013 rev 5](decisions/0013-work-tracking-invariants.md)).
-- A pull request's base and its issue's parent agree. A parent implies a non-default base; an
-  integration branch implies membership in the ticket anchoring it; and a non-default base that is
-  not itself a conforming branch fails rather than skips, because an anchor the check cannot resolve
-  must not read as success. Sub-issue membership means a shared merge target — topical grouping is
-  the milestone's job.
+  description behind. Why exactly one type label and an open milestone are required, and why that is
+  checked at merge rather than at filing, are
+  [ADR 0013 rev 5](decisions/0013-work-tracking-invariants.md)'s, not restated here.
+- A pull request's base and its issue's parent agreeing, including why an anchor the check cannot
+  resolve fails rather than skips, are
+  [`WisewareOrg/.github`'s `PROCESS.md`](https://github.com/WisewareOrg/.github/blob/main/PROCESS.md)
+  (PROC-007, PROC-008), not restated here. That sub-issue membership means a shared merge target
+  rather than topical grouping is
+  [ADR 0013 rev 5](decisions/0013-work-tracking-invariants.md)'s, not restated here.
 - The Docker build context excludes `.git` and `node_modules`, which the committed `.dockerignore`
   does, along with `.github/`, `.claude/`, `docs/`, the frontend's build and test output, and the
   `scripts/` virtualenv. That is the whole of what it excludes rather than everything a build of the
@@ -1179,10 +1156,9 @@ already decided, which is what makes it a check and not a want.
   runner would execute the file, and what the tiers must guarantee is [`TESTING.md`](TESTING.md)'s.
 - The default branch's required status checks, summed across its two rulesets, equal the gate jobs
   the two workflows define: `process-gates`'s required checks equal `checks.yml`'s gate jobs plus
-  `process-gates.yml`'s three (`check-branch`, `pr-title`, `repo-floor`); `pull-request`'s required
-  rules are its own (pull request required, no deletion, no force-push), naming no status check at
-  all. A gate job absent from the required set fails, and so does a required entry naming no defined
-  job. **`main`
+  `process-gates.yml`'s three. Which three, and what `pull-request`'s required rules are, are
+  [`WisewareOrg/.github`'s `repository-floor.yml`](https://github.com/WisewareOrg/.github/blob/main/repository-floor.yml)'s
+  (PROC-011 through PROC-014), not restated here. **`main`
   merges through a merge queue, and administrators are bound by it**: the queue builds and merges
   one pull request at a time, re-running the required checks on that pull request applied to the
   current `main`, so nothing merges on a stale green and no pull request's green depends on another
