@@ -749,7 +749,8 @@ resolve, a citation to something that does not exist, an index that has drifted 
   inside the header rather than text separating it. A number is only a handle — a renumber rewrites
   `links:` and leaves the sentence pointing at whatever now occupies it, still reading as correct —
   and the header is what turns that drift into a mismatch a machine can see. An ADR number carries no
-  header; how the rev beside it pins is
+  header, and numbers are reusable, so what holds is that the check fails the instant a number is
+  freed. How the rev beside it pins the version rather than the identity is
   [wise-ci's `check-adrs`](https://github.com/WisewareOrg/wise-ci/tree/main/check-adrs)'s own, not
   restated here. A citation written on a branch across a freeing and a re-taking of the same number is
   the case that leaves, and nothing here decides it.
