@@ -7,7 +7,7 @@
 #   docs/site/.venv/bin/pip install -r docs/site/requirements-dev.txt
 # CI installs the same pins (see .github/workflows/checks.yml, job `docs-site`).
 sphinx==9.2.0
-myst-parser==5.1.0
+myst-parser==5.2.0
 sphinx-needs==9.2.0
 sphinxcontrib-mermaid==2.1.1
 furo==2025.12.19
