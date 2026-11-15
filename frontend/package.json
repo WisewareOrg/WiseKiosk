@@ -28,7 +28,7 @@
     "istanbul-reports": "3.2.0",
     "json-schema-to-typescript": "16.0.0",
     "orval": "8.47.0",
-    "prettier": "3.9.10",
+    "prettier": "3.10.1",
     "svelte": "5.57.3",
     "svelte-check": "4.7.8",
     "typescript": "6.0.3",
