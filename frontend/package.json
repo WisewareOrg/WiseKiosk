@@ -20,7 +20,7 @@
     "@vitest/coverage-istanbul": "5.1.0",
     "ajv": "8.20.0",
     "eslint": "10.14.0",
-    "eslint-plugin-svelte": "3.23.1",
+    "eslint-plugin-svelte": "3.24.1",
     "globals": "17.14.0",
     "istanbul-lib-coverage": "3.2.2",
     "istanbul-lib-report": "3.0.1",
