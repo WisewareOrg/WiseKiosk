@@ -10,6 +10,6 @@
     "codegen": "likec4 codegen"
   },
   "devDependencies": {
-    "likec4": "1.60.0"
+    "likec4": "1.61.1"
   }
 }
