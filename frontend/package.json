@@ -29,7 +29,7 @@
     "json-schema-to-typescript": "16.0.0",
     "orval": "8.47.0",
     "prettier": "3.9.10",
-    "svelte": "5.57.3",
+    "svelte": "5.59.2",
     "svelte-check": "4.7.8",
     "typescript": "6.0.3",
     "typescript-eslint": "8.72.1",
